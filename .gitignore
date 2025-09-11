@@ -1,0 +1,12 @@
+*.docx
+*.sql
+.DS_Store
+config.php
+error_log
+!uploaded-file/
+uploaded-file/*
+!uploaded-file/.gitkeep
+!uploaded-file/.gitignore
+*.env
+.vscode/
+.idea/

@@ -1,0 +1,146 @@
+
+<?php  
+session_start();
+
+ use PHPMailer\PHPMailer\PHPMailer;
+ use PHPMailer\PHPMailer\Exception;
+
+require 'phpmailer/src/Exception.php';
+require 'phpmailer/src/PHPMailer.php';
+require 'phpmailer/src/SMTP.php';
+//Create an instance; passing `true` enables exceptions
+   $mail = new PHPMailer(true); 
+   
+       
+    //Server settings
+    //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+    $mail->isSMTP();                                            //Send using SMTP
+    $mail->Host       = 'mail.freelancerhanip.com';                     //Set the SMTP server to send through
+    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+    $mail->Username   = 'contact@freelancerhanip.com';                     //SMTP username
+    $mail->Password   = 'contact@freelancerhanip.com';                               //SMTP password
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;            //Enable implicit TLS encryption
+    $mail->Port       = 587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+    
+    
+   if(isset($_REQUEST['PasswordResetEmail']))  // for password reset
+    { 
+                 // forgot Password a email
+		try {
+
+			 $email      = $_REQUEST['PasswordResetEmail'] ; 
+			 $token_hash = $_REQUEST['token_hash'] ; 
+			 
+			//Recipients
+			 $mail->setFrom('contact@freelancerhanip.com', 'Pyncparcel.com');
+			 $mail->addAddress("$email", 'recipient email address.');
+
+			//Content
+			  $mail->isHTML(true);      //Set email format to HTML
+			  $mail->Subject = 'Password Reset Request for Your Account';
+			  $mail->Body    = " 
+								<div style='border:1px solid #ddd; margin: auto; padding: 11px;'>
+									  <h4>Pyncparcel</h4>
+									  <img style='max-width:500px; display:block; margin: auto; ' src='https://practice.freelancerhanip.com/final_pyncparcel_manageme/assets/img/logo.png'>
+									  <div style='padding: 20px 16px; width: 205px; margin: auto'>
+										  <p style='color: #786d6d; font-weight: 300;'><b>Reset your password</b></p>  
+										  <a href='https://practice.freelancerhanip.com/final_pyncparcel_manageme/user-area/new-password.php?token_hash=$token_hash'  
+												style='padding: 10px; background: #E87946; color: #fff; text-decoration: none; 
+												border-radius: 3px; cursor: pointer;margin-bottom: 16px;display: inline-block;'> 
+												Click here to reset password 
+										  </a> 
+									  </div>
+								</div>
+							   ";
+
+			$mail->send();
+			   $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>"; 
+			   
+			   if( isset( $_REQUEST['AnotherRequest'] ) ){
+			         
+			         $_SESSION['AnotherRequestMessage'] = "";
+			         header("location: final_pyncparcel_manageme/forgotpwd.php?mailsent=$email&AnotherRequest");
+
+			     }else{ 
+			         
+			         header("location: final_pyncparcel_manageme/forgotpwd.php?mailsent=$email");
+			     };
+			     
+			     die();  
+			 
+		} catch (Exception $e) {
+			$_SESSION['message'] = "Something went wrong, please try again"; 
+			 header('location: final_pyncparcel_manageme/forgotpwd.php'); 
+			 die();
+		} 
+    }; 
+?> 
+<!-- when user has signed up , I will get a email-->
+<?php 
+ 
+ if( isset($_REQUEST['signUp_email']) ) 
+ { 
+ 
+   try {
+        $signUp_email = $_REQUEST['signUp_email'] ;
+        $Account_Number =  isset($_REQUEST['Account_Number']) ? $_REQUEST['Account_Number'] : 'a/n' ;
+        $Fname          = isset( $_REQUEST['Fname'] ) ? $_REQUEST['Fname'] : 'a/n' ;
+		
+		
+        $body =  "<div style='padding:10px; max-width: 700px; margin: auto; color:#222 !important'> 
+            
+			  <h1 style='font-size: 20px;'>Your Pync Parcel Chateau Journey Starts Here ✨</h1>
+			  <p>Hello $Fname,</p>
+			  <p> Welcome to Pync Parcel Chateau – where shipping is made seamless, and service is made special.
+
+				Below is your unique overseas shipping address. Use this address whenever you’re shopping online so we can get your parcels to you quickly and securely.
+				</p> 
+				<h4>Your Shipping Address:</h4>
+				<p>Line 1:5401 NW 102ND AVE</p>
+				<p>Line 2:STE113 - $Account_Number</p>
+				<p>City:SUNRISE</p>
+				<p>State:Florida</p>
+				<p>Country:United States</p>
+				<p>Zip Code:33351</p>
+				<p>For now, we’re delivering all parcels directly to you. Until your customer dashboard is updated to allow delivery scheduling, please head straight to “My Account” and set up your preferred delivery address. This ensures your parcels get to you without delay.</p>
+				<p>Security Tip: <br />
+				Always update your address inside your account. Avoid sending personal delivery details through WhatsApp or text — this helps us protect your privacy.
+				</p>
+			   <hr />
+			   <p>We’re thrilled to have you with us, and we can’t wait to make every delivery feel like an unboxing experience you’ll remember.</p>
+			   <h4>The Pync Chateau Promise:</h4>
+			   <p>Parcels handled with care</p>
+			   <p>Clear, timely updates</p>
+			   <p>Service with a touch of luxury</p>
+			   <h4>Your next steps:</h4>
+			   <p>1.Save your shipping address above</p>
+			   <p>2.Update your preferred delivery address under “My Account”</p>
+			   <p>3.Start shopping and let the Pync Chateau take care of the rest</p>
+			   <p>Here’s to your first delivery,The Pync Parcel Chateau Team</p>
+		</div>";
+
+			$email      =  $signUp_email; //$_REQUEST['PasswordResetEmail'] ; 
+			//Recipients
+			 $mail->setFrom('contact@freelancerhanip.com', 'Pyncparcel.com');
+			 $mail->addAddress("$email", 'recipient email address.');
+
+			//Content
+			  $mail->isHTML(true);      //Set email format to HTML
+			  $mail->Subject = 'Welcome to the Pync Chateau - Your Shipping Address is Ready!';
+			  $mail->Body    = $body;
+
+			$mail->send();
+			      $_SESSION['message'] = "Registration successful. You can now log in"; 
+			      header('location: final_pyncparcel_manageme/sign-in.php');
+			      die(); 	
+			 
+			 
+		} catch (Exception $e) {
+			  $_SESSION['message'] = "Something went wrong, please try again"; 
+			  header('location: final_pyncparcel_manageme/forgotpwd.php'); 
+			 die(); 
+		};
+ }; 
+ ?>
+
+
