@@ -1,5 +1,4 @@
-
-<?php  
+<?php
 session_start();
 
  use PHPMailer\PHPMailer\PHPMailer;
@@ -8,10 +7,13 @@ session_start();
 require 'phpmailer/src/Exception.php';
 require 'phpmailer/src/PHPMailer.php';
 require 'phpmailer/src/SMTP.php';
+
+require_once __DIR__ . '/routes/web.php';
+$routes = include __DIR__ . '/routes/web.php';
+$base_url = $routes['base_url'];
+
 //Create an instance; passing `true` enables exceptions
-   $mail = new PHPMailer(true); 
-   
-       
+   $mail = new PHPMailer(true);
     //Server settings
     //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
     $mail->isSMTP();                                            //Send using SMTP
@@ -38,17 +40,17 @@ require 'phpmailer/src/SMTP.php';
 			//Content
 			  $mail->isHTML(true);      //Set email format to HTML
 			  $mail->Subject = 'Password Reset Request for Your Account';
-			  $mail->Body    = " 
+			  $mail->Body    = "
 								<div style='border:1px solid #ddd; margin: auto; padding: 11px;'>
 									  <h4>Pyncparcel</h4>
-									  <img style='max-width:500px; display:block; margin: auto; ' src='https://practice.freelancerhanip.com/final_pyncparcel_manageme/assets/img/logo.png'>
+									  <img style='max-width:500px; display:block; margin: auto; ' src='" . $base_url . "assets/img/logo.png'>
 									  <div style='padding: 20px 16px; width: 205px; margin: auto'>
-										  <p style='color: #786d6d; font-weight: 300;'><b>Reset your password</b></p>  
-										  <a href='https://practice.freelancerhanip.com/final_pyncparcel_manageme/user-area/new-password.php?token_hash=$token_hash'  
-												style='padding: 10px; background: #E87946; color: #fff; text-decoration: none; 
-												border-radius: 3px; cursor: pointer;margin-bottom: 16px;display: inline-block;'> 
-												Click here to reset password 
-										  </a> 
+										  <p style='color: #786d6d; font-weight: 300;'><b>Reset your password</b></p>
+										  <a href='" . $base_url . "user-area/new-password.php?token_hash=$token_hash'
+												style='padding: 10px; background: #E87946; color: #fff; text-decoration: none;
+												border-radius: 3px; cursor: pointer;margin-bottom: 16px;display: inline-block;'>
+												Click here to reset password
+										  </a>
 									  </div>
 								</div>
 							   ";
@@ -57,24 +59,24 @@ require 'phpmailer/src/SMTP.php';
 			   $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>"; 
 			   
 			   if( isset( $_REQUEST['AnotherRequest'] ) ){
-			         
-			         $_SESSION['AnotherRequestMessage'] = "";
-			         header("location: final_pyncparcel_manageme/forgotpwd.php?mailsent=$email&AnotherRequest");
 
-			     }else{ 
-			         
-			         header("location: final_pyncparcel_manageme/forgotpwd.php?mailsent=$email");
+			         $_SESSION['AnotherRequestMessage'] = "";
+			         header('location: ' . $base_url . 'forgotpwd.php?mailsent=' . $email . '&AnotherRequest');
+
+			     }else{
+
+			         header('location: ' . $base_url . 'forgotpwd.php?mailsent=' . $email);
 			     };
 			     
 			     die();  
 			 
 		} catch (Exception $e) {
-			$_SESSION['message'] = "Something went wrong, please try again"; 
-			 header('location: final_pyncparcel_manageme/forgotpwd.php'); 
+			$_SESSION['message'] = "Something went wrong, please try again";
+			 header('location: ' . $base_url . 'forgotpwd.php');
 			 die();
-		} 
+		}
     }; 
-?> 
+?>
 <!-- when user has signed up , I will get a email-->
 <?php 
  
@@ -130,15 +132,15 @@ require 'phpmailer/src/SMTP.php';
 			  $mail->Body    = $body;
 
 			$mail->send();
-			      $_SESSION['message'] = "Registration successful. You can now log in"; 
-			      header('location: final_pyncparcel_manageme/sign-in.php');
-			      die(); 	
+			      $_SESSION['message'] = "Registration successful. You can now log in";
+			      header('location: ' . $base_url . 'sign-in.php');
+			      die();
 			 
 			 
 		} catch (Exception $e) {
-			  $_SESSION['message'] = "Something went wrong, please try again"; 
-			  header('location: final_pyncparcel_manageme/forgotpwd.php'); 
-			 die(); 
+			  $_SESSION['message'] = "Something went wrong, please try again";
+			  header('location: ' . $base_url . 'forgotpwd.php');
+			 die();
 		};
  }; 
  ?>
