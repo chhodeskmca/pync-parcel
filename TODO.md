@@ -1,0 +1,3 @@
+- [x] Edit Pync-parcel/user-area/authorized-user.php: Replace echo message with redirect to ../sign-in.php
+- [x] Edit Pync-parcel/admin-dashboard/authorized-admin.php: Replace first echo message with redirect
+- [x] Edit Pync-parcel/admin-dashboard/authorized-admin.php: Replace second echo message with redirect

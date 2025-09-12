@@ -1,7 +1,6 @@
 *.docx
 *.sql
 .DS_Store
-config.php
 error_log
 !uploaded-file/
 uploaded-file/*
@@ -10,3 +9,4 @@ uploaded-file/*
 *.env
 .vscode/
 .idea/
+vendor/
