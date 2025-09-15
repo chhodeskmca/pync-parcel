@@ -237,7 +237,7 @@ $('.reset_btn').click(function () {
 });
 // address type 
 $('.main-header').click(function () {
-	alert(90);
+
 });
 $('.AddressType').on('change', function () {
 	$addressType = $(this).val();

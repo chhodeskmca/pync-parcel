@@ -19,7 +19,7 @@
     $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $offset = ($page - 1) * $limit;
 
-    $sql_count      = 'SELECT COUNT(*) as total FROM pre_alert';
+    $sql_count      = 'SELECT COUNT(*) as total FROM packages';
     $result_count   = mysqli_query($conn, $sql_count);
     $total_packages = mysqli_fetch_assoc($result_count)['total'];
 
@@ -339,9 +339,9 @@
                 $order = ($sort == 'oldest') ? 'ASC' : 'DESC';
 
                 // Check if we have database packages
-                $sql             = "SELECT * FROM pre_alert ORDER BY created_at $order LIMIT $limit OFFSET $offset";
-                $result          = mysqli_query($conn, $sql);
-                $has_db_packages = mysqli_num_rows($result) > 0;
+    $sql             = "SELECT * FROM packages ORDER BY created_at $order LIMIT $limit OFFSET $offset";
+    $result          = mysqli_query($conn, $sql);
+    $has_db_packages = mysqli_num_rows($result) > 0;
 
                 // If no database packages, use demo packages
                 if (! $has_db_packages && ! empty($packages_list)) {
@@ -374,7 +374,7 @@
                 <th>Description</th>
                 <th>Customer</th>
                 <th>Weight</th>
-                <th>Dimensions (L x W x H)</th>
+                <!-- <th>Dimensions (L x W x H)</th> -->
                 <th>Shipment Status</th>
                 <th>Shipment Type</th>
                 <th>Branch</th>
@@ -405,15 +405,15 @@
                             }
                         ?>
             <tr>
-                <td><?php echo $rows['tracking_name'] ?? 'N/A'; ?></td>
+                <td><?php echo ucfirst($rows['tracking_name']) ?? 'N/A'; ?></td>
                 <td><?php echo $rows['tracking_number']; ?></td>
                 <td><?php echo $rows['courier_company']; ?></td>
                 <td><?php echo $rows['describe_package']; ?></td>
                 <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
                 <td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
-                <td><?php echo ($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td>
+                <!-- <td><?php echo ($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td> -->
                 <td><?php echo $rows['shipment_status'] ?? 'N/A'; ?></td>
-                <td><?php echo $rows['shipment_type'] ?? 'N/A'; ?></td>
+                <td><?php echo ucfirst($rows['shipment_type']) ?? 'N/A'; ?></td>
                 <td><?php echo $rows['branch'] ?? 'N/A'; ?></td>
                 <td><?php echo $rows['tag'] ?? 'N/A'; ?></td>
                 <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>

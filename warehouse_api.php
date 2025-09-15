@@ -133,14 +133,14 @@ function pull_packages_from_warehouse($limit = 10) {
                 continue; // Skip packages without a matching user
             }
 
-            $sqlCheck = "SELECT id FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
+            $sqlCheck = "SELECT id FROM packages WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
                 $row = mysqli_fetch_assoc($resCheck);
-                $sqlUpdate = "UPDATE pre_alert SET
-                    Courier_Company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
-                    Describe_Package = '" . mysqli_real_escape_string($conn, $description) . "',
-                    Weight = " . floatval($weight) . ",
+                $sqlUpdate = "UPDATE packages SET
+                    courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
+                    describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
+                    weight = " . floatval($weight) . ",
                     tracking_name = '" . mysqli_real_escape_string($conn, $trackingName) . "',
                     dim_length = " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
                     dim_width = " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
@@ -150,7 +150,7 @@ function pull_packages_from_warehouse($limit = 10) {
                     branch = '" . mysqli_real_escape_string($conn, $branch) . "',
                     tag = '" . mysqli_real_escape_string($conn, $tag) . "',
                     created_at = '" . mysqli_real_escape_string($conn, $mysqlDate) . "',
-                    User_id = " . intval($user_id) . "
+                    user_id = " . intval($user_id) . "
                     WHERE id = " . intval($row['id']);
                 $updateResult = mysqli_query($conn, $sqlUpdate);
                 if (!$updateResult) {
@@ -159,14 +159,12 @@ function pull_packages_from_warehouse($limit = 10) {
                     error_log("Warehouse API pull_packages_from_warehouse updated package: $trackingNumber");
                 }
             } else {
-                $sqlInsert = "INSERT INTO pre_alert
-                    (User_id, Tracking_Number, Courier_Company, Merchant, Describe_Package, invoice, Weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, created_at) VALUES (
+                $sqlInsert = "INSERT INTO packages
+                    (user_id, tracking_number, courier_company, describe_package, weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, created_at) VALUES (
                     " . intval($user_id) . ",
                     '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     '" . mysqli_real_escape_string($conn, $courierCompany) . "',
-                    'Warehouse API',
                     '" . mysqli_real_escape_string($conn, $description) . "',
-                    '',
                     " . floatval($weight) . ",
                     '" . mysqli_real_escape_string($conn, $trackingName) . "',
                     " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",

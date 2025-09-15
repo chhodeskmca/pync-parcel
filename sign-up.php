@@ -120,9 +120,9 @@
 					<p>I accept the <a href="terms-and-conditions.php">terms and conditions</a> of Pync Parcel Chateau</p>
 				</div>
 				<!-- recaptcha-->
-				<div class="Google-recaptcha"> 
+				<!-- <div class="Google-recaptcha"> 
 				   <div class="g-recaptcha" data-sitekey="6LdJX2orAAAAADNLtaBt1_hthT7n2xq1xcVwSR9q"></div>
-				</div>
+				</div> -->
 				<!-- Submit Button-->
 				<div class="d-grid">
 				 <input hidden type="text" name="signup" />

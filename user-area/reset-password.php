@@ -16,8 +16,7 @@ if (isset($_REQUEST['email'])) {
     }
     $rows    = mysqli_fetch_array($result);
     $user_id = $rows['id'];
-	echo "<pre>";
-	print_r($rows);die();
+
     $Token            = bin2hex(random_bytes(16));
     $reset_token_hash = hash('sha256', $Token);
     $token_expired_at = date('Y-m-d H:i:s', time() + 60 * 60);
@@ -49,11 +48,11 @@ if (isset($_REQUEST['userInputCurrentPwd'])) {
 
     $reset_password = ltrim($_REQUEST['userInputCurrentPwd']);
     if (! $reset_password == '') {
-        $user_id       = $_REQUEST['user_id'];
+        $user_id = $_REQUEST['user_id'];
 
         $sql    = "SELECT * FROM users WHERE id = $user_id";
         $result = mysqli_query($conn, $sql);
-        $user = mysqli_fetch_assoc($result);
+        $user   = mysqli_fetch_assoc($result);
 
         if (password_verify($reset_password, $user['password_hash'])) {
             echo 1;
