@@ -4,8 +4,8 @@
 	include('../config.php'); // database connection
  if( isset($_REQUEST['user_basic_account_info_btn'] ) ){ 
 	     // User  form input values
-		$FName        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['FName'])) );
-		$LName        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['LName'])) );
+		$first_name        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['first_name'])) );
+		$last_name        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['last_name'])) );
 		$phone        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['phone'])) );
 		$BDate        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['BDate'])) );
 		$Gender       =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Gender'])) );
@@ -28,14 +28,14 @@
 			{ 
 			  $Region = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Region3'])) );
 			};  
-		if( $FName == '' ) 
+		if( $first_name == '' ) 
 		{    
 			$_SESSION['message-1'] =  'Please Enter First Name';
 			$_SESSION['message']   =  'Please Enter First Name';
 	        header('location: user-dashboard/user-account.php?no-update-basic-data='); 
             die();
 		};
-	    if( $LName == '') 
+	    if( $last_name == '') 
 	    { 
 		      
 			$_SESSION['message-2'] =  'Please Enter Last Name';
@@ -135,7 +135,7 @@
 		};
 		
 		// Updating user basic information
-		$sql = "UPDATE users SET FName = '$FName', LName = '$LName', PhoneNumber = '$phone', DateOfBirth = '$BDate', Gender = '$Gender', 
+		$sql = "UPDATE users SET first_name = '$first_name', last_name = '$last_name', PhoneNumber = '$phone', DateOfBirth = '$BDate', Gender = '$Gender', 
 	            file = '$File', AddressType = '$AddressType', Parish = '$Parish', Region = '$Region', 
 				AddressLine1 = '$AddressLine1', AddressLine2 = '$AddressLine2' WHERE id = $user_id";
 		if( mysqli_query($conn, $sql)){
@@ -179,12 +179,12 @@
 
      //================================================== Credit adding in user account start===============================
 	 
-	 if( isset($_REQUEST['new_Credit_btn']) ){ 
+	 if( isset($_REQUEST['new_credit_btn']) ){ 
 	    
-		        $New_credit    =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['New_credit'])) );
+		        $new_credit    =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['new_credit'])) );
 		        $user_id       =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['user_id'])) );
 		        $user_name     =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['user_name'])) );
-		        $AccountNumber =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['AccountNumber'])) ); 
+		        $account_number =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['account_number'])) ); 
 				
 				 $sql = "SELECT * FROM  users  WHERE id = $user_id" ; 
 				 $result = mysqli_query($conn, $sql);
@@ -192,36 +192,36 @@
 					{ 
 				   
 				       $rows = mysqli_fetch_array($result); 
-					   $Total_Balance =  $rows['Total_Balance'] + $New_credit; 
+					   $total_balance =  $rows['total_balance'] + $new_credit; 
 					  
-						$sql =  "UPDATE users SET  Total_Balance = $Total_Balance WHERE id = $user_id";  
+						$sql =  "UPDATE users SET  total_balance = $total_balance WHERE id = $user_id";  
 						
 						if( mysqli_query($conn, $sql)){ 
 						
-						  $sql = "INSERT INTO balance ( user_id, Add_New_Credit) VALUES ( $user_id, $New_credit )" ;
+						  $sql = "INSERT INTO balance ( user_id, Add_new_credit) VALUES ( $user_id, $new_credit )" ;
 						  if( mysqli_query($conn, $sql) ){ 
 						  
 								$_SESSION['message']   =  'Credit updated successfully';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&AccountNumber=$AccountNumber"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
 								die();
 							   
 						  }else{ 
 						  
 							    $_SESSION['message']   =  'Something went wrong';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&AccountNumber=$AccountNumber"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
 								die();
 						  }
 						}else{ 
 						
 						        $_SESSION['message']   =  'Something went wrong';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&AccountNumber=$AccountNumber"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
 								die();
 						}
 				
 				    }else{ 
 					
 								$_SESSION['message']   =  'Something went wrong';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&AccountNumber=$AccountNumber"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
 								die();
 				
 					};

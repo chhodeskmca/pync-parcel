@@ -277,7 +277,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
                 </li>
               </ul>
             </div>
@@ -389,8 +389,14 @@
 						 </form>
 					  </div>
 					</div>
-						   <div class="panel-body table-responsive shadow">
-								<table class="table-area">
+                                <div class="loading"
+                                    style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;">
+                                    <span style="background: #E87946;  margin-right: 10px;"
+                                        class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true">
+                                    </span>Loading...
+                                </div>
+                                <div class="panel-body table-responsive shadow" style="display:none;">
+                                    <table class="table table-striped table-hover table-bordered shadow m-auto">
 									<thead>
 										<tr>
 											<th>Tracking</th>
@@ -426,7 +432,7 @@
 											<td> Apr 29, 2025, 10:43 PM </td>
 											<td>
 												<ul class="action-list">
-													<li> 
+													<li style="list-style:none;"> 
 													  <a href="package-view.php"> 
 														 <i class="fa-solid fa-eye"></i>
 													  </a> 
@@ -686,9 +692,9 @@
      <!-- custom js -->
       <script src="assets/js/custom.js"></script> 
 	  <script type="text/javascript">
-	   //Swal.fire("SweetAlert2 is working!"); 
+	   //Swal.fire("SweetAlert2 is working!");
 			$('.delete_shipment').click( function(){
-				
+
 			  Swal.fire({
 				  title: "Are you sure?",
 				  text: "You won't be able to revert this!",
@@ -705,9 +711,16 @@
 					  icon: "success"
 					});
 				  }
-				}); 
-			});  
-      </script>  	 
+				});
+			});
+      </script>
+	  <script type="text/javascript">
+	   $(window).on('load', function() {
+		// Page is fully loaded
+		  $('.table-responsive').show('slow');
+		  $('.loading').hide();
+		});
+	  </script>
   </body>
 </html>
 

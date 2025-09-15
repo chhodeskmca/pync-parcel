@@ -51,7 +51,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a  href="package.html">
+                <a  href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
                   <p>Packages</p>
                 </a>
@@ -337,10 +337,10 @@
                       <div style="font-size: 18px;" class="card-title UpPrealert-heading"><h2>Update Pre-alert</h2></div>
 					</div>
                   </div>
-                  <div class="card-body p-0">
+                  <div class="p-0 card-body">
                     <div class="table-responsive">
                       <!-- Projects table -->
-                      <table class="table align-items-center mb-0">
+                      <table class="table mb-0 align-items-center">
                         <thead class="thead-light">
                           <tr>
                             <th scope="col">Tracking Number</th>

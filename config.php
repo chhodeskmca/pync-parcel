@@ -10,9 +10,13 @@ $userName     = $_ENV['DB_USER'] ?? 'root';
 $userPassword = $_ENV['DB_PASS'] ?? 'admin';
 $dbName       = $_ENV['DB_NAME'] ?? 'freela53_pyncparcelchateau';
 
-define('WAREHOUSE_API_KEY', $_ENV['WAREHOUSE_API_KEY'] ?? '');
+if (!defined('WAREHOUSE_API_KEY')) {
+    define('WAREHOUSE_API_KEY', $_ENV['WAREHOUSE_API_KEY'] ?? '');
+}
 
-define('IS_PRODUCTION', ($_ENV['APP_ENV'] ?? 'development') === 'production');
+if (!defined('IS_PRODUCTION')) {
+    define('IS_PRODUCTION', ($_ENV['APP_ENV'] ?? 'development') === 'production');
+}
 
 $conn = mysqli_connect($hostName, $userName, $userPassword, $dbName);
 if (! $conn) {

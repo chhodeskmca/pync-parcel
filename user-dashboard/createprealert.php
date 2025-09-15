@@ -253,7 +253,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
                 </li>
               </ul>
             </div>

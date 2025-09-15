@@ -6,7 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no"  name="viewport" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="../../user-dashboard hanip/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../../user-dashboard hanip/assets/css/kaiadmin.min.css" />
@@ -15,22 +15,20 @@
 	<!-- custom css -->
     <link rel="stylesheet" href="../../user-dashboard hanip/assets/css/custom.css" />
     <link rel="stylesheet" href="assets/css/admin.css" />
-	 <style type="text/css"> 
+	 <style type="text/css">
 	  body{
 
   font-family: 'Quicksand', sans-serif;
   background: #eee;
 }
 
-
-
 .close:focus{
 
-      outline: 1px dotted #fff !important;
+  outline: 1px dotted #fff !important;
 }
 
 .modal-body {
-    
+
      padding: 0rem !important;
 }
 
@@ -75,15 +73,15 @@
 
 .fs-9{
       font-size: 9px;
-} 
+}
 .modal-dialog {
-	
+
 	max-width: 400px;
 }
 .close {
 	border: 0px;
 	background: #f000;
-} 
+}
 .fa-close:hover {
 	color: #ffffffad;
 }
@@ -123,7 +121,7 @@
               <li class="nav-item active">
                 <a href="index.php">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Home</p> 
+                  <p>Home</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -155,7 +153,7 @@
                 <img class="user-icon" src="assets/img/receiver.png" alt="User" />
                   <p>Receivals</p>
                 </a>
-              </li> 
+              </li>
 			    <li class="nav-item log-out">
                 <a  href="#">
                 <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
@@ -225,7 +223,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -239,7 +237,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -255,7 +253,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -274,7 +272,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -291,7 +289,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -315,7 +313,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold">Jovene Cunningham</span> 
+                      <span class="fw-bold">Jovene Cunningham</span>
                 </li>
               </ul>
             </div>
@@ -335,7 +333,7 @@
                         </div>
                     </div>
                 </div>
-				<div class="search-form"> 
+				<div class="search-form">
 					 <form action="#" class="input-group">
 						<input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
 						<button type="submit" class="btn btn-outline-primary"   data-mdb-ripple-init> <img class="search-icon" src="assets/img/search.png" alt="" /></button>
@@ -374,14 +372,14 @@
                                 <td> Apr 29, 2025, 10:43 PM </td>
                                 <td>
                                     <ul class="action-list">
-                                        <li> 
-										  <a href="trackingdetails.php"> 
+                                        <li>
+										  <a href="trackingdetails.php">
 										     <i class="fa-solid fa-eye"></i>
-										  </a> 
+										  </a>
 									    </li>
                                     </ul>
                                 </td>
-                            </tr> 
+                            </tr>
 						                                <tr>
                                 <td>76rt3276i45786324</td>
                                 <td>Amazon</td>
@@ -396,14 +394,14 @@
                                 <td> Apr 29, 2025, 10:43 PM </td>
                                 <td>
                                     <ul class="action-list">
-                                        <li> 
-										  <a href="trackingdetails.php"> 
+                                        <li>
+										  <a href="trackingdetails.php">
 										     <i class="fa-solid fa-eye"></i>
-										  </a> 
+										  </a>
 									    </li>
                                     </ul>
                                 </td>
-                            </tr> 
+                            </tr>
 						                                <tr>
                                 <td>76rt3276i45786324</td>
                                 <td>Amazon</td>
@@ -418,14 +416,14 @@
                                 <td> Apr 29, 2025, 10:43 PM </td>
                                 <td>
                                     <ul class="action-list">
-                                        <li> 
-										  <a href="trackingdetails.php"> 
+                                        <li>
+										  <a href="trackingdetails.php">
 										     <i class="fa-solid fa-eye"></i>
-										  </a> 
+										  </a>
 									    </li>
                                     </ul>
                                 </td>
-                            </tr> 
+                            </tr>
 						 </tbody>
                     </table>
                 </div>
@@ -453,7 +451,7 @@
             </div>
         </div>
     </div>
-	     <!--Order history end--> 
+	     <!--Order history end-->
  </div>
 	   <footer class="footer">
           <div>
@@ -462,7 +460,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
@@ -474,6 +472,6 @@
     <!-- Kaiadmin JS -->
       <script src="assets/js/kaiadmin.min.js"></script>
 	  <!-- custom js -->
-      <script src="assets/js/custom.js"></script> 
+      <script src="assets/js/custom.js"></script>
   </body>
 </html>

@@ -51,7 +51,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a  href="package.html">
+                <a  href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
                   <p>Packages</p>
                 </a>
@@ -256,7 +256,7 @@
         <div class="container">
         <div class="page-inner">
 		<!-- account Setting start--> 
-	     <div class="row  justify-content-center">
+	     <div class="row justify-content-center">
 		     <div class="col-md-11"> 
 				 <div class="card Account-area">
 						<div class="card-body">
@@ -312,7 +312,7 @@
 									    Miami Address 
 									    <p class="supportText">Your Personalized Miami Address</p>
 									  </a>
-									  <div class="mobile_tab  MiamiAddress_tab_btn">
+									  <div class="mobile_tab MiamiAddress_tab_btn">
 									    <img  class="user-icon" src="assets/img/location.png" alt="padlock"> 
 									       Miami Address 
 									       <p class="supportText">Your Personalized Miami Address</p>
@@ -320,7 +320,7 @@
 									  </div>
 								</li>
 							</ul>
-							<div class="tab-content mt-2 mb-3" id="pills-without-border-tabContent">
+							<div class="mt-2 mb-3 tab-content" id="pills-without-border-tabContent">
 							<div class="tab-pane fade account_content" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd">
 								     <!-- my account -->
 										<form disabled id="account-setting">
@@ -481,7 +481,7 @@
 												  />
 												</div> 
 											  </div>  
-											    <div class="card-action d-flex justify-content-center text-center accountUpdateBtn">
+											    <div class="text-center card-action d-flex justify-content-center accountUpdateBtn">
 												   <button  class="btn account_info_btn updatePreAltBtn">Enable Edit</button>
 												    <button style="display:none" class="btn account_info_update_btn updatePreAltBtn">Update</button>
 												</div> 
@@ -536,7 +536,7 @@
 										  <div class="col-md-6">
 											<div class="form-group">
 											  <label for="firstName">First Name</label>
-											  <input disabled type="text" placeholder="Gyahi" class="form-control AuthorizedUser  " id="firstName"
+											  <input disabled type="text" placeholder="Gyahi" class="form-control AuthorizedUser " id="firstName"
 											  />
 											</div>
 										     <div class="form-group">
@@ -560,7 +560,7 @@
 										    <div class="card-action d-flex justify-content-center ">
 											     <button class="btn AurizedUsr-enble-btn updatePreAltBtn">     Enable Edit 
 												 </button>
-												<button style="display:none" class="btn  AurizedUsr-update-btn updatePreAltBtn">
+												<button style="display:none" class="btn AurizedUsr-update-btn updatePreAltBtn">
 													     Update 
 												</button>
 											</div>

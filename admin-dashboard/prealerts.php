@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="assets/css/admin.css" />
   </head>
   <body>
-    <div class="wrapper  admin pre-alerts">
+    <div class="wrapper admin pre-alerts">
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-logo">
@@ -247,7 +247,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
                 </li>
               </ul>
             </div>
@@ -270,8 +270,8 @@
 				 	<?php
 							$sort = isset($_GET['sort']) ? $_GET['sort'] : 'latest';
 							$order = ($sort == 'oldest') ? 'ASC' : 'DESC';
-							$sql = "SELECT* FROM pre_alert ORDER BY Create_at $order";
-							if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ){
+							$sql = "SELECT* FROM pre_alert ORDER BY created_at $order";
+							if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ) {
 
 					?>
 				 <div class="search-form">
@@ -297,7 +297,7 @@
 						role="status" aria-hidden="true"> </span>Loading...
 					</div>
                 <div style='display:none;' class="panel-body table-responsive">
-                    <table class="table-area shadow m-auto">
+                    <table class="m-auto shadow table-area">
                         <thead>
                             <tr>
                                 <th>Tracking</th>
@@ -317,16 +317,16 @@
 							  $result = mysqli_query($conn, $sql) ;
 							  while( $rows = mysqli_fetch_array($result) ){
 
-                               		 $User_id = $rows['User_id'];
-                                     $sql = "SELECT* FROM users where id = $User_id";
-									 $row = mysqli_fetch_array(mysqli_query($conn, $sql));
-									 if ($row) {
-									     $customer_name = $row['FName'];
-									     $AccountNumber = $row['AccountNumber'];
-									 } else {
-									     $customer_name = 'Unknown';
-									     $AccountNumber = 'N/A';
-									 }
+$user_id = $rows['user_id'];
+$sql = "SELECT * FROM users WHERE id = $user_id";
+$row = mysqli_fetch_array(mysqli_query($conn, $sql));
+if ($row) {
+    $customer_name = $row['first_name'];
+    $account_number = $row['account_number'];
+} else {
+    $customer_name = 'Unknown';
+    $account_number = 'N/A';
+}
 
 
 
@@ -339,14 +339,14 @@
 									<td><span style="border: 1px solid #ddd;  padding: 1px;">N/A</span></td>
 									<td> <span class="item_value">$<?php echo $rows['Value_of_Package']; ?></span></td>
 									<td> <span class="linked" style="background:#dcfce7;color:#3c995e"> Linked</span></td>
-									<td><?php echo timeAgo($rows['Create_at']); ?></td>
+									<td><?php echo timeAgo($rows['created_at']); ?></td>
 									<td>
 										<ul class="action-list">
 											<li> 
 											  <a  
 											     data-Pre_alert_id='<?php echo $rows['id']; ?>' 
 												 data-customer_name='<?php echo $customer_name; ?>'
-												 data-account_number='<?php echo $AccountNumber;?>'
+												 data-account_number='<?php echo $account_number;?>'
 											     class="view_user_information" 
 												 data-toggle="modal" 
 												 data-target="#view_user_information" 
@@ -377,7 +377,7 @@
 		<div class="modal fade" id="view_user_information" tabindex="-1" aria-labelledby="view_user_information" aria-hidden="true">
 		  <div class="modal-dialog modal-lg">
 			<div class="modal-content">
-			  <div class="modal-header justify-content-end border-0">
+			  <div class="border-0 modal-header justify-content-end">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 				  <span aria-hidden="true"><i class="fa fa-close"></i></span>
 				</button>
@@ -410,7 +410,7 @@
 					    <hr width="100%" />
 					   	<div class="col-12"> 
 					     <h2>Invoice</h2>
-						 <p><a style="border:1px solid; margin-top: 5px;" class="d-block text-center Invoice"  href="#"><i class="fa-solid fa-download"></i> Download</a></p>
+						 <p><a style="border:1px solid; margin-top: 5px;" class="text-center d-block Invoice"  href="#"><i class="fa-solid fa-download"></i> Download</a></p>
 					   </div>
 					</div>
 			  </div>

@@ -57,7 +57,7 @@ $base_url = $routes['base_url'];
 				 $result = mysqli_query($conn,   $sql  );
 				 if( $result){ 
 				            
-					    $UserName = $rows['FName'] ;
+					    $UserName = $rows['first_name'] ;
 					    $_SESSION['log-in-message'] = "Welcome $UserName to Dashboard!" ; 
 						
 						// Users redirecting to Pyncparcel dashboard

@@ -51,7 +51,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="package.html">
+                <a href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
                   <p>Packages</p>
                 </a>

@@ -60,7 +60,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a  href="package.html">
+                <a  href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
                   <p style="<?php echo  $current_file_name == 'package.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
                 </a>
@@ -255,7 +255,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
                 </li>
               </ul>
             </div>
@@ -279,10 +279,10 @@
                       <div style="font-size: 18px;" class="card-title"><h1>My Packages</h1></div>
 					</div>
                   </div>
-                  <div class="card-body p-0">
+                  <div class="p-0 card-body">
                     <div class="table-responsive">
                       <!-- Projects table -->
-                      <table id="mypackages" class="table align-items-center mb-0">
+                      <table id="mypackages" class="table mb-0 align-items-center">
                         <thead class="thead-light">
                           <tr>
                             <th scope="col">Tracking Number</th>

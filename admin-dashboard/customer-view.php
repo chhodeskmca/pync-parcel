@@ -275,7 +275,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
                 </li>
               </ul>
             </div>
@@ -296,13 +296,13 @@
 					 
 					   <?php 
 					         
-					     if( isset($_REQUEST['user_id']) && isset($_REQUEST['user_name']) && isset($_REQUEST['AccountNumber'])){ 
+					     if( isset($_REQUEST['user_id']) && isset($_REQUEST['user_name']) && isset($_REQUEST['account_number'])){ 
 						 
 					    ?>
 						<div  class="col-md-3 col-lg-2">	
 							<p>Customer info</p>
 							<h3><?php echo $_REQUEST['user_name'] ; ?></h3>				
-							<h4><?php echo $_REQUEST['AccountNumber'] ; ?></h4>	
+							<h4><?php echo $_REQUEST['account_number'] ; ?></h4>	
                             <div class="text-center"><span>unverified</span></div>							
 						</div> 
 						<div  class="col-md-3  col-lg-2">
@@ -316,11 +316,11 @@
 							   <?php 
 							   
 									$user_id =  $_REQUEST['user_id'] ; 
-									$sql     = "SELECT* FROM users where id = $user_id "; 
+									$sql     = "SELECT * FROM users where id = $user_id "; 
 									$result  =  mysqli_query($conn, $sql); 
 									$rows    = mysqli_fetch_array($result); 
 									
-									echo "$" . $rows['Total_Balance'];
+									echo "$" . $rows['total_balance'];
 									
 								?> 
 							 </h3>				
@@ -476,14 +476,14 @@
 										  
 									        while( $rows = mysqli_fetch_array($result)  ){ 
 											
-											        $Add_New_Credit = $rows['Add_New_Credit'] ;
+											        $Add_new_credit = $rows['Add_new_credit'] ;
 													$timestamp = $rows['Create_at'] ;
 													$date = new DateTime($timestamp);
 													$Create_at =  $date->format("M j, Y, g:i A"); 
 													
 												    echo " 
 															<div class='d-flex justify-content-between'> 
-																<span style='color:#696c71;font-size: 20px;  margin-bottom: 5px;  display: block;  font-weight: 700;'><b> $$Add_New_Credit </b></span>
+																<span style='color:#696c71;font-size: 20px;  margin-bottom: 5px;  display: block;  font-weight: 700;'><b> $$Add_new_credit </b></span>
 																<span style='color:#696c71'>$Create_at</span>
 															</div> 
 														";
@@ -510,11 +510,11 @@
 								  <p class="title" style="font-size: 30px; font-weight: 900; color: #E87946; font-weight: 700;text-align:center">Basic Information</p>
 									<div class="Tracking-value"> 
 										 <span class="heading">First Name</span>
-										 <span class="value"><?php echo $rows['FName'] ; ?></span>
+										 <span class="value"><?php echo $rows['first_name'] ; ?></span>
 									</div> 
 									 <div class="Tracking-value"> 
 										 <span class="heading">Last Name</span>
-										 <span class="value"><?php echo $rows['LName'] ; ?></span>
+										 <span class="value"><?php echo $rows['last_name'] ; ?></span>
 									</div>
 
 									<div class="Tracking-value"> 
@@ -596,11 +596,11 @@
 						 
 											?> 
 											 <span class="heading">First Name</span>
-											 <span class="value"><?php echo ltrim($rows['FName']) == '' ? 'N/A' : ltrim($rows['FName']) ; ?></span>
+											 <span class="value"><?php echo ltrim($rows['first_name']) == '' ? 'N/A' : ltrim($rows['first_name']) ; ?></span>
 										</div> 
 										 <div class="Tracking-value"> 
 											 <span class="heading">Last</span>
-											 <span class="value"><?php echo ltrim($rows['LName']) == '' ? 'N/A' : ltrim($rows['LName']) ; ?></span>
+											 <span class="value"><?php echo ltrim($rows['last_name']) == '' ? 'N/A' : ltrim($rows['last_name']) ; ?></span>
 										</div>
 										<div class="Tracking-value"> 
 											 <span class="heading">Identification Type</span>
@@ -619,7 +619,7 @@
 									</div>
                                     <div class="Tracking-value"> 
 									     <span    class="heading">Line 2 : </span>
-									     <span  class="value">STE113 - <span title='Account Number'><?php echo $_REQUEST['AccountNumber'] ; ?></span></span>
+									     <span  class="value">STE113 - <span title='Account Number'><?php echo $_REQUEST['account_number'] ; ?></span></span>
 									</div>
                                      <div class="Tracking-value"> 
 									     <span    class="heading">City : </span>
@@ -679,20 +679,20 @@
 							   </div>
 							    <div class="col-6"> 
 							         <h5>New Balance</h5> 
-								     <h3 class="New_credit">$0.00</h3>
+								     <h3 class="new_credit">$0.00</h3>
 							    </div>
 							</div>	
                               <p style="margin: 0px;color: #222;font-weight: 700;">Account</p>					
-							  <input name="New_credit" id="credit_adding" placeholder="0" value="0"  type="number" class="form-control"
+							  <input name="new_credit" id="credit_adding" placeholder="0" value="0"  type="number" class="form-control"
 							  />
 							</div>
 						</div>	
                      	<div class="card-action d-flex justify-content-center">
 						      <input hidden type="text" name="user_id" value="<?php echo $_REQUEST['user_id']; ?>" />
 						      <input hidden type="text" name="user_name" value="<?php echo $_REQUEST['user_name']; ?>" />
-						      <input hidden type="text" name="AccountNumber" value="<?php echo $_REQUEST['AccountNumber']; ?>" />
-						      <input hidden type="text" name="new_Credit_btn" />
-							  <button name="new_Credit_btn" type="submit" class=" my-4 submit">
+						      <input hidden type="text" name="account_number" value="<?php echo $_REQUEST['account_number']; ?>" />
+						      <input hidden type="text" name="new_credit_btn" />
+							  <button name="new_credit_btn" type="submit" class=" my-4 submit">
 							    <img class="spinner" style="display:none;" width="20px" src="assets/img/spinner.gif" alt="" />
 								 Submit 
 							   </button>
@@ -719,7 +719,7 @@
 								<div class=""> 
 								   <label for="First-name">First name</label>
 								   <input 
-								     name="FName"
+								     name="first_name"
 								     value="Abdul"
 									 id="First-name" 
 									 placeholder="Abdul"
@@ -729,7 +729,7 @@
                                 <div> 
 								   <label for="last-name">Last name</label>
 								   <input  
-								     name="LName"
+								     name="last_name"
 								     value="quadri" 
 									 id="last-name" 
 									 placeholder="quadri"
@@ -929,12 +929,12 @@
 			     if( newCredit < 0 ){ 
 				    
 				   var negativeValues = '-$' + Math.abs(newCredit).toFixed(2);
-				   $('.New_credit').text(negativeValues);
+				   $('.new_credit').text(negativeValues);
 				   
 				 }else{ 
 				 
 				    const positiveValues = "$"+newCredit;
-					$('.New_credit').text(positiveValues);
+					$('.new_credit').text(positiveValues);
 				 };
 		}); 
 		
@@ -947,8 +947,8 @@
 			 
 			function balance(){ 
 			 
-		     var New_credit = parseFloat($('#credit_adding').val()) ;
-		    if( New_credit > 0 ){
+		     var new_credit = parseFloat($('#credit_adding').val()) ;
+		    if( new_credit > 0 ){
 				
 				form.submit();
 			 

@@ -4,7 +4,7 @@ $base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname
 
  if(isset($_COOKIE['user_id'])){
 
-    if( user_account_information()['Role_As']  == 1 ){
+    if( user_account_information()['role_as']  == 1 ){
 
         // You are admin
 		header('location: ' . $base_url . 'admin-dashboard/index.php');  // redirecting to admin dashboard;

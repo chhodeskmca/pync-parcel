@@ -274,7 +274,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName']  ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name']  ; ?></span> 
                 </li>
               </ul>
             </div>
@@ -351,7 +351,7 @@
 										  <div class="card-header">
 										  <div class="card-title"> 
 										      <h1 class="acntSetHeading">Account Number: 
-											   <span class="account_number"><?php echo user_account_information()['AccountNumber']  ;?></span></h1>
+											   <span class="account_number"><?php echo user_account_information()['account_number']  ;?></span></h1>
 										  </div>
 										  </div>
 										  <div class="card-body">
@@ -361,7 +361,7 @@
 												<div class="form-group change-value">
 								                <label for="Firstname">First Name <span class="mandatory_field">*</span></label>
 												  <input required <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?>  
-												     name="FName" value="<?php echo user_account_information()['FName']  ;?>" 
+												     name="first_name" value="<?php echo user_account_information()['first_name']  ;?>" 
 												     type="text" class="form-control" id="Firstname"
 												     />
 												   <p style='margin-bottom: 0px;  margin-top: 5px; color: #bf1919; font-size: 16px; line-height: 17px;'> 
@@ -379,8 +379,8 @@
 												  <label for="LastName">Last Name<span class="mandatory_field">*</span></label>
 												  <input  required
 												    <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> 
-												    value="<?php echo user_account_information()['LName']  ; ?>"
-												    name='LName'
+												    value="<?php echo user_account_information()['last_name']  ; ?>"
+												    name='last_name'
 													type="text"
 													class="form-control"
 													id="LastName"
@@ -401,7 +401,7 @@
 												  <input  required
 												    <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> 
 													name="phone"  maxlength='12'   
-												    value="<?php echo user_account_information()['PhoneNumber']  ; ?>"
+												    value="<?php echo user_account_information()['phone_number']  ?? ''; ?>"
 													type="tel"
 													class="form-control txtPhoneNo"
 													id="phone1" 
@@ -422,7 +422,7 @@
 											  <div class="col-md-4 col-lg-4">
 											   <div class="form-group change-value ">
 												  <label for="Birthday">Date of Birth<span class="mandatory_field">*</span></label>
-												  <input required  name='BDate'  <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> value="<?php echo user_account_information()['DateOfBirth']  ; ?>"
+												  <input required  name='BDate'  <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> value="<?php echo user_account_information()['date_of_birth']  ?? ''; ?>"
 													type="date"
 													class="form-control"
 													id="phone" />
@@ -440,7 +440,7 @@
 												  <label for="Email">Email Address</label>
 												  <input  
 												   <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> 
-												   value="<?php echo user_account_information()['EmailAddress']  ; ?>"  
+												   value="<?php echo user_account_information()['email_address']  ?? ''; ?>"  
 												   type="email" class="form-control" id="Email"
 												  />
 												</div>
@@ -454,7 +454,7 @@
 													class="form-check-input"
 													type="radio"
 													id="flexRadioDefault1"
-													<?php echo user_account_information()['Gender'] == 'Male' ? 'checked' : ''   ; ?>
+													<?php echo (user_account_information()['gender'] ?? '') == 'Male' ? 'checked' : ''   ; ?>
 												  />
 												  <label
 													class="form-check-label"
@@ -468,7 +468,7 @@
 													class="form-check-input"
 													type="radio"
 													id="flexRadioDefault2"
-													<?php echo user_account_information()['Gender'] == 'female' ? 'checked' : ''   ; ?>
+													<?php echo (user_account_information()['gender'] ?? '') == 'female' ? 'checked' : ''   ; ?>
 												  />
 												  <label
 													class="form-check-label"
@@ -492,20 +492,20 @@
 												  <label for="id">Copy of Photo Identification 
 												  </label>
 												  <br />
-		                                          <input  
+												  <input  
 												    hidden  
 													name='old_image'  
-													value='<?php echo user_account_information()['file'] ; ?>'
+													value='<?php echo user_account_information()['file'] ?? ''; ?>'
 													type="text"  
 												  />
 													
-												  <input <?php echo user_account_information()['file'] == '' ? 'required':''; ?> 
+												  <input <?php echo (user_account_information()['file'] ?? '') == '' ? 'required':''; ?> 
 												   name='file'  
 												   <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?>  
 												   type="file" 
 												   class="form-control-file w-100"  
 												   id="id" 
-												   style="color:<?php echo user_account_information()['file'] == "" ? 'black' : '#fff0'  ; ?>"
+												   style="color:<?php echo (user_account_information()['file'] ?? '') == "" ? 'black' : '#fff0'  ; ?>"
 												  />
 												   <br />
 												   <p style='margin-bottom:0px' class="fileAllowed"><b>Allowed formats : </b>PDF, DOC, DOCX, JPEG or PNG (MAX. 10MB)</p>
@@ -519,17 +519,17 @@
 													      ?>
 													</p>
 													<div style="margin-bottom: 10px; width: 250px; display: flex;  border: 1px solid #ddd;  padding: 9px;  border-radius: 6px;  color: #978484;  font-size: 14px;  position: relative;"> 
-													  <?php 
-															if( user_account_information()['file'] != '' ){  
+														  <?php 
+															if( (user_account_information()['file'] ?? '') != '' ){  
 													   ?> 
 															<span style=" display: -webkit-box;  -webkit-line-clamp: 1;  -webkit-box-orient: vertical;  overflow: hidden;  width: 180px;">  
 															
-															  <?php echo user_account_information()['file'] ; ?> 
+															  <?php echo user_account_information()['file'] ?? ''; ?> 
 															  
 															  </span>
 															<a target="_blank" style="width: 18px; position: absolute;  right: 10px;  top: 11px; "
 															 class="d-flex" 
-															 href="../uploaded-file/<?php echo user_account_information()['file'] ; ?>">
+															 href="../uploaded-file/<?php echo user_account_information()['file'] ?? ''; ?>">
 															   <img 
 																  width='18px;' 
 																  src="assets/img/hide.png"  
@@ -563,14 +563,14 @@
 													  <option value="">Choose...</option>
 													  <option  
 													   <?php  
-													      echo user_account_information()['AddressType'] == 'Home' ? 'selected' : ''  ;  
+													      echo (user_account_information()['address_type'] ?? '') == 'Home' ? 'selected' : ''  ;  
 														  
 														?> value="Home"> 
 													    Home 
 														</option>
 													  <option 
 													   <?php  
-													      echo user_account_information()['AddressType'] == 'Office' ? 'selected' : ''  ;  
+													      echo (user_account_information()['address_type'] ?? '') == 'Office' ? 'selected' : ''  ;  
 													    ?>
 													    value="Office"> 
 													      Office 
@@ -578,7 +578,7 @@
 													  <option value="Other" 
 													    <?php  
 														
-													      echo user_account_information()['AddressType'] == 'Other' ? 'selected' : ''  ;  
+													      echo (user_account_information()['address_type'] ?? '') == 'Other' ? 'selected' : ''  ;  
 														  
 													    ?>
 													     > 
@@ -608,7 +608,7 @@
 													   <option  
 													    <?php 
 														
-													      echo user_account_information()['Parish'] == 'Kingston' ? 'selected' : ''  ;  
+													      echo (user_account_information()['parish'] ?? '') == 'Kingston' ? 'selected' : ''  ;  
 														  
 													    ?>
 													      value="Kingston" > 
@@ -617,7 +617,7 @@
 													  <option  
 													    <?php 
 														
-													      echo user_account_information()['Parish'] == 'St. Andrew' ? 'selected' : ''  ;  
+													      echo (user_account_information()['parish'] ?? '') == 'St. Andrew' ? 'selected' : ''  ;  
 														  
 													    ?>
 													    value="St. Andrew">
@@ -626,7 +626,7 @@
 													  <option  
 													    <?php  
 														
-													      echo user_account_information()['Parish'] == 'St. Catherine' ? 'selected' : ''  ;  
+													      echo (user_account_information()['parish'] ?? '') == 'St. Catherine' ? 'selected' : ''  ;  
 														  
 														?>
 													   value="St. Catherine"> 
@@ -651,58 +651,58 @@
 													name="Region" class="form-select RegionAddress"  
 													id="RegionAddress">
 													 <option style="display:block" value="">Choose...</option>
-							                         <option class=""
+													 <option class=""
 													   <?php
-														   echo  user_account_information()['Region'] == 'Kingston' ? 'selected' : '' ;
+														   echo  (user_account_information()['region'] ?? '') == 'Kingston' ? 'selected' : '' ;
 														 ?>
 													     value="Kingston"> 
 														    Kingston 
 														</option>  
 													    <option class=""
                                                           <?php 
-														    echo  user_account_information()['Region'] == 'Half-Way Tree' ? 'selected' : '' ;
+														    echo  (user_account_information()['region'] ?? '') == 'Half-Way Tree' ? 'selected' : '' ;
 													        ?>													  
 													      value="Half-Way Tree">Half-Way Tree 
 														</option>
 													    <option  class=""
                                                            <?php 
-														    echo  user_account_information()['Region'] == 'Constant Spring' ? 'selected' : '' ;
+														    echo  (user_account_information()['region'] ?? '') == 'Constant Spring' ? 'selected' : '' ;
 													       ?>													  
 													      value="Constant Spring">Constant Spring 
 														 </option>
 													    <option   class=""
 													       <?php 
-														     echo  user_account_information()['Region'] == 'Cross Roads' ? 'selected' : '' ;
+														     echo  (user_account_information()['region'] ?? '') == 'Cross Roads' ? 'selected' : '' ;
 													        ?>	
 													       value="Cross Roads">Cross Roads
 														  </option>
 													   	  <option class=""
 													         <?php 
-														       echo  user_account_information()['Region'] == 'Portmore' ? 'selected' : '' ;
+														       echo  (user_account_information()['region'] ?? '') == 'Portmore' ? 'selected' : '' ;
 													          ?>	
 													          value="Portmore">Portmore 
 															</option>
 													        <option class=""
                                                              <?php 
-														       echo  user_account_information()['Region'] == 'Spanish Town' ? 'selected' : '' ;
+														       echo  (user_account_information()['region'] ?? '') == 'Spanish Town' ? 'selected' : '' ;
 													          ?>														  
 													          value="Spanish Town">Spanish Town 
 															</option>
 													        <option class=""
 													           <?php 
-														        echo  user_account_information()['Region'] == 'Old Harbour' ?   'selected' : '' ;
+														        echo  (user_account_information()['region'] ?? '') == 'Old Harbour' ?   'selected' : '' ;
 															    ?>
 													             value="Old Harbour">Old Harbour 
 															</option>
 													       <option  class=""
 													  	    <?php 
-														      echo  user_account_information()['Region'] == 'Bog Walk' ? 'selected' : '' ;
+														      echo  (user_account_information()['region'] ?? '') == 'Bog Walk' ? 'selected' : '' ;
 													         ?>
 													         value="Bog Walk">Bog Walk 
 															</option>
 													        <option  class=""
 													        <?php 
-														      echo  user_account_information()['Region'] == 'Linstead' ? 'selected' : '' ;
+														      echo  (user_account_information()['region'] ?? '') == 'Linstead' ? 'selected' : '' ;
 														      ?>
 													          value="Linstead">Linstead 
 															</option>
@@ -722,12 +722,12 @@
                                                  <div class="form-group change-value">
 												  <label for="Firstname">Address line 1<span class="mandatory_field">*</span> </label>
 												  <input required  <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?>  name="AddressLine1" type="text" class="form-control" id="Firstname"
-												  value='<?php echo user_account_information()['AddressLine1'] ; ?>'
+												  value='<?php echo user_account_information()['address_line1'] ?? ''; ?>'
 												  />
 												</div>								       <div class="form-group change-value">
 												  <label for="Firstname">Address line 2 </label>
 												  <input  <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> name="AddressLine2" type="text" class="form-control" id="Firstname"
-												  value='<?php echo user_account_information()['AddressLine2'] ; ?>'
+												  value='<?php echo user_account_information()['address_line2'] ?? ''; ?>'
 												  />
 												</div> 
 											   </div>  
@@ -819,12 +819,12 @@
 										  <div class="col-md-6">
 											<div class="form-group">
 											  <label for="firstName">First Name</label>
-											  <input disabled type="text" placeholder="<?php echo Authorized_User()['FName']; ?>" class="form-control AuthorizedUser  " id="firstName" name='Fname'
+											  <input disabled type="text" placeholder="<?php echo Authorized_User()['first_name']; ?>" class="form-control AuthorizedUser  " id="firstName" name='first_name'
 											  />
 											</div>
 										     <div class="form-group">
 											  <label for="firstName">Last Name</label>
-											  <input disabled type="text" placeholder="<?php echo Authorized_User()['LName']; ?>" class="form-control AuthorizedUser" id="firstName" name='Lname'
+											  <input disabled type="text" placeholder="<?php echo Authorized_User()['last_name']; ?>" class="form-control AuthorizedUser" id="firstName" name='last_name'
 											  />
 											</div> 
 										  </div>
@@ -878,7 +878,7 @@
 											     Line 2: 
 											   </div>
 											    <div id="Line2textToCopy"> 
-											     STE113 - <span title="Account Number"><?php echo user_account_information()['AccountNumber']; ?> </span>
+											     STE113 - <span title="Account Number"><?php echo user_account_information()['account_number']; ?> </span>
 											   </div>
 										 </div>
 										 <div onclick="Line2()" class='MiamiAddressTextCpy'> 

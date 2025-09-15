@@ -1065,3 +1065,7 @@ border: 1px solid #E87946;
 	font-size: 25px;
 }
 }
+
+ul.action-list {
+	list-style: none !important;
+}

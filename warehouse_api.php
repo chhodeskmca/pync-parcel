@@ -8,10 +8,10 @@ define('WAREHOUSE_API_KEY', 'pub_key_7520691a44bc22bd1eef47ce05bc8ab397e7ba5a93c
 // Function to push customer data to warehouse API
 function push_customer_to_warehouse($customer) {
     $data = [
-        'firstName' => $customer['FName'],
-        'lastName' => $customer['LName'],
-        'accountId' => $customer['AccountNumber'],
-        'branch' => $customer['Region'],
+        'firstName' => $customer['first_name'],
+        'lastName' => $customer['last_name'],
+        'accountId' => $customer['account_number'],
+        'branch' => $customer['region'],
     ];
 
     $payload = json_encode($data);
@@ -91,7 +91,7 @@ function pull_packages_from_warehouse($limit = 50) {
 
             $user_id = 0;
             if ($accountId) {
-                $sqlUser = "SELECT id FROM users WHERE AccountNumber = '" . mysqli_real_escape_string($conn, $accountId) . "' LIMIT 1";
+            $sqlUser = "SELECT id FROM users WHERE account_number = '" . mysqli_real_escape_string($conn, $accountId) . "' LIMIT 1";
                 $resUser = mysqli_query($conn, $sqlUser);
                 if ($resUser && mysqli_num_rows($resUser) > 0) {
                     $rowUser = mysqli_fetch_assoc($resUser);
@@ -99,21 +99,21 @@ function pull_packages_from_warehouse($limit = 50) {
                 }
             }
 
-            $sqlCheck = "SELECT id FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
+            $sqlCheck = "SELECT id FROM pre_alert WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
                 $row = mysqli_fetch_assoc($resCheck);
-                $sqlUpdate = "UPDATE pre_alert SET 
-                    Courier_Company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
-                    Describe_Package = '" . mysqli_real_escape_string($conn, $description) . "',
-                    Weight = '" . mysqli_real_escape_string($conn, $weight) . "',
-                    Create_at = '" . mysqli_real_escape_string($conn, $dateCreated) . "',
-                    User_id = " . intval($user_id) . "
+                $sqlUpdate = "UPDATE pre_alert SET
+                    courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
+                    describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
+                    weight = '" . mysqli_real_escape_string($conn, $weight) . "',
+                    created_at = '" . mysqli_real_escape_string($conn, $dateCreated) . "',
+                    user_id = " . intval($user_id) . "
                     WHERE id = " . intval($row['id']);
                 mysqli_query($conn, $sqlUpdate);
             } else {
-                $sqlInsert = "INSERT INTO pre_alert 
-                    (User_id, Tracking_Number, Courier_Company, Describe_Package, Weight, Create_at) VALUES (
+                $sqlInsert = "INSERT INTO pre_alert
+                    (user_id, tracking_number, courier_company, describe_package, weight, created_at) VALUES (
                     " . intval($user_id) . ",
                     '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     '" . mysqli_real_escape_string($conn, $courierCompany) . "',
@@ -177,20 +177,20 @@ function sync_customers_with_warehouse($local_customers) {
 
     // Push missing local customers to warehouse API
     foreach ($local_customers as $lc) {
-        if (!isset($warehouse_map[$lc['AccountNumber']])) {
+        if (!isset($warehouse_map[$lc['account_number']])) {
             // Push to warehouse API
             $push_result = push_customer_to_warehouse([
-                'FName' => $lc['FName'],
-                'LName' => $lc['LName'],
-                'AccountNumber' => $lc['AccountNumber'],
+                'first_name' => $lc['first_name'],
+                'last_name' => $lc['last_name'],
+                'account_number' => $lc['account_number'],
                 'Region' => $lc['Region'],
             ]);
             if ($push_result !== false) {
                 // Add pushed customer to merged list
                 $merged_customers[] = [
-                    'accountId' => $lc['AccountNumber'],
-                    'firstName' => $lc['FName'],
-                    'lastName' => $lc['LName'],
+                    'accountId' => $lc['account_number'],
+                    'firstName' => $lc['first_name'],
+                    'lastName' => $lc['last_name'],
                     'branch' => $lc['Region'],
                 ];
             }
@@ -198,7 +198,7 @@ function sync_customers_with_warehouse($local_customers) {
     }
 
     // Add warehouse customers not in local DB to merged list
-    $local_account_numbers = array_column($local_customers, 'AccountNumber');
+    $local_account_numbers = array_column($local_customers, 'account_number');
     foreach ($warehouse_customers as $wc) {
         if (!in_array($wc['accountId'], $local_account_numbers)) {
             $merged_customers[] = $wc;

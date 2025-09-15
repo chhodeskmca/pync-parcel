@@ -86,13 +86,13 @@ $base_url = $routes['base_url'];
    try {
         $signUp_email = $_REQUEST['signUp_email'] ;
         $Account_Number =  isset($_REQUEST['Account_Number']) ? $_REQUEST['Account_Number'] : 'a/n' ;
-        $Fname          = isset( $_REQUEST['Fname'] ) ? $_REQUEST['Fname'] : 'a/n' ;
+        $first_name          = isset( $_REQUEST['first_name'] ) ? $_REQUEST['first_name'] : 'a/n' ;
 		
 		
         $body =  "<div style='padding:10px; max-width: 700px; margin: auto; color:#222 !important'> 
             
 			  <h1 style='font-size: 20px;'>Your Pync Parcel Chateau Journey Starts Here ✨</h1>
-			  <p>Hello $Fname,</p>
+			  <p>Hello $first_name,</p>
 			  <p> Welcome to Pync Parcel Chateau – where shipping is made seamless, and service is made special.
 
 				Below is your unique overseas shipping address. Use this address whenever you’re shopping online so we can get your parcels to you quickly and securely.

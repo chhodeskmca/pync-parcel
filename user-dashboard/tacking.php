@@ -51,7 +51,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="package.html">
+                <a href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
                   <p>Packages</p>
                 </a>
@@ -258,7 +258,7 @@
 	    <section class="bsb-timeline-5 py-5 py-xl-8">
 	   <div class="row justify-content-center">
 	      <div class="Tracking-close">
-		     <a href="package.html"><img src="assets/img/close.png" alt="close"></a>
+		     <a href="package.php"><img src="assets/img/close.png" alt="close"></a>
 		  </div>
 	   <div class="col-md-5 Package-details"> 
 		 <div class="box"><img src="assets/img/box.png" alt="box" /></div>

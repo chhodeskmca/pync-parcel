@@ -15,13 +15,13 @@
 	$offset = ($page - 1) * $limit;
 
 	// Fetch total count for pagination
-	$sql_count = "SELECT COUNT(*) as total FROM users WHERE Role_As != 1";
+	$sql_count = "SELECT COUNT(*) as total FROM users WHERE role_as != 1";
 	$result_count = mysqli_query($conn, $sql_count);
 	$total_customers = mysqli_fetch_assoc($result_count)['total'];
 	$total_pages = ceil($total_customers / $limit);
 
 	// Fetch paginated customers from local DB
-	$sql = "SELECT * FROM users WHERE Role_As != 1 ORDER BY id DESC LIMIT $limit OFFSET $offset";
+	$sql = "SELECT * FROM users WHERE role_as != 1 ORDER BY id DESC LIMIT $limit OFFSET $offset";
 	$result = mysqli_query($conn, $sql);
 
 	$customers = [];
@@ -75,7 +75,7 @@
     <link rel="stylesheet" href="assets/css/admin.css" />
   </head>
   <body>
-    <div class="wrapper  admin">
+    <div class="wrapper admin">
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-logo">
@@ -294,7 +294,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['FName'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
                 </li>
               </ul>
             </div>
@@ -318,7 +318,7 @@
 
 				<div class="search-form">
 					 <form action="#" class="input-group">
-						<input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+						<input type="search" class="rounded form-control" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
 						<button type="submit" class="btn btn-outline-primary"   data-mdb-ripple-init> <img class="search-icon" src="assets/img/search.png" alt="" /></button>
 					 </form>
 				  </div>
@@ -328,7 +328,7 @@
 						role="status" aria-hidden="true"> </span>Loading...
 					</div>
                 <div style="display:none" class="panel-body table-responsive ">
-                    <table class="table table-striped table-hover table-bordered shadow m-auto">
+                    <table class="table m-auto shadow table-striped table-hover table-bordered">
                         <thead class="table-light">
                             <tr>
                                 <th>Id</th>
@@ -344,18 +344,18 @@
                         <tbody>
                               <?php foreach ($customers as $rows) { ?>
                             <tr>
-                                <td><?php echo $rows['AccountNumber'] ?></td>
-                                <td><?php echo $rows['FName'] ?></td>
-                                <td><?php echo $rows['EmailAddress'] ?></td>
+                                <td><?php echo $rows['account_number'] ?></td>
+                                <td><?php echo $rows['first_name'] ?></td>
+                                <td><?php echo $rows['email_address'] ?></td>
                                 <td><span class="badge bg-danger">unverified</span></td>
                                 <td>Montego Bay Fairview Branch</td>
-                                <td><?php echo $rows['PhoneNumber'] ?> </td>
-                                <td> <?php echo timeAgo($rows['Create_At']); ?> </td>
+                                <td><?php echo $rows['phone_number'] ?> </td>
+                                <td> <?php echo timeAgo($rows['created_at']); ?> </td>
                                 <td>
-                                    <ul class="action-list list-unstyled mb-0">
+                                    <ul class="mb-0 action-list list-unstyled">
                                         <li>
 										  <a
-										   href="customer-view.php?user_id=<?php echo $rows['id'] ?>&user_name=<?php echo $rows['FName'] ?>&AccountNumber=<?php echo $rows['AccountNumber'] ?>"
+										   href="customer-view.php?user_id=<?php echo $rows['id'] ?>&user_name=<?php echo $rows['first_name'] ?>&account_number=<?php echo $rows['account_number'] ?>"
 										   class="btn btn-sm btn-outline-secondary"
 										   title="View Customer"
 										   >
@@ -370,7 +370,7 @@
                     </table>
                 </div>
                 <!-- Pagination -->
-                <div class="panel-footer mt-3">
+                <div class="mt-3 panel-footer">
                     <div class="row">
                         <div class="col col-sm-6 col-xs-6">Showing <b><?php echo count($customers); ?></b> out of <b><?php echo $total_customers; ?></b> entries</div>
                         <div class="col-sm-6 col-xs-6">

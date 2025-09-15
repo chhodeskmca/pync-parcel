@@ -1,11 +1,33 @@
+
 <?php
-// initialize session
-session_start();
-include '../config.php'; // database connection
-include '../function.php'; // function comes from user dashboard
-include 'function.php'; // function comes from admin dashboard
-include 'authorized-admin.php';
-$current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
+    // initialize session
+    session_start();
+    include '../config.php';   // database connection
+    include '../function.php'; // function comes from user dashboard
+    include 'function.php';    // function comes from admin dashboard
+    include 'authorized-admin.php';
+    $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
+
+    // Pagination parameters
+    $limit  = 50; // Number of packages per page
+    $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    $offset = ($page - 1) * $limit;
+
+    $sql_count      = "SELECT COUNT(*) as total FROM pre_alert";
+    $result_count   = mysqli_query($conn, $sql_count);
+    $total_packages = mysqli_fetch_assoc($result_count)['total'];
+
+    // Load demo packages if no packages in database
+    $demo_packages = [];
+    if ($total_packages == 0) {
+        $json_file = '../demo-packages.json';
+        if (file_exists($json_file)) {
+            $json_data      = json_decode(file_get_contents($json_file), true);
+            $demo_packages  = $json_data['packages'] ?? [];
+            $total_packages = count($demo_packages);
+        }
+    }
+    $total_pages = ceil($total_packages / $limit);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,7 +53,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
 </head>
 
 <body>
-    <div class="wrapper  admin">
+    <div class="wrapper admin">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-logo">
@@ -63,7 +85,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                 <p>Home</p>
                             </a>
                         </li>
-                        <li class="nav-item <?php echo $current_file_name == 'packages.php' ? 'active' : ''; ?>">
+                        <li class="nav-item                                            <?php echo $current_file_name == 'packages.php' ? 'active' : ''; ?>">
                             <a href="packages.php">
                                 <img class="package-icon" src="assets/img/package.png" alt="package" />
                                 <p style="<?php echo $current_file_name == 'packages.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
@@ -235,7 +257,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                             </li>
                             <li class="nav-item">
                                 <span class="op-7">Welcome</span>
-                                <span class="fw-bold"><?php echo user_account_information()['FName']; ?></span>
+                                <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
                             </li>
                         </ul>
                     </div>
@@ -257,7 +279,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                 </div>
                                 <div class="search-form">
                                     <form action="#" class="input-group">
-                                        <input type="search" class="form-control rounded" placeholder="Search"
+                                        <input type="search" class="rounded form-control" placeholder="Search"
                                             aria-label="Search" aria-describedby="search-addon" />
                                         <button type="submit" class="btn btn-outline-primary" data-mdb-ripple-init>
                                             <img class="search-icon" src="assets/img/search.png"
@@ -268,14 +290,26 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                     <form action="#" method="GET">
                                         <label for="sort">Sort by:</label>
                                         <select name="sort" id="sort" onchange="this.form.submit()">
-                                            <option value="latest" <?php echo !isset($_GET['sort']) || $_GET['sort'] == 'latest' ? 'selected' : ''; ?>>Latest First</option>
-                                            <option value="oldest" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
+                                            <option value="latest"                                                                   <?php echo ! isset($_GET['sort']) || $_GET['sort'] == 'latest' ? 'selected' : ''; ?>>Latest First</option>
+                                            <option value="oldest"                                                                   <?php echo isset($_GET['sort']) && $_GET['sort'] == 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
                                         </select>
                                     </form>
-                                    <form action="pull_packages.php" method="POST" style="margin:0;">
-                                        <button type="submit" class="btn btn-warning">Pull Packages from
-                                            Warehouse</button>
-                                    </form>
+                                <form action="pull_packages.php" method="POST" style="margin:0;">
+                                    <button type="submit" class="btn btn-warning">Pull Packages from
+                                        Warehouse</button>
+                                </form>
+                                <?php
+                                    if (session_status() == PHP_SESSION_NONE) {
+                                        session_start();
+                                    }
+                                    if (isset($_SESSION['message'])) {
+                                        $message_type = $_SESSION['message_type'] ?? 'info';
+                                        $message      = $_SESSION['message'];
+                                        echo "<div class='alert alert-{$message_type} mt-3' role='alert'>{$message}</div>";
+                                        unset($_SESSION['message']);
+                                        unset($_SESSION['message_type']);
+                                    }
+                                ?>
                                 </div>
                                 <div class="loading"
                                     style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;">
@@ -283,132 +317,169 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                         class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true">
                                     </span>Loading...
                                 </div>
-                                <?php
+            <?php
 
-            $sort = isset($_GET['sort']) ? $_GET['sort'] : 'latest';
-            $order = ($sort == 'oldest') ? 'ASC' : 'DESC';
-            $sql = "SELECT* FROM pre_alert ORDER BY Create_at $order";
-            if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
-              ?>
-                                <div class="panel-body table-responsive shadow">
-                                    <table class="table-area ">
-                                        <thead>
-                                            <tr>
-                                                <th>Tracking</th>
-                                                <th>Courier</th>
-                                                <th>Description</th>
-                                                <th>Customer</th>
-                                                <th>Weight</th>
-                                                <th>Item Value</th>
-                                                <th>Status</th>
-                                                <th>Inv Status</th>
-                                                <th>Invoice</th>
-                                                <th>Inv Total</th>
-                                                <th>Created at</th>
-                                                <th>View</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php
+                $sort  = isset($_GET['sort']) ? $_GET['sort'] : 'latest';
+                $order = ($sort == 'oldest') ? 'ASC' : 'DESC';
 
-                                              $result = mysqli_query($conn, $sql);
-                                              echo "<pre>";
-                                              print_r($result);die;
-                                              while ($rows = mysqli_fetch_array($result)) {
-                                                $User_id = $rows['User_id'];
-                                                $sql = "SELECT* FROM users where id = $User_id";
-                                                $row = mysqli_fetch_array(mysqli_query($conn, $sql));
-                                                if ($row) {
-                                                  $customer_name = $row['FName'];
-                                                  $AccountNumber = $row['AccountNumber'];
-                                                } else {
-                                                  $customer_name = 'Unknown';
-                                                  $AccountNumber = 'N/A';
-                                                }
+                // Check if we have database packages
+                $sql             = "SELECT * FROM pre_alert ORDER BY created_at $order LIMIT $limit OFFSET $offset";
+                $result          = mysqli_query($conn, $sql);
+                $has_db_packages = mysqli_num_rows($result) > 0;
 
-                                              ?>
-                                            <tr>
-                                                <td><?php echo $rows['Tracking_Number']; ?></td>
-                                                <td><?php echo $rows['Courier_Company']; ?></td>
-                                                <td><?php echo $rows['Describe_Package']; ?></td>
-                                                <td> <span class="customer_name"> <?php echo $customer_name; ?></span> </td>
-                                                <td>N/A</td>
-                                                <td> <span class="item_value">$<?php echo $rows['Value_of_Package']; ?></span></td>
-                                                <td> <span class="status">Undergoing Customs Clearance</span> </td>
-                                                <td><span class="Inv-status">Open</span></td>
-                                                <td> <span class="invoice">N/A</span></td>
-                                                <td>$10</td>
-                                                <td><?php echo timeAgo($rows['Create_at']); ?></td>
-                                                <td>
-                                                    <ul class="action-list">
-                                                        <li>
-                                                            <a href="package-view.php">
-                                                                <i class="fa-solid fa-eye"></i>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </td>
-                                            </tr>
-                                            <?php
-                };
+                // If no database packages, use demo packages
+                if (! $has_db_packages && ! empty($demo_packages)) {
+                    // Apply sorting to demo packages
+                    if ($sort == 'oldest') {
+                        usort($demo_packages, function ($a, $b) {
+                            return strtotime($a['createdAt']) - strtotime($b['createdAt']);
+                        });
+                    } else {
+                        usort($demo_packages, function ($a, $b) {
+                            return strtotime($b['createdAt']) - strtotime($a['createdAt']);
+                        });
+                    }
+                    // Apply pagination to demo packages
+                    $paginated_packages = array_slice($demo_packages, $offset, $limit);
+                    $display_count      = count($paginated_packages);
+                } elseif ($has_db_packages) {
+                    $display_count = mysqli_num_rows($result);
+                }
 
+                if ($has_db_packages || (! empty($demo_packages) && $total_packages > 0)) {
                 ?>
-                                            <tr>
-                                                <td>76rt3276i45786324</td>
-                                                <td>Amazon</td>
-                                                <td>Laptop</td>
-                                                <td> <span class="customer_name"> Abdul </span> </td>
-                                                <td>6 lbs</td>
-                                                <td> <span class="item_value">$10.00</span></td>
-                                                <td> <span
-                                                        style="background: hsl(140.6, 84.2%, 92.5%); color:hsl(142.4, 47.8%, 30.8%)"
-                                                        class="status">Delivered</span> </td>
-                                                <td><span class="Inv-status">Open</span></td>
-                                                <td> <span class="invoice">N/A</span></td>
-                                                <td>$10</td>
-                                                <td> Apr 29, 2025, 10:43 PM </td>
-                                                <td>
-                                                    <ul class="action-list">
-                                                        <li>
-                                                            <a href="package-view.php">
-                                                                <i class="fa-solid fa-eye"></i>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>76rt3276i45786324</td>
-                                                <td>Amazon</td>
-                                                <td>Laptop</td>
-                                                <td> <span class="customer_name"> Abdul </span> </td>
-                                                <td>6 lbs</td>
-                                                <td> <span class="item_value">$10.00</span></td>
-                                                <td> <span
-                                                        style="background:rgb(219, 234, 254); color:rgb(45, 110, 199);"
-                                                        class="status">Received at Warehouse</span> </td>
-                                                <td><span class="Inv-status">Open</span></td>
-                                                <td> <span class="invoice">N/A</span></td>
-                                                <td>$10</td>
-                                                <td> Apr 29, 2025, 10:43 PM </td>
-                                                <td>
-                                                    <ul class="action-list">
-                                                        <li>
-                                                            <a href="package-view.php">
-                                                                <i class="fa-solid fa-eye"></i>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+<div class="panel-body table-responsive" style="display: none;">
+    <table class="table m-auto shadow table-striped table-hover table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Tracking</th>
+                <th>Courier</th>
+                <th>Description</th>
+                <th>Customer</th>
+                <th>Weight</th>
+                <th>Item Value</th>
+                <th>Status</th>
+                <th>Inv Status</th>
+                <th>Invoice</th>
+                <th>Inv Total</th>
+                <th>Created at</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+                if ($has_db_packages) {
+                        // Display database packages
+                        while ($rows = mysqli_fetch_array($result)) {
+                            $user_id  = $rows['user_id'];
+                            $sql_user = "SELECT * FROM users WHERE id = $user_id";
+                            $row      = mysqli_fetch_array(mysqli_query($conn, $sql_user));
+                            if ($row) {
+                                $customer_name = $row['first_name'];
+                                $account_number = $row['account_number'];
+                            } else {
+                                $customer_name = 'Unknown';
+                                $account_number = 'N/A';
+                            }
+                        ?>
+            <tr>
+                <td><?php echo $rows['tracking_number']; ?></td>
+                <td><?php echo $rows['courier_company']; ?></td>
+                <td><?php echo $rows['describe_package']; ?></td>
+                <td> <span class="customer_name">                                                                                  <?php echo $customer_name; ?></span> </td>
+                <td>N/A</td>
+                <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
+                <td> <span class="status">Undergoing Customs Clearance</span> </td>
+                <td><span class="Inv-status">Open</span></td>
+                <td> <span class="invoice">N/A</span></td>
+                <td>$10</td>
+                <td><?php echo timeAgo($rows['created_at']); ?></td>
+                <td>
+                    <ul class="mb-0 action-list list-unstyled">
+                        <li>
+                            <a href="package-view.php">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+            <?php
+                }
+                    } elseif (! empty($paginated_packages)) {
+                        // Display demo packages
+                        foreach ($paginated_packages as $package) {
+                            $customer_name = $package['firstName'] . ' ' . $package['lastName'];
+                        ?>
+            <tr>
+                <td><?php echo $package['tracking']; ?></td>
+                <td><?php echo $package['courierName']; ?></td>
+                <td><?php echo $package['description']; ?></td>
+                <td> <span class="customer_name">                                                                                  <?php echo $customer_name; ?></span> </td>
+                <td><?php echo $package['weight']; ?> lbs</td>
+                <td> <span class="item_value">$<?php echo rand(50, 500); ?></span></td>
+                <td> <span class="status">Undergoing Customs Clearance</span> </td>
+                <td><span class="Inv-status">Open</span></td>
+                <td> <span class="invoice">N/A</span></td>
+                <td>$<?php echo rand(10, 100); ?></td>
+                <td><?php echo timeAgo($package['createdAt']); ?></td>
+                <td>
+                    <ul class="mb-0 action-list list-unstyled">
+                        <li>
+                            <a href="package-view.php">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+            <?php
+                }
+                    }
+                ?>
+        </tbody>
+    </table>
+</div>
+                                <!-- Pagination -->
+                                <div class="mt-3 panel-footer">
+                                    <div class="row">
+                                        <div class="col col-sm-6 col-xs-6">Showing <b><?php echo $has_db_packages ? mysqli_num_rows($result) : $display_count; ?></b> out of <b><?php echo $total_packages; ?></b> entries</div>
+                                        <div class="col-sm-6 col-xs-6">
+                                            <ul class="pagination justify-content-end" style="color:black;">
+                                                <?php if ($page > 1) {?>
+                                                    <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
+                                                <?php } else {?>
+                                                    <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                                                <?php }?>
+                                                <?php for ($i = 1; $i <= $total_pages; $i++) {?>
+                                                    <li class="page-item<?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                                <?php }?>
+                                                <?php if ($page < $total_pages) {?>
+                                                    <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
+                                                <?php } else {?>
+                                                    <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                                                <?php }?>
+                                            </ul>
+                                            <ul class="pagination visible-xs pull-right d-none">
+                                                <?php if ($page > 1) {?>
+                                                    <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
+                                                <?php } else {?>
+                                                    <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                                                <?php }?>
+                                                <?php if ($page < $total_pages) {?>
+                                                    <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
+                                                <?php } else {?>
+                                                    <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                                                <?php }?>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                                 <?php
-            } else {
-              echo "<p class='text-center' style='font-size: 25px'>No Packages available.</p>";
-            }
-            ?>
+                                    } else {
+                                        echo "<p class='text-center' style='font-size: 25px'>No Packages available.</p>";
+                                    }
+                                ?>
                                 <!--
                 <div class="panel-footer">
                     <div class="row">
@@ -463,7 +534,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
 
 <script type="text/javascript">
     $(window).on('load', function() {
-        // Page is fully loaded 
+        // Page is fully loaded
         $('.table-responsive').show('slow');
         $('.loading').hide();
     });

@@ -8,8 +8,8 @@
 	//==================================================User basic account info updating start===============================
     if( isset($_REQUEST['user_basic_account_info_btn'] ) ){ 
 	     // User  form input values
-		$FName        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['FName'])) );
-		$LName        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['LName'])) );
+		$first_name        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['first_name'])) );
+		$last_name        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['last_name'])) );
 		$phone        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['phone'])) );
 		$BDate        =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['BDate'])) );
 		$Gender       =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Gender'])) );
@@ -20,14 +20,14 @@
 		$Region       =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Region'])) ); 
 		$oldImage     =   $_REQUEST['old_image'] ;
 		$File         =   ''; 
-		if( $FName == '' ) 
+		if( $first_name == '' ) 
 		{    
 			$_SESSION['message-1'] =  'Please Enter First Name';
 			$_SESSION['message']   =  'Please Enter First Name';
 	        header('location: user-dashboard/user-account.php?no-update-basic-data='); 
             die();
 		};
-	    if( $LName == '') 
+	    if( $last_name == '') 
 	    { 
 		      
 			$_SESSION['message-2'] =  'Please Enter Last Name';
@@ -127,7 +127,7 @@
 		};
 		
 		// Updating user basic information
-		$sql = "UPDATE users SET FName = '$FName', LName = '$LName', PhoneNumber = '$phone', DateOfBirth = '$BDate', Gender = '$Gender', 
+		$sql = "UPDATE users SET first_name = '$first_name', last_name = '$last_name', PhoneNumber = '$phone', DateOfBirth = '$BDate', Gender = '$Gender', 
 	            file = '$File', AddressType = '$AddressType', Parish = '$Parish', Region = '$Region', 
 				AddressLine1 = '$AddressLine1', AddressLine2 = '$AddressLine2' WHERE id = $user_id";
 		if( mysqli_query($conn, $sql)){
@@ -173,12 +173,12 @@
      //================================================== Authorized Users Start=============================== 
 	if( isset( $_REQUEST['delivery-updatingBtn'] )){ 
 	  
-	     $FName = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Fname'])) );
-	     $Lname = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Lname'])) );
+	     $first_name = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['first_name'])) );
+	     $last_name = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['last_name'])) );
 	     $IdType = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['IdType'])) );
-	     $FName = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['IdNber']))); 
+	     $first_name = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['IdNber']))); 
 		 
-        $sql = "UPDATE authorized_users SET  FName ='$FName', LName ='$Lname', IdType ='$IdType', IdNumber ='$FName' WHERE id = $user_id"; 
+        $sql = "UPDATE authorized_users SET  first_name ='$first_name', last_name ='$last_name', IdType ='$IdType', IdNumber ='$first_name' WHERE id = $user_id"; 
 		if( mysqli_query($conn, $sql)){ 
 		
 		        $_SESSION['message']   =  'Updating has been successfully';

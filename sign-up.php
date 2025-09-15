@@ -79,11 +79,11 @@
 				   <!-- Email address input-->
 				<div class="col-md-6 mb-3">
 				    <label for="firstName">First name<small class="star">*</small></label>
-					<input autocomplete value="<?php echo isset($_REQUEST['FName']) ? $_REQUEST['FName']: '';  ?>"   name="fname" class="form-control" id="firstName" type="text" placeholder="First name"/>
+					<input autocomplete value="<?php echo isset($_REQUEST['first_name']) ? $_REQUEST['first_name']: '';  ?>"   name="first_name" class="form-control" id="firstName" type="text" placeholder="First name"/>
 				</div>
 				<div class="col-md-6 mb-3">
-				    <label for="lname">Last name <small class="star">*</small></label>
-					<input value="<?php echo isset($_REQUEST['LName']) ? $_REQUEST['LName']: '';  ?>" autocomplete name="lname" class="form-control" id="lname" type="text" placeholder="Last name" />
+				    <label for="last_name">Last name <small class="star">*</small></label>
+					<input value="<?php echo isset($_REQUEST['last_name']) ? $_REQUEST['last_name']: '';  ?>" autocomplete name="last_name" class="form-control" id="last_name" type="text" placeholder="Last name" />
 				</div> 
 				 <div class="col-md-6  mb-3">
 				    <label id="phone" for="txtPhoneNo">Phone number <small class="star">*</small></label>

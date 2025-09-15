@@ -7,7 +7,7 @@ if (isset($_POST['login'])) {
     $password = mysqli_real_escape_string($conn, $_POST['pwd']);
     $hashed_password = md5('pync' . $password);
 
-    $sql = "SELECT * FROM users WHERE EmailAddress = '$email' AND Password_Hash = '$hashed_password'";
+    $sql = "SELECT * FROM users WHERE email_address = '$email' AND password_hash = '$hashed_password'";
     $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) == 1) {
@@ -16,7 +16,7 @@ if (isset($_POST['login'])) {
         $_SESSION['user_id'] = $user_data;
         setcookie('user_id', $user_data, time() + (86400 * 30), "/"); // 30 days
         $base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME'], 2) . '/';
-        if ($user['Role_As'] == 1) {
+        if ($user['role_as'] == 1) {
             $redirect_url = $base_url . 'admin-dashboard/index.php';
         } else {
             $redirect_url = $base_url . 'user-dashboard/index.php';

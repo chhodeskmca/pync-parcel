@@ -2,10 +2,11 @@
 <?php
 include('function.php');
 
-$base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/';
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$base_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/';
 
    if( isset($_COOKIE['user_id']) ){
-		if( user_account_information()['Role_As']  == 1 ){
+		if( user_account_information()['role_as']  == 1 ){
 			header('location: ' . $base_url . 'admin-dashboard/index.php');
 		}else{
 			header('location: ' . $base_url . 'user-dashboard/index.php');
