@@ -312,18 +312,22 @@
 							      <i  class="fa-solid fa-plus"> </i> 
 							  </span>   
 						    </p>
-							<h3> 
-							   <?php 
-							   
-									$user_id =  $_REQUEST['user_id'] ; 
-									$sql     = "SELECT * FROM users where id = $user_id "; 
-									$result  =  mysqli_query($conn, $sql); 
-									$rows    = mysqli_fetch_array($result); 
-									
-									echo "$" . $rows['total_balance'];
-									
-								?> 
-							 </h3>				
+							<h3>
+							   <?php
+
+									$user_id =  $_REQUEST['user_id'] ;
+									$sql     = "SELECT total_balance FROM balance WHERE user_id = $user_id ";
+									$result  =  mysqli_query($conn, $sql);
+									if (mysqli_num_rows($result) > 0) {
+										$rows    = mysqli_fetch_array($result);
+										$balance = isset($rows['total_balance']) ? $rows['total_balance'] : 0.00;
+										echo "$" . number_format($balance, 2);
+									} else {
+										echo "$0.00";
+									}
+
+								?>
+							 </h3>
                             <div class="text-center"> 
 							  Amount on account owed to customer
 							</div>
@@ -440,7 +444,7 @@
 													    ?>			  
 													</span></td>
 													<td>$10</td>
-													<td><?php echo timeAgo($rows['Create_at']); ?></td>
+													<td><?php echo timeAgo($rows['created_at']); ?></td>
 													<td>
 														<ul class="action-list">
 															<li> 
@@ -467,28 +471,28 @@
 							<div class="row justify-content-center Credit-History"> 
 							    <div class="col-md-6"> 
 								   <p style="font-size:30px; font-weight: 900; color: #E87946; font-weight: 700;" class="title text-center">Credit History</p> 
-								   <?php 
-										$user_id =  $_REQUEST['user_id'] ; 
-										$sql = "SELECT* FROM balance where user_id = $user_id ORDER BY Create_at DESC "; 
-										 $result = mysqli_query($conn, $sql) ; 
-										if(  mysqli_num_rows( $result) > 0  ) 
-										{ 
-										  
-									        while( $rows = mysqli_fetch_array($result)  ){ 
-											
-											        $Add_new_credit = $rows['Add_new_credit'] ;
-													$timestamp = $rows['Create_at'] ;
+								   <?php
+										$user_id =  $_REQUEST['user_id'] ;
+										$sql = "SELECT* FROM balance where user_id = $user_id ORDER BY created_at DESC ";
+										 $result = mysqli_query($conn, $sql) ;
+										if(  mysqli_num_rows( $result) > 0  )
+										{
+
+									        while( $rows = mysqli_fetch_array($result)  ){
+
+											        $amount = isset($rows['amount']) ? $rows['amount'] : 0;
+													$timestamp = $rows['created_at'] ;
 													$date = new DateTime($timestamp);
-													$Create_at =  $date->format("M j, Y, g:i A"); 
-													
-												    echo " 
-															<div class='d-flex justify-content-between'> 
-																<span style='color:#696c71;font-size: 20px;  margin-bottom: 5px;  display: block;  font-weight: 700;'><b> $$Add_new_credit </b></span>
-																<span style='color:#696c71'>$Create_at</span>
-															</div> 
+													$created_at =  $date->format("M j, Y, g:i A");
+
+												    echo "
+															<div class='d-flex justify-content-between'>
+																<span style='color:#696c71;font-size: 20px;  margin-bottom: 5px;  display: block;  font-weight: 700;'><b> $$amount </b></span>
+																<span style='color:#696c71'>$created_at</span>
+															</div>
 														";
-									          } 
-										}else{ 
+									          }
+										}else{
 												 echo "<p class='text-center'>No History</p>";
 									    };
 								    ?>
@@ -517,33 +521,33 @@
 										 <span class="value"><?php echo $rows['last_name'] ; ?></span>
 									</div>
 
-									<div class="Tracking-value"> 
+									<div class="Tracking-value">
 										 <span class="heading">Phone</span>
-										 <span class="value"><?php echo $rows['PhoneNumber'] ; ?></span>
+										 <span class="value"><?php echo $rows['phone_number'] ?? 'N/A'; ?></span>
 									</div>
-									<div class="Tracking-value"> 
+									<div class="Tracking-value">
 										 <span class="heading">Email Address</span>
-										 <span class="value"><?php echo $rows['EmailAddress'] ; ?></span>
-									</div> 
-									<div class="Tracking-value"> 
+										 <span class="value"><?php echo $rows['email_address'] ?? 'N/A'; ?></span>
+									</div>
+									<div class="Tracking-value">
 										 <span class="heading">Date of Birth</span>
-										 <span class="value"> 
-										      <?php echo ltrim($rows['DateOfBirth']) == '' ? 'N/A' : ltrim($rows['DateOfBirth']) ; ?> 
+										 <span class="value">
+										      <?php echo (!empty($rows['date_of_birth'])) ? $rows['date_of_birth'] : 'N/A'; ?>
 										 </span>
-									</div>  
-									<div class="Tracking-value"> 
+									</div>
+									<div class="Tracking-value">
 										 <span class="heading"> Gender</span>
-										 <span class="value"> 
-										    <?php echo ltrim($rows['Gender']) == '' ? 'N/A' : ltrim($rows['Gender']) ;?> 
+										 <span class="value">
+										    <?php echo (!empty($rows['gender'])) ? $rows['gender'] : 'N/A'; ?>
 										 </span>
-									</div> 
-									<div class="Tracking-value"> 
+									</div>
+									<div class="Tracking-value">
 										 <span class="heading">Copy of Photo Identification</span>
 										 <span class="value">
-										   <?php   
-										   
-										   
-										    if( ltrim($rows['file']) != '' ){ 
+										   <?php
+
+
+										    if( !empty($rows['file']) ){
 											
 											  $file = $rows['file'] ;
 											  echo " 
@@ -568,48 +572,48 @@
 									</div>
 								    <div class="col-md-6"> 
 									  <p class="title" style="font-size: 30px;font-weight: 900;color: #E87946; font-weight: 700; text-align:center">Delivery Preference</p>
-										<div class="Tracking-value"> 
+										<div class="Tracking-value">
 											 <span class="heading">Address Type</span>
-											 <span class="value"> 
-											 <?php echo ltrim($rows['AddressType']) == '' ? 'N/A' : ltrim($rows['AddressType']) ;  ?></span>
-										</div> 
-										 <div class="Tracking-value"> 
-											 <span class="heading">Parish</span>
-											 <span class="value"> 
-											  <?php echo ltrim($rows['Parish']) == '' ? 'N/A' : ltrim($rows['Parish']) ; ?></span>
+											 <span class="value">
+											 <?php echo (!empty($rows['address_type'])) ? $rows['address_type'] : 'N/A';  ?></span>
 										</div>
-										<div class="Tracking-value"> 
+										 <div class="Tracking-value">
+											 <span class="heading">Parish</span>
+											 <span class="value">
+											  <?php echo (!empty($rows['parish'])) ? $rows['parish'] : 'N/A'; ?></span>
+										</div>
+										<div class="Tracking-value">
 											 <span class="heading">Region</span>
 											 <span class="value">
-											  <?php echo ltrim($rows['Region']) == '' ? 'N/A' : ltrim($rows['Region']) ; ?></span>
+											  <?php echo (!empty($rows['region'])) ? $rows['region'] : 'N/A'; ?></span>
 										</div>
 							        </div>
 									<div class="col-md-6">
 									  <p class="title" style="font-size: 30px;font-weight: 900;font-weight: 700; text-align:center; color: #E87946;">Authorized Users</p>
-										<div class="Tracking-value">  
-											 <?php 
-										   
-												$user_id =  $_REQUEST['user_id'] ; 
-												$sql     = "SELECT* FROM authorized_users where Id = $user_id "; 
-												$result  =  mysqli_query($conn, $sql); 
-												$rows    = mysqli_fetch_array($result); 
-						 
-											?> 
+										<div class="Tracking-value">
+											 <?php
+
+												$user_id =  $_REQUEST['user_id'] ;
+												$sql     = "SELECT* FROM authorized_users where user_id = $user_id ";
+												$result  =  mysqli_query($conn, $sql);
+												$auth_rows = mysqli_fetch_array($result);
+
+											?>
 											 <span class="heading">First Name</span>
-											 <span class="value"><?php echo ltrim($rows['first_name']) == '' ? 'N/A' : ltrim($rows['first_name']) ; ?></span>
-										</div> 
-										 <div class="Tracking-value"> 
+											 <span class="value"><?php echo (!empty($auth_rows['first_name'])) ? $auth_rows['first_name'] : 'N/A'; ?></span>
+										</div>
+										 <div class="Tracking-value">
 											 <span class="heading">Last</span>
-											 <span class="value"><?php echo ltrim($rows['last_name']) == '' ? 'N/A' : ltrim($rows['last_name']) ; ?></span>
+											 <span class="value"><?php echo (!empty($auth_rows['last_name'])) ? $auth_rows['last_name'] : 'N/A'; ?></span>
 										</div>
-										<div class="Tracking-value"> 
+										<div class="Tracking-value">
 											 <span class="heading">Identification Type</span>
-											 <span class="value"><?php echo ltrim($rows['IdType']) == '' ? 'N/A' : ltrim($rows['IdType']) ; ?></span>
+											 <span class="value"><?php echo (!empty($auth_rows['id_type'])) ? $auth_rows['id_type'] : 'N/A'; ?></span>
 										</div>
-										 <div class="Tracking-value"> 
+										 <div class="Tracking-value">
 											 <span class="heading">ID Number</span>
-											 <span class="value"><?php echo ltrim($rows['IdNumber']) == '' ? 'N/A' : ltrim($rows['IdNumber']) ; ?></span>
-										</div>	
+											 <span class="value"><?php echo (!empty($auth_rows['id_number'])) ? $auth_rows['id_number'] : 'N/A'; ?></span>
+										</div>
 							       </div>
 								   	<div class="col-md-6">
 									 <p class="title" style="font-size: 30px;   font-weight: 900;color: #E87946; font-weight: 700; text-align:center">Miami Address</p>

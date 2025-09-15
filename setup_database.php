@@ -64,10 +64,15 @@ $dropTables = [
     'pre_alert',
     'balance',
     'authorized_users',
+    'delivery_preference',
     'users'
 ];
 
 echo "Dropping existing tables (if any)...<br>";
+
+// Disable foreign key checks to avoid constraint errors during drop
+$conn->query("SET FOREIGN_KEY_CHECKS=0;");
+
 foreach ($dropTables as $table) {
     if ($conn->query("DROP TABLE IF EXISTS `$table`") === TRUE) {
         echo "Dropped table: $table<br>";
@@ -75,6 +80,9 @@ foreach ($dropTables as $table) {
         echo "Error dropping $table: " . $conn->error . "<br>";
     }
 }
+
+// Re-enable foreign key checks
+$conn->query("SET FOREIGN_KEY_CHECKS=1;");
 
 echo "<br>Creating tables...<br>";
 foreach ($createStatements as $sql) {
@@ -130,5 +138,5 @@ if ($tables_result) {
 $conn->close();
 
 echo "<br><a href='admin_user_setup.php'>Click here to setup admin user</a><br>";
-echo "<a href='../admin-dashboard/index.php'>Go to Admin Dashboard</a>";
+echo "<a href='./admin-dashboard/index.php'>Go to Admin Dashboard</a>";
 ?>

@@ -14,6 +14,10 @@ if (!defined('WAREHOUSE_API_KEY')) {
     define('WAREHOUSE_API_KEY', $_ENV['WAREHOUSE_API_KEY'] ?? '');
 }
 
+if (!defined('WAREHOUSE_API_URL')) {
+    define('WAREHOUSE_API_URL', $_ENV['WAREHOUSE_API_URL'] ?? '');
+}
+
 if (!defined('IS_PRODUCTION')) {
     define('IS_PRODUCTION', ($_ENV['APP_ENV'] ?? 'development') === 'production');
 }

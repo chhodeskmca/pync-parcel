@@ -409,7 +409,7 @@
                             <td><?php echo $rows['Merchant']; ?></td>
                             <td><?php echo $rows['Value_of_Package']; ?></td>
                             <td><?php echo $rows['Describe_Package']; ?></td>
-                            <td><?php echo date('d/m/y', strtotime($rows['Create_at']) )  ; ?></td>
+                            <td><?php echo date('d/m/y', strtotime($rows['created_at']) )  ; ?></td>
                           </tr>  
 						  <?php 
 							  }  

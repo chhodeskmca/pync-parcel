@@ -35,7 +35,7 @@ if (file_exists($setup_file)) {
     }
     echo "<br><strong>Admin user setup completed successfully!</strong><br>";
     echo "<br><strong>Default Admin Credentials:</strong><br>";
-    echo "Email: admin@pyncparcel.com<br>";
+    echo "Email: admin-ppc@pyncparcel.com<br>";
     echo "Password: admin123<br>";
     echo "<span style='color: red;'><strong>⚠️ IMPORTANT: Change the default password after first login!</strong></span><br>";
 } else {
@@ -45,6 +45,6 @@ if (file_exists($setup_file)) {
 // Close connection
 $conn->close();
 
-echo "<br><a href='../admin-dashboard/index.php'>Go to Admin Dashboard Login</a><br>";
-echo "<a href='../index.php'>Go to Home Page</a>";
+echo "<br><a href='./admin-dashboard/index.php'>Go to Admin Dashboard Login</a><br>";
+echo "<a href='./index.php'>Go to Home Page</a>";
 ?>

@@ -8,23 +8,39 @@
     include 'authorized-admin.php';
     $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
 
+    if (!function_exists('alert')) {
+        function alert($message, $type = 'info') {
+            return "<div class='alert alert-{$type} mt-3' role='alert'>{$message}</div>";
+        }
+    }
+
     // Pagination parameters
     $limit  = 50; // Number of packages per page
     $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $offset = ($page - 1) * $limit;
 
-    $sql_count      = "SELECT COUNT(*) as total FROM pre_alert";
+    $sql_count      = 'SELECT COUNT(*) as total FROM pre_alert';
     $result_count   = mysqli_query($conn, $sql_count);
     $total_packages = mysqli_fetch_assoc($result_count)['total'];
 
-    // Load demo packages if no packages in database
-    $demo_packages = [];
-    if ($total_packages == 0) {
+    // Load demo packages if no packages in database and demo packages enabled in .env
+    $packages_list = [];
+    $demo_packages_enabled = getenv('DEMO_PACKAGES_ENABLED') === 'true';
+
+    // Debug: Check environment variable and total packages
+    error_log("DEMO_PACKAGES_ENABLED: " . getenv('DEMO_PACKAGES_ENABLED'));
+    error_log("demo_packages_enabled: " . ($demo_packages_enabled ? 'true' : 'false'));
+    error_log("total_packages: " . $total_packages);
+
+    if ($total_packages == 0 && $demo_packages_enabled) {
         $json_file = '../demo-packages.json';
         if (file_exists($json_file)) {
             $json_data      = json_decode(file_get_contents($json_file), true);
-            $demo_packages  = $json_data['packages'] ?? [];
-            $total_packages = count($demo_packages);
+            $packages_list  = $json_data['packages'] ?? [];
+            $total_packages = count($packages_list);
+            error_log("Loaded demo packages: " . count($packages_list));
+        } else {
+            error_log("demo-packages.json file not found");
         }
     }
     $total_pages = ceil($total_packages / $limit);
@@ -85,7 +101,7 @@
                                 <p>Home</p>
                             </a>
                         </li>
-                        <li class="nav-item                                            <?php echo $current_file_name == 'packages.php' ? 'active' : ''; ?>">
+                        <li class="nav-item                                                                                                                                                                                                                        <?php echo $current_file_name == 'packages.php' ? 'active' : ''; ?>">
                             <a href="packages.php">
                                 <img class="package-icon" src="assets/img/package.png" alt="package" />
                                 <p style="<?php echo $current_file_name == 'packages.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
@@ -290,14 +306,15 @@
                                     <form action="#" method="GET">
                                         <label for="sort">Sort by:</label>
                                         <select name="sort" id="sort" onchange="this.form.submit()">
-                                            <option value="latest"                                                                   <?php echo ! isset($_GET['sort']) || $_GET['sort'] == 'latest' ? 'selected' : ''; ?>>Latest First</option>
-                                            <option value="oldest"                                                                   <?php echo isset($_GET['sort']) && $_GET['sort'] == 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
+                                            <option value="latest"                                                                                                                                                                                                                                                                                                                                           <?php echo ! isset($_GET['sort']) || $_GET['sort'] == 'latest' ? 'selected' : ''; ?>>Latest First</option>
+                                            <option value="oldest"                                                                                                                                                                                                                                                                                                                                           <?php echo isset($_GET['sort']) && $_GET['sort'] == 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
                                         </select>
                                     </form>
                                 <form action="pull_packages.php" method="POST" style="margin:0;">
                                     <button type="submit" class="btn btn-warning">Pull Packages from
                                         Warehouse</button>
                                 </form>
+                                </div>
                                 <?php
                                     if (session_status() == PHP_SESSION_NONE) {
                                         session_start();
@@ -310,7 +327,6 @@
                                         unset($_SESSION['message_type']);
                                     }
                                 ?>
-                                </div>
                                 <div class="loading"
                                     style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;">
                                     <span style="background: #E87946;  margin-right: 10px;"
@@ -328,35 +344,41 @@
                 $has_db_packages = mysqli_num_rows($result) > 0;
 
                 // If no database packages, use demo packages
-                if (! $has_db_packages && ! empty($demo_packages)) {
+                if (! $has_db_packages && ! empty($packages_list)) {
                     // Apply sorting to demo packages
                     if ($sort == 'oldest') {
-                        usort($demo_packages, function ($a, $b) {
+                        usort($packages_list, function ($a, $b) {
                             return strtotime($a['createdAt']) - strtotime($b['createdAt']);
                         });
                     } else {
-                        usort($demo_packages, function ($a, $b) {
+                        usort($packages_list, function ($a, $b) {
                             return strtotime($b['createdAt']) - strtotime($a['createdAt']);
                         });
                     }
                     // Apply pagination to demo packages
-                    $paginated_packages = array_slice($demo_packages, $offset, $limit);
+                    $paginated_packages = array_slice($packages_list, $offset, $limit);
                     $display_count      = count($paginated_packages);
                 } elseif ($has_db_packages) {
                     $display_count = mysqli_num_rows($result);
                 }
 
-                if ($has_db_packages || (! empty($demo_packages) && $total_packages > 0)) {
+                if ($has_db_packages || (! empty($packages_list) && $total_packages > 0)) {
                 ?>
 <div class="panel-body table-responsive" style="display: none;">
     <table class="table m-auto shadow table-striped table-hover table-bordered">
         <thead class="table-light">
             <tr>
+                <th>Tracking Name</th>
                 <th>Tracking</th>
                 <th>Courier</th>
                 <th>Description</th>
                 <th>Customer</th>
                 <th>Weight</th>
+                <th>Dimensions (L x W x H)</th>
+                <th>Shipment Status</th>
+                <th>Shipment Type</th>
+                <th>Branch</th>
+                <th>Tag</th>
                 <th>Item Value</th>
                 <th>Status</th>
                 <th>Inv Status</th>
@@ -375,19 +397,25 @@
                             $sql_user = "SELECT * FROM users WHERE id = $user_id";
                             $row      = mysqli_fetch_array(mysqli_query($conn, $sql_user));
                             if ($row) {
-                                $customer_name = $row['first_name'];
+                                $customer_name  = $row['first_name'];
                                 $account_number = $row['account_number'];
                             } else {
-                                $customer_name = 'Unknown';
+                                $customer_name  = 'Unknown';
                                 $account_number = 'N/A';
                             }
                         ?>
             <tr>
+                <td><?php echo $rows['tracking_name'] ?? 'N/A'; ?></td>
                 <td><?php echo $rows['tracking_number']; ?></td>
                 <td><?php echo $rows['courier_company']; ?></td>
                 <td><?php echo $rows['describe_package']; ?></td>
-                <td> <span class="customer_name">                                                                                  <?php echo $customer_name; ?></span> </td>
-                <td>N/A</td>
+                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
+                <td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
+                <td><?php echo ($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td>
+                <td><?php echo $rows['shipment_status'] ?? 'N/A'; ?></td>
+                <td><?php echo $rows['shipment_type'] ?? 'N/A'; ?></td>
+                <td><?php echo $rows['branch'] ?? 'N/A'; ?></td>
+                <td><?php echo $rows['tag'] ?? 'N/A'; ?></td>
                 <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
                 <td> <span class="status">Undergoing Customs Clearance</span> </td>
                 <td><span class="Inv-status">Open</span></td>
@@ -412,11 +440,17 @@
                             $customer_name = $package['firstName'] . ' ' . $package['lastName'];
                         ?>
             <tr>
+                <td><?php echo $package['trackingName']; ?></td>
                 <td><?php echo $package['tracking']; ?></td>
                 <td><?php echo $package['courierName']; ?></td>
                 <td><?php echo $package['description']; ?></td>
-                <td> <span class="customer_name">                                                                                  <?php echo $customer_name; ?></span> </td>
+                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
                 <td><?php echo $package['weight']; ?> lbs</td>
+                <td><?php echo $package['dimLength'] . ' x ' . $package['dimWidth'] . ' x ' . $package['dimHeight']; ?></td>
+                <td><?php echo $package['shipmentStatus']; ?></td>
+                <td><?php echo $package['shipmentType']; ?></td>
+                <td><?php echo $package['branch']; ?></td>
+                <td><?php echo $package['tag']; ?></td>
                 <td> <span class="item_value">$<?php echo rand(50, 500); ?></span></td>
                 <td> <span class="status">Undergoing Customs Clearance</span> </td>
                 <td><span class="Inv-status">Open</span></td>

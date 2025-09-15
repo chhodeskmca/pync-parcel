@@ -3,8 +3,8 @@
     $Tracking_Number = $_REQUEST['Tracking_Number'] ;
 	include('config.php'); // database connection
 	include('function.php'); // function connection
-	//error_reporting(E_ALL);
-    //ini_set('display_errors', 1);
+	 error_reporting(E_ALL);
+     ini_set('display_errors', 1);
 	//==================================================User basic account info updating start===============================
     if( isset($_REQUEST['user_basic_account_info_btn'] ) ){ 
 	     // User  form input values
@@ -153,8 +153,23 @@
 					}; 
 					
 				};	
-					
-				$_SESSION['message']   =  'Account information has been updated';
+					 
+			     $sql = "SELECT * FROM delivery_preference WHERE user_id = $user_id AND address_type = '$AddressType' " ; //checking if address not saved
+			     if( mysqli_num_rows(mysqli_query($conn, $sql)) == 0){ 
+			         
+			            
+			          $sql =  "INSERT INTO delivery_preference (user_id, address_type, parish, region, address_line1, address_line2) 
+			          VALUES ($user_id, '$AddressType', '$Parish', '$Region', '$AddressLine1', '$AddressLine2')" ;   
+			          mysqli_query($conn, $sql) ;
+			         
+			     }else if( 1 ){ 
+			         
+			      $sql = "UPDATE delivery_preference SET address_type = '$AddressType', parish ='$Parish', region ='$Region', 
+			             address_line1='$AddressLine1', address_line2 ='$AddressLine2'  WHERE user_id = $user_id AND address_type = '$AddressType' ";  
+			             mysqli_query($conn, $sql);
+			         
+			     }	 
+				$_SESSION['message']   =  "Account information has been updated";
 				header('location: user-dashboard/user-account.php'); 
 				die();
 				
@@ -343,10 +358,49 @@
 		};
     }; 
  //================================================== Pre alert updating end===============================
-	
- Echo "You are not allowed to this page!";
  
+ //================================================== password updating start===============================
+  
+  
+  	if( isset($_REQUEST['pwd_update'] ) ){   
+  
+         $pwd = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['NewPassword'])) ) ;  
+	     $hash_password =  md5('pync'.$pwd); 
+		 $sql = "UPDATE  users SET Password_Hash = '$hash_password' where id = $user_id"; 
+		 if( mysqli_query($conn, $sql)){  
 
+			echo 200;
+			  
+		 }else{ 
+		     
+			echo 401;
+		 }
+	
+	};
+	
+ //================================================== password updating end=============================== 
+ 
+ //==================================================address type updating start=============================== 
+ 
+   	if( isset($_REQUEST['addresType']) ){  
+   	    
+   	    $address_type =  $_REQUEST['addresType'] ;
+   	     
+   	     $sql = "SELECT * FROM delivery_preference WHERE user_id = $user_id AND address_type = '$address_type' " ; //checking if address  saved
+			     if( mysqli_num_rows(mysqli_query($conn, $sql)) == 1){  
+			         
+			         $result = mysqli_query($conn, $sql) ;  
+			         $rows   = mysqli_fetch_assoc($result); 
+			         echo json_encode($rows);
+			         
+			         
+			     }else{ 
+			         
+			         echo 0;
+			     };
+			     
+   	 }
+ //==================================================address type updating end===============================
 
 
 

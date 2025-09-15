@@ -2,9 +2,6 @@
 include_once 'config.php';
 include_once 'function.php'; // for DB connection
 
-define('WAREHOUSE_API_URL', 'https://courier.shipavecorp.com/rpc');
-define('WAREHOUSE_API_KEY', 'pub_key_7520691a44bc22bd1eef47ce05bc8ab397e7ba5a93c0ff0222');
-
 // Function to push customer data to warehouse API
 function push_customer_to_warehouse($customer) {
     $data = [
@@ -44,7 +41,7 @@ function push_customer_to_warehouse($customer) {
 }
 
 // Function to pull package data from warehouse API and update local pre_alert table
-function pull_packages_from_warehouse($limit = 50) {
+function pull_packages_from_warehouse($limit = 10) {
     global $conn;
 
     $cursor = '';
@@ -61,25 +58,37 @@ function pull_packages_from_warehouse($limit = 50) {
             'Content-Type: application/json',
             'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
         ]);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
         curl_close($ch);
 
         if ($err) {
-            error_log("Warehouse API pull_packages_from_warehouse error: $err");
+            error_log("Warehouse API pull_packages_from_warehouse curl error: $err");
+            return false;
+        }
+
+        if ($http_code !== 200) {
+            error_log("Warehouse API pull_packages_from_warehouse HTTP error: $http_code, Response: $response");
             return false;
         }
 
         $result = json_decode($response, true);
-        if (!isset($result['packages'])) {
-            error_log("Warehouse API pull_packages_from_warehouse invalid response");
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Warehouse API pull_packages_from_warehouse JSON decode error: " . json_last_error_msg() . ", Response: $response");
             return false;
         }
 
+        if (!isset($result['packages'])) {
+            error_log("Warehouse API pull_packages_from_warehouse invalid response structure, missing 'packages' key. Response: " . json_encode($result));
+            return false;
+        }
+        // echo "<pre>";
+        // print_r($result['packages']);die();
         foreach ($result['packages'] as $package) {
             $trackingNumber = $package['tracking'] ?? '';
             $courierCompany = $package['courierName'] ?? '';
@@ -88,6 +97,27 @@ function pull_packages_from_warehouse($limit = 50) {
             $weight = $package['weight'] ?? 0;
             $dateCreated = $package['createdAt'] ?? '';
             $accountId = $package['accountId'] ?? '';
+
+            $trackingName = $package['trackingName'] ?? null;
+            $dimLength = $package['dimLength'] ?? null;
+            $dimWidth = $package['dimWidth'] ?? null;
+            $dimHeight = $package['dimHeight'] ?? null;
+            $shipmentStatus = $package['shipmentStatus'] ?? null;
+            $shipmentType = $package['shipmentType'] ?? null;
+            $branch = $package['branch'] ?? null;
+            $tag = $package['tag'] ?? null;
+
+            $mysqlDate = '';
+            if (!empty($dateCreated)) {
+                try {
+                    $dt = new DateTime($dateCreated);
+                    $mysqlDate = $dt->format('Y-m-d H:i:s');
+                } catch (Exception $e) {
+                    $mysqlDate = date('Y-m-d H:i:s');
+                }
+            } else {
+                $mysqlDate = date('Y-m-d H:i:s');
+            }
 
             $user_id = 0;
             if ($accountId) {
@@ -99,29 +129,61 @@ function pull_packages_from_warehouse($limit = 50) {
                 }
             }
 
-            $sqlCheck = "SELECT id FROM pre_alert WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
+            if ($user_id == 0) {
+                continue; // Skip packages without a matching user
+            }
+
+            $sqlCheck = "SELECT id FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
                 $row = mysqli_fetch_assoc($resCheck);
                 $sqlUpdate = "UPDATE pre_alert SET
-                    courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
-                    describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
-                    weight = '" . mysqli_real_escape_string($conn, $weight) . "',
-                    created_at = '" . mysqli_real_escape_string($conn, $dateCreated) . "',
-                    user_id = " . intval($user_id) . "
+                    Courier_Company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
+                    Describe_Package = '" . mysqli_real_escape_string($conn, $description) . "',
+                    Weight = " . floatval($weight) . ",
+                    tracking_name = '" . mysqli_real_escape_string($conn, $trackingName) . "',
+                    dim_length = " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
+                    dim_width = " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
+                    dim_height = " . ($dimHeight !== null ? floatval($dimHeight) : "NULL") . ",
+                    shipment_status = '" . mysqli_real_escape_string($conn, $shipmentStatus) . "',
+                    shipment_type = '" . mysqli_real_escape_string($conn, $shipmentType) . "',
+                    branch = '" . mysqli_real_escape_string($conn, $branch) . "',
+                    tag = '" . mysqli_real_escape_string($conn, $tag) . "',
+                    created_at = '" . mysqli_real_escape_string($conn, $mysqlDate) . "',
+                    User_id = " . intval($user_id) . "
                     WHERE id = " . intval($row['id']);
-                mysqli_query($conn, $sqlUpdate);
+                $updateResult = mysqli_query($conn, $sqlUpdate);
+                if (!$updateResult) {
+                    error_log("Warehouse API pull_packages_from_warehouse DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
+                } else {
+                    error_log("Warehouse API pull_packages_from_warehouse updated package: $trackingNumber");
+                }
             } else {
                 $sqlInsert = "INSERT INTO pre_alert
-                    (user_id, tracking_number, courier_company, describe_package, weight, created_at) VALUES (
+                    (User_id, Tracking_Number, Courier_Company, Merchant, Describe_Package, invoice, Weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, created_at) VALUES (
                     " . intval($user_id) . ",
                     '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     '" . mysqli_real_escape_string($conn, $courierCompany) . "',
+                    'Warehouse API',
                     '" . mysqli_real_escape_string($conn, $description) . "',
-                    '" . mysqli_real_escape_string($conn, $weight) . "',
-                    '" . mysqli_real_escape_string($conn, $dateCreated) . "'
+                    '',
+                    " . floatval($weight) . ",
+                    '" . mysqli_real_escape_string($conn, $trackingName) . "',
+                    " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
+                    " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
+                    " . ($dimHeight !== null ? floatval($dimHeight) : "NULL") . ",
+                    '" . mysqli_real_escape_string($conn, $shipmentStatus) . "',
+                    '" . mysqli_real_escape_string($conn, $shipmentType) . "',
+                    '" . mysqli_real_escape_string($conn, $branch) . "',
+                    '" . mysqli_real_escape_string($conn, $tag) . "',
+                    '" . mysqli_real_escape_string($conn, $mysqlDate) . "'
                     )";
-                mysqli_query($conn, $sqlInsert);
+                $insertResult = mysqli_query($conn, $sqlInsert);
+                if (!$insertResult) {
+                    error_log("Warehouse API pull_packages_from_warehouse DB insert error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
+                } else {
+                    error_log("Warehouse API pull_packages_from_warehouse inserted package: $trackingNumber");
+                }
             }
         }
 
@@ -183,7 +245,7 @@ function sync_customers_with_warehouse($local_customers) {
                 'first_name' => $lc['first_name'],
                 'last_name' => $lc['last_name'],
                 'account_number' => $lc['account_number'],
-                'Region' => $lc['Region'],
+                'region' => $lc['region'],
             ]);
             if ($push_result !== false) {
                 // Add pushed customer to merged list
@@ -191,7 +253,7 @@ function sync_customers_with_warehouse($local_customers) {
                     'accountId' => $lc['account_number'],
                     'firstName' => $lc['first_name'],
                     'lastName' => $lc['last_name'],
-                    'branch' => $lc['Region'],
+                    'branch' => $lc['region'],
                 ];
             }
         }

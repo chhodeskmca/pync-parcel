@@ -32,10 +32,10 @@ $base_url = $routes['base_url'];
    };
    if( isset($_REQUEST['new_password'] ) ){  
    
-         $token_hash = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['token_hash'])) ) ;  
-         $pwd = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['pwd'])) ) ;  
-	     $hash_password =  md5('pync'.$pwd); 
-		 $sql = "UPDATE  users SET Password_Hash = '$hash_password' where Token_hash = '$token_hash'"; 
+         $token_hash = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['token_hash'])) ) ;
+         $pwd = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['pwd'])) ) ;
+	     $hash_password = password_hash($pwd, PASSWORD_DEFAULT);
+		 $sql = "UPDATE  users SET password_hash = '$hash_password' where token_hash = '$token_hash'";
 		 if( mysqli_query($conn, $sql)){  
 		 
 		       $sql = "SELECT * FROM users WHERE Token_hash = '$token_hash'";  

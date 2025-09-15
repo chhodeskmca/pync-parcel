@@ -309,7 +309,7 @@
                             <td class="text-end"><?php echo $rows['Weight'] == 0 ? 'N/A' : $rows['Weight'] ; ?></td>
                             <td class="text-end"><?php echo $rows['Value_of_Package']; ?></td>
                             <td class="text-end"><?php echo $rows['Describe_Package']; ?></td>
-                            <td class="text-end"><?php echo date('d/m/y', strtotime($rows['Create_at']) ) ; ?></td>
+                            <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at']) ) ; ?></td>
                           </tr> 
 					    <?php } ; ?>
 						   

@@ -1,5 +1,8 @@
 <?php
 
+include('config.php');
+include('helpers.php');
+
 //user account id in  COOKIE
  if(isset($_COOKIE['user_id'])) {
 
@@ -7,6 +10,7 @@
       $user_id = $user->id;
 
 }
+
 
 // Check if function already exists to avoid redeclaration error
 if (!function_exists('user_account_information')) {
@@ -19,6 +23,26 @@ if (!function_exists('user_account_information')) {
     $sql = "SELECT * FROM users WHERE id = $user_id";
     $result = mysqli_query($conn,  $sql);
 	$rows  =  mysqli_fetch_assoc($result);
+
+	if (!$rows) {
+	    return array (
+	        'first_name' => '',
+	        'last_name' => '',
+	        'phone_number' => '',
+	        'email_address' => '',
+	        'date_of_birth' => '',
+	        'account_number' => '',
+	        'gender' => '',
+	        'role_as' => '',
+	        'file' => '',
+	        'address_type' => '',
+	        'parish' => '',
+	        'region' => '',
+	        'address_line1' => '',
+	        'address_line2' => '',
+	        'password_hash' => ''
+	    );
+	}
 
 	return array (
 
@@ -107,20 +131,4 @@ if (!function_exists('timeAgo')) {
             return $string ? implode(', ', $string) . ' ago' : 'just now';
     };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ?>

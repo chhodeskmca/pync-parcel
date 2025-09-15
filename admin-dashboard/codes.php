@@ -186,44 +186,52 @@
 		        $user_name     =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['user_name'])) );
 		        $account_number =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['account_number'])) ); 
 				
-				 $sql = "SELECT * FROM  users  WHERE id = $user_id" ; 
+				 $sql = "SELECT total_balance FROM balance WHERE user_id = $user_id";
 				 $result = mysqli_query($conn, $sql);
-				    if( $result ) 
-					{ 
-				   
-				       $rows = mysqli_fetch_array($result); 
-					   $total_balance =  $rows['total_balance'] + $new_credit; 
-					  
-						$sql =  "UPDATE users SET  total_balance = $total_balance WHERE id = $user_id";  
-						
-						if( mysqli_query($conn, $sql)){ 
-						
-						  $sql = "INSERT INTO balance ( user_id, Add_new_credit) VALUES ( $user_id, $new_credit )" ;
-						  if( mysqli_query($conn, $sql) ){ 
-						  
+				    if( mysqli_num_rows($result) > 0 )
+					{
+				       $rows = mysqli_fetch_array($result);
+					   $total_balance =  $rows['total_balance'] + $new_credit;
+
+						$sql =  "UPDATE balance SET total_balance = $total_balance WHERE user_id = $user_id";
+
+						if( mysqli_query($conn, $sql)){
+						$sql = "INSERT INTO balance (user_id, amount, created_at) VALUES ($user_id, $new_credit, NOW())";
+						  if( mysqli_query($conn, $sql) ){
+
 								$_SESSION['message']   =  'Credit updated successfully';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
 								die();
-							   
-						  }else{ 
-						  
+
+						  }else{
+
 							    $_SESSION['message']   =  'Something went wrong';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
 								die();
 						  }
-						}else{ 
-						
+						}else{
+
 						        $_SESSION['message']   =  'Something went wrong';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
+								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
 								die();
 						}
-				
-				    }else{ 
-					
-								$_SESSION['message']   =  'Something went wrong';
-								header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number"); 
-								die();
-				
+
+				    }else{
+
+						// If no balance record exists, insert new one
+						$sql = "INSERT INTO balance (user_id, total_balance, amount, created_at) VALUES ($user_id, $new_credit, $new_credit, NOW())";
+						if( mysqli_query($conn, $sql) ){
+
+							$_SESSION['message']   =  'Credit updated successfully';
+							header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+							die();
+
+						}else{
+
+							$_SESSION['message']   =  'Something went wrong';
+							header("location: customer-view.php?user_id=$user_id&user_name=$user_name&account_number=$account_number");
+							die();
+						}
 					};
 				
 	          

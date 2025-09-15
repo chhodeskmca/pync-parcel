@@ -147,10 +147,11 @@ html{
 	text-align: center;
 }
 .account_number {
-	font-size: 20px;
+	font-size: 19px;
 	font-weight: 700;
-	color: #000 !important;
-} 
+	color: #e87946 !important;
+	text-transform: uppercase;
+}
 .mandatory_field {
 	color: red;
 	font-size: 15px;
@@ -472,12 +473,13 @@ html{
 	font-size: 18px;
 	font-weight: 500; 
 	transition: 0.3s;
+    opacity: 0.4;
 }  
 .Account-area .nav-pills.nav-pills-no-bd li .nav-link:hover {
-	color: #E87946 !important; 
+	opacity: 1;
 }
 .Account-area .nav-pills.nav-pills-no-bd li .nav-link.active {
-	color: #E87946 !important; 
+	opacity: 1;
 }
 .Account-area ul {
 	border: 1px solid #dddd;
@@ -855,7 +857,17 @@ footer p {
 .main-header {
 	top: 0px;
 }
-
+.address_spinner {
+	/* border: 1px solid red; */
+	width: 200px;
+	height: 200px;
+	position: absolute;
+	background-image: url('../../../assets/img/spinner.gif');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 100px; 
+	display: none;
+}
  /* Typical Device Breakpoints */
  /* Extra small devices (phones, 600px and down) */
 @media only screen and (min-width: 200px) and (max-width: 767px) {

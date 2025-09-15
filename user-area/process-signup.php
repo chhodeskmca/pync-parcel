@@ -129,8 +129,8 @@
 	// };
     // ================== sign up validation checking end================
       
-    // inserting  sign up data of users  
-	$hash_password =  md5('pync'.$pwd);
+    // inserting  sign up data of users
+	$hash_password = password_hash($pwd, PASSWORD_DEFAULT);
 	$Account_Number =  'Pync-'.rand(1,100000) ; // generating account number  
     $created_at = date("Y-m-d H:i:s") ; //date("m-d-Y H:i:s");
     $sql = "INSERT INTO users (first_name, last_name, phone_number, email_address, password_hash, account_number, created_at)
