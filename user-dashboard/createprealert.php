@@ -1,10 +1,10 @@
-<?php 
+<?php
     // initialize session
-    session_start();  
-	include('../config.php'); // database connection
-	include('../function.php'); // function
-    include('../user-area/authorized-user.php'); // function
-	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name 
+    session_start();
+    include '../config.php';                             // database connection
+    include '../function.php';                           // function
+    include '../user-area/authorized-user.php';          // function
+    $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +16,7 @@
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.min.css" integrity="sha512-IXuoq1aFd2wXs4NqGskwX2Vb+I8UJ+tGJEu/Dc0zwLNKeQ7CW3Sr6v0yU3z5OQWe3eScVIkER4J9L7byrgR/fA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
@@ -57,7 +57,7 @@
               <li class="nav-item active">
                 <a href="index.php">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Dashboard</p> 
+                  <p>Dashboard</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -69,7 +69,7 @@
               <li class="nav-item">
                 <a  href="createprealert.php">
                   <img class="ctePrealt-icon" src="assets/img/create-prealert.png" alt="Prealert" />
-                  <p style="<?php echo  $current_file_name == 'createprealert.php' ? 'color: #E87946 !important' : ''; ?>">Create Pre-alert</p>
+                  <p style="<?php echo $current_file_name == 'createprealert.php' ? 'color: #E87946 !important' : ''; ?>">Create Pre-alert</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -77,7 +77,7 @@
                 <img class="calculator-icon" src="assets/img/calculator.png" alt="Calculator" />
                   <p>Cost Calculator</p>
                 </a>
-              </li> 
+              </li>
 			  <li class="nav-item">
                 <a  href="makepayment.php">
                   <img class="payment-icon" src="assets/img/payment-protection.png" alt="payment" />
@@ -163,7 +163,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -177,7 +177,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -193,7 +193,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -212,7 +212,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -229,7 +229,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -253,7 +253,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
                 </li>
               </ul>
             </div>
@@ -262,7 +262,7 @@
         </div>
         <div class="container">
           <div class="page-inner">
-		    <!-- create prealert start--> 
+		    <!-- create prealert start-->
 		     <div class="row">
               <div class="col-md-12">
                 <div class="card">
@@ -275,7 +275,7 @@
                       <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                           <label for="TrackingNumber">Tracking Number</label>
-                          <input name="Tracking_Number"
+                          <input name="tracking_number"
                             type="text" required
                             class="form-control"
                             id="TrackingNumber"
@@ -287,17 +287,17 @@
                           <input name="ValueofPackage" required autocomplete="off" id="priceField" step=".01" min="0" onkeypress="return priceCheck(this, event);"
                             type="number"
                             class="form-control floatNumberField"
-                          
+
                             placeholder="0.00"
                           />
-                        </div>					
+                        </div>
                       </div>
                       <div class="col-md-6 col-lg-4">
 					   <div class="form-group">
                           <label for="exampleFormControlSelect1"
                             >Courier Company</label
                           >
-                          <select name="Courier_Company" required
+                          <select name="courier_company" required
                             class="form-select"
                             id="exampleFormControlSelect1"
                           >
@@ -311,13 +311,13 @@
                         </div>
 						 <div class="form-group">
                           <label for="comment">Describe Package Content (eg. Sun-glasses)</label>
-                          <textarea  name="Describe_Package" class="form-control" id="comment" rows="3"></textarea>
+                          <textarea  name="describe_package" class="form-control" id="comment" rows="3"></textarea>
                         </div>
                       </div>
 					   <div class="col-md-6 col-lg-4">
                         <div class="form-group">
-                          <label for="Store">Merchant (source of purchase)</label>
-                          <input required name="Merchant"
+                          <label for="Store">merchant (source of purchase)</label>
+                          <input required name="merchant"
                             type="text"
                             class="form-control"
                             id="Store"
@@ -326,7 +326,7 @@
                         </div>
 						<div class="form-group">
 						     <h2 style="font-family:avenir-light !important; color: #495057; font-size: 14px !important; font-weight: 400;">Invoice</h2>
-						   	<div class="invoice"> 	   
+						   	<div class="invoice">
 								<div class="d-flex justify-content-center">
 								   <h3>Click here to upload invoice</h3>
 								   <p>Please upload an invoice to avoid any delays in processing at customs</p>
@@ -343,17 +343,17 @@
 								<div style="display:none" class="alert alert-warning alert-dismissible fade show" role="alert">
 								  <strong style="color: red;"></strong>
 								  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-								</div> 
-							</div>	
+								</div>
+							</div>
 						</div>
                       </div>
 					</div>
                   </div>
                   <div class="card-action d-flex">
 				    <input type="text" hidden name="Pre-alert" />
-                    <button class="btn pre_cretBtn"> 
+                    <button class="btn pre_cretBtn">
 					  <img style='display:none' class='spinner'  width="20px" src="../assets/img/spinner.gif" alt="" />
-					  Create 
+					  Create
 					 </button>
                   </div>
 				  </form>
@@ -365,11 +365,11 @@
 		    <div class="row">
 			  <div class="col-md-12">
                 <div class="card card-round">
-				<?php 
-				    $sql = "SELECT* FROM pre_alert where User_id = $user_id ORDER BY id DESC"; 
-				    if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ){ 
-				 
-			    ?> 
+				<?php
+                    $sql = "SELECT* FROM pre_alert where User_id = $user_id ORDER BY id DESC";
+                    if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
+
+                    ?>
                   <div class="card-header">
                     <div class="card-head-row card-tools-still-right justify-content-center">
                       <div style="font-size: 18px;" class="card-title UpPrealert-heading"><h2>Update Pre-alert</h2></div>
@@ -378,61 +378,61 @@
                   <div class="card-body p-0">
                     <div class="table-responsive">
                       <!-- Projects table -->
-                      <table class="table align-items-center mb-0">
+                      <table class="table  mb-0">
                         <thead class="thead-light">
                           <tr>
                             <th scope="col">Tracking Number</th>
-                            <th scope="col" class="text-center">Courier Company</th>
-                            <th scope="col" class="text-center">Store</th>
-                            <th scope="col" class="text-center">Value of Package (USD)</th>
-                            <th scope="col" class="text-center">Package Description</th>
-                            <th scope="col" class="text-center">Date Created</th>
+                            <th scope="col">Courier Company</th>
+                            <th scope="col">Store</th>
+                            <th scope="col">Value of Package (USD)</th>
+                            <th scope="col">Package Description</th>
+                            <th scope="col">Date Created</th>
                           </tr>
                         </thead>
-                        <tbody> 
-						<?php 
-						
-							if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ){ 
-							  $result = mysqli_query($conn, $sql) ;
-                              while( $rows = mysqli_fetch_array($result) ){   
-						?>
+                        <tbody style="text-align-last: center;">
+						<?php
+
+                                if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
+                                    $result = mysqli_query($conn, $sql);
+                                    while ($rows = mysqli_fetch_array($result)) {
+                                    ?>
                           <tr>
                             <td class="text-end edit-prealt">
-							   <span class="prealert-edit-btn"> 
-							    <a href="updateprealert.php?pre_alert_id=<?php echo $rows['id'] ; ?>">
-							     <img src="assets\img\edit.png" alt="edit" /> 
-							   </a>
-							  </span> 
-							    <?php echo $rows['Tracking_Number']; ?>
-							</td>
-                            <td><?php echo $rows['Courier_Company']; ?></td>
-                            <td><?php echo $rows['Merchant']; ?></td>
-                            <td><?php echo $rows['Value_of_Package']; ?></td>
-                            <td><?php echo $rows['Describe_Package']; ?></td>
-                            <td><?php echo date('d/m/y', strtotime($rows['created_at']) )  ; ?></td>
-                          </tr>  
-						  <?php 
-							  }  
-							};
-						  ?>
+                              <span class="prealert-edit-btn">
+                                <a href="updateprealert.php?pre_alert_id=<?php echo isset($rows['id']) ? $rows['id'] : ''; ?>">
+                                <img src="assets\img\edit.png" alt="edit" />
+                              </a>
+                              </span>
+                                <?php echo isset($rows['tracking_number']) ? $rows['tracking_number'] : ''; ?>
+                            </td>
+                            <td><?php echo isset($rows['courier_company']) ? $rows['courier_company'] : ''; ?></td>
+                            <td><?php echo isset($rows['merchant']) ? $rows['merchant'] : ''; ?></td>
+                            <td><?php echo isset($rows['value_of_package']) ? $rows['value_of_package'] : ''; ?></td>
+                            <td><?php echo isset($rows['describe_package']) ? $rows['describe_package'] : ''; ?></td>
+                            <td><?php echo isset($rows['created_at']) ? date('d/m/y', strtotime($rows['created_at'])) : ''; ?></td>
+                          </tr>
+						  <?php
+                              }
+                                  }
+                              ?>
 						</tbody>
                       </table>
                     </div>
                   </div>
-				<?php  
-				  }else{ 
-				  
-				   echo "
+				<?php
+                    } else {
+
+                        echo "
 					    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
 					     You have no Pre-alert. Please create Pre-alerts.
-					    </h2> 
+					    </h2>
 					 ";
-				  }				  
-				?> 
+                    }
+                ?>
                 </div>
               </div>
             </div>
-		   <!--My package end--> 
+		   <!--My package end-->
         </div>
         <footer class="footer">
           <div>
@@ -441,7 +441,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>
@@ -453,8 +453,8 @@
     <!-- Kaiadmin JS -->
       <script src="assets/js/kaiadmin.min.js"></script>
 	  	  <!-- custom JS -->
-	 <script src="assets/js/custom.js" > </script> 
-	 <script type="text/javascript"> 
+	 <script src="assets/js/custom.js" > </script>
+	 <script type="text/javascript">
 			 function priceCheck(element, event) {
 			result = (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46;
 			if (result) {
@@ -478,49 +478,49 @@
 			} else {
 				return false;
 			}
-		}; 
-		
-		   // if invoice are clecked, file input will open.		
+		};
+
+		   // if invoice are clecked, file input will open.
 		$('.invoice .d-flex:first-child').click(function() {
-		     $('#customFile1').click(); 
+		     $('#customFile1').click();
         });
-		 
+
 		function displaySelectedImage(event, elementId) {
 			const selectedImage = document.getElementById(elementId);
-			const fileInput = event.target; 
-			
+			const fileInput = event.target;
+
             const fileName  = fileInput.files[0].name;  // getting file name
             const filesize  = fileInput.files[0].size; // getting file size
-			const fileSizeMB = (filesize / (1024 * 1024)).toFixed(2); // bytes to MB  
+			const fileSizeMB = (filesize / (1024 * 1024)).toFixed(2); // bytes to MB
             const fileExtension = (fileName.split('.').pop()).toLowerCase();// Getting the file extension
-			 
+
 			if(fileExtension == "png" || fileExtension == "pdf" || fileExtension == "jpg"
-			
-			){ 
-			  if( fileSizeMB < 10  ){ 
+
+			){
+			  if( fileSizeMB < 10  ){
 			     	if (fileInput.files && fileInput.files[0]) {
 				    const reader = new FileReader();
 
 				   reader.onload = function(e) {
-					selectedImage.src = e.target.result; 
+					selectedImage.src = e.target.result;
 				};
 				reader.readAsDataURL(fileInput.files[0]);
 			}
-			    }else{ 
-				
+			    }else{
+
 				   $('.invoice .alert-warning').show();
 			       $('.invoice .alert-warning strong').text('Please upload a file Which is less than 10MB');
-			    } 
-			 }else{ 
-			 
+			    }
+			 }else{
+
 			     $('.invoice .alert-warning').show();
 			     $('.invoice .alert-warning strong').text('The file not Supported');
-				 
+
 			 }
-		};  
-		
+		};
+
 	   // Submission form will start after 1 second
-	    $(document).ready(function() {  
+	    $(document).ready(function() {
 		  $('.create_PreAlert').on('submit', function(e) {
 			 $('.spinner').css('display', 'inline');
 			e.preventDefault(); // Stop form from submitting immediately
@@ -530,19 +530,19 @@
 			  form.submit(); // Native submit after delay
 			}, 1000); // 5000ms = 5 seconds
 		  });
-		}); 
+		});
 </script>
        <?php
-           if( isset($_SESSION['message']) ){  
-	    ?>  
+           if (isset($_SESSION['message'])) {
+           ?>
         <script>
             // ===== alertify======
             alertify.set('notifier','position', 'top-right');
-		    alertify.success("<?php echo $_SESSION['message'] ; ?>");
-		</script>  
-		 <?php  
-			unset($_SESSION['message']);
-			};
-		 ?> 
+		    alertify.success("<?php echo $_SESSION['message']; ?>");
+		</script>
+		 <?php
+             unset($_SESSION['message']);
+             }
+         ?>
   </body>
 </html>

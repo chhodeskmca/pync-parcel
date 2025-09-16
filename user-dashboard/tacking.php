@@ -282,7 +282,7 @@
 				 <span class="value">shoes</span>
 			</div>  
 			 <div class="Tracking-value"> 
-				 <span class="heading">Merchant</span>
+				 <span class="heading">merchant</span>
 				 <span class="value">Alibaba</span>
 			</div>  
 	  </div>

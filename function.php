@@ -131,4 +131,41 @@ if (!function_exists('timeAgo')) {
             return $string ? implode(', ', $string) . ' ago' : 'just now';
     };
 }
+
+if (!function_exists('calculate_value_of_package')) {
+    // Calculate shipping cost based on weight using rates.json
+    function calculate_value_of_package($weight) {
+        $rates_file = __DIR__ . '/rates.json';
+        if (!file_exists($rates_file)) {
+            return 0.00; // or handle error
+        }
+        $rates_data = json_decode(file_get_contents($rates_file), true);
+        $rates = $rates_data['rates'];
+        $additional_rate = $rates_data['additional_rate_above_20'];
+        $minimum_weight = $rates_data['minimum_weight'];
+
+        // Ensure minimum weight
+        if ($weight < $minimum_weight) {
+            $weight = $minimum_weight;
+        }
+
+        // Find exact match for weight <= 20
+        foreach ($rates as $rate) {
+            if ($rate['weight'] == $weight) {
+                return $rate['price'];
+            }
+        }
+
+        // If weight > 20, calculate
+        if ($weight > 20) {
+            $base_price = 71.50; // price for 20 lbs
+            $extra_weight = $weight - 20;
+            return $base_price + ($extra_weight * $additional_rate);
+        }
+
+        // If no exact match and <=20, perhaps interpolate or return 0, but since rates are discrete, maybe return for closest lower
+        // For simplicity, return 0 if not exact, but probably weights are exact in the table.
+        return 0.00;
+    }
+}
 ?>

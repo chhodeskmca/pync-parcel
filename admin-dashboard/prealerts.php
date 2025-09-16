@@ -7,7 +7,7 @@
     include('authorized-admin.php'); 
 	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name 
 ?>
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -283,13 +283,13 @@
 					 </form>
 				 </div>
 				 <div class="sort-form">
-					 <form action="#" method="GET">
+					 <!-- <form action="#" method="GET">
 						<label for="sort">Sort by:</label>
 						<select name="sort" id="sort" onchange="this.form.submit()">
 							<option value="latest" <?php echo (!isset($_GET['sort']) || $_GET['sort'] == 'latest') ? 'selected' : ''; ?>>Latest First</option>
 							<option value="oldest" <?php echo (isset($_GET['sort']) && $_GET['sort'] == 'oldest') ? 'selected' : ''; ?>>Oldest First</option>
 						</select>
-					 </form>
+					 </form> -->
 				 </div>
 					<div class="loading" style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;"> 
 						<span style="background: #E87946;  margin-right: 10px;"  
@@ -332,12 +332,12 @@ if ($row) {
 
 						    ?>
 								<tr >
-									<td><?php echo $rows['Tracking_Number']; ?></td>
-									<td><?php echo $rows['Courier_Company']; ?></td>
-									<td><?php echo $rows['Describe_Package']; ?></td>
+									<td><?php echo $rows['tracking_number']; ?></td>
+									<td><?php echo $rows['courier_company']; ?></td>
+									<td><?php echo $rows['describe_package']; ?></td>
 									<td> <span class="customer_name"><?php echo $customer_name; ?></span> </td>
 									<td><span style="border: 1px solid #ddd;  padding: 1px;">N/A</span></td>
-									<td> <span class="item_value">$<?php echo $rows['Value_of_Package']; ?></span></td>
+									<td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
 									<td> <span class="linked" style="background:#dcfce7;color:#3c995e"> Linked</span></td>
 									<td><?php echo timeAgo($rows['created_at']); ?></td>
 									<td>
@@ -471,18 +471,18 @@ if ($row) {
 						   {  
 							  
 								$jsArray          = JSON.parse(response); 
-								$Describe_Package = $jsArray['Describe_Package'];
-								$Tracking_Number  = $jsArray['Tracking_Number'];
-								$Value_of_Package = $jsArray['Value_of_Package'];
-								$Courier_Company  = $jsArray['Courier_Company'];
-								//$Merchant       = $jsArray['Merchant'];
+								$describe_package = $jsArray['describe_package'];
+								$tracking_number  = $jsArray['tracking_number'];
+								$value_of_package = $jsArray['value_of_package'];
+								$courier_company  = $jsArray['courier_company'];
+								//$merchant       = $jsArray['merchant'];
 								$invoice          = $.trim( $jsArray['invoice'] ) ;
 								$invoice          =  $invoice == '' ? '#' : '../uploaded-file/' + $jsArray['invoice'];
 								
-								$('.Pre-Alert-details .Description').text($Describe_Package);
-								$('.Pre-Alert-details .Tracking').text($Tracking_Number);
-								$('.Pre-Alert-details .Courier').text($Courier_Company);
-								$('.Pre-Alert-details .Value').text($Value_of_Package);
+								$('.Pre-Alert-details .Description').text($describe_package);
+								$('.Pre-Alert-details .Tracking').text($tracking_number);
+								$('.Pre-Alert-details .Courier').text($courier_company);
+								$('.Pre-Alert-details .Value').text($value_of_package);
 								$('.Pre-Alert-details .Customer').text($customer_name);
 								$('.Pre-Alert-details .account_num').text($account_number); 
 								$('.Pre-Alert-details .Invoice').attr('href', $invoice);

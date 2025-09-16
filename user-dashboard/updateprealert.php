@@ -295,8 +295,8 @@
                       <div class="col-md-6 col-lg-4">
                         <div class="form-group">
                           <label for="TrackingNumber">Tracking Number</label>
-                          <input value="<?php echo $rows['Tracking_Number']; ?>"
-						    name="Tracking_Number"
+                          <input value="<?php echo $rows['tracking_number']; ?>"
+						    name="tracking_number"
                             type="text"
                             class="form-control"
                             id="TrackingNumber"
@@ -305,8 +305,8 @@
                         </div>
 						<div class="form-group">
                           <label for="value">Value of Package (USD)</label>
-                          <input value="<?php echo $rows['Value_of_Package']; ?>"
-						    name="Value_of_Package"
+                          <input value="<?php echo $rows['value_of_package']; ?>"
+						    name="value_of_package"
                             type="number"
                             class="form-control"
                             id="value"
@@ -317,24 +317,24 @@
                       <div class="col-md-6 col-lg-4">
 					   <div class="form-group">
                           <label for="exampleFormControlSelect1">Courier Company</label>
-                          <select name="Courier_Company" class="form-select" id="exampleFormControlSelect1">
-                            <option <?php echo $rows['Courier_Company'] == 'Amazon' ? 'selected' : ''  ; ?> >Amazon</option>
-                            <option <?php echo $rows['Courier_Company'] == 'DHL' ? 'selected' : ''  ; ?> >DHL</option> 
-                            <option <?php echo $rows['Courier_Company'] == 'FedEx' ? 'selected' : ''  ; ?> >FedEx</option>
-                            <option <?php echo $rows['Courier_Company'] == 'UPS'? 'selected' : ''  ; ?>>UPS</option>
-                            <option <?php echo $rows['Courier_Company'] == 'USPS'? 'selected' : '' ; ?>>USPS</option>
-                            <option <?php echo $rows['Courier_Company'] == 'Other'? 'selected' : ''  ; ?> >Other</option>
+                          <select name="courier_company" class="form-select" id="exampleFormControlSelect1">
+                            <option <?php echo $rows['courier_company'] == 'Amazon' ? 'selected' : ''  ; ?> >Amazon</option>
+                            <option <?php echo $rows['courier_company'] == 'DHL' ? 'selected' : ''  ; ?> >DHL</option> 
+                            <option <?php echo $rows['courier_company'] == 'FedEx' ? 'selected' : ''  ; ?> >FedEx</option>
+                            <option <?php echo $rows['courier_company'] == 'UPS'? 'selected' : ''  ; ?>>UPS</option>
+                            <option <?php echo $rows['courier_company'] == 'USPS'? 'selected' : '' ; ?>>USPS</option>
+                            <option <?php echo $rows['courier_company'] == 'Other'? 'selected' : ''  ; ?> >Other</option>
                           </select>
                         </div>
 						 <div class="form-group">
                           <label for="comment">Describe Package Content (eg. Sun-glasses)</label>
-                          <textarea name="Package_Content" class="form-control" id="comment" rows="3"><?php echo $rows['Describe_Package']; ?></textarea>
+                          <textarea name="describe_package" class="form-control" id="comment" rows="3"><?php echo $rows['describe_package']; ?></textarea>
                         </div>
                       </div>
 					   <div class="col-md-6 col-lg-4">
                         <div class="form-group">
-                          <label for="Store">Merchant (source of purchase)</label>
-                          <input name="Merchant" value="<?php echo $rows['Merchant']; ?>"
+                          <label for="Store">merchant (source of purchase)</label>
+                          <input name="merchant" value="<?php echo $rows['merchant']; ?>"
                             type="text"
                             class="form-control"
                             id="Store"

@@ -1,0 +1,90 @@
+{
+  "rates": [
+    {
+      "weight": 0.5,
+      "price": 5.00
+    },
+    {
+      "weight": 1,
+      "price": 8.00
+    },
+    {
+      "weight": 2,
+      "price": 12.50
+    },
+    {
+      "weight": 3,
+      "price": 17.00
+    },
+    {
+      "weight": 4,
+      "price": 20.00
+    },
+    {
+      "weight": 5,
+      "price": 23.00
+    },
+    {
+      "weight": 6,
+      "price": 26.00
+    },
+    {
+      "weight": 7,
+      "price": 29.00
+    },
+    {
+      "weight": 8,
+      "price": 32.00
+    },
+    {
+      "weight": 9,
+      "price": 35.00
+    },
+    {
+      "weight": 10,
+      "price": 38.00
+    },
+    {
+      "weight": 11,
+      "price": 41.50
+    },
+    {
+      "weight": 12,
+      "price": 45.00
+    },
+    {
+      "weight": 13,
+      "price": 48.50
+    },
+    {
+      "weight": 14,
+      "price": 52.00
+    },
+    {
+      "weight": 15,
+      "price": 55.00
+    },
+    {
+      "weight": 16,
+      "price": 58.00
+    },
+    {
+      "weight": 17,
+      "price": 61.00
+    },
+    {
+      "weight": 18,
+      "price": 64.50
+    },
+    {
+      "weight": 19,
+      "price": 68.00
+    },
+    {
+      "weight": 20,
+      "price": 71.50
+    }
+  ],
+  "additional_rate_above_20": 3.50,
+  "minimum_weight": 0.5
+}

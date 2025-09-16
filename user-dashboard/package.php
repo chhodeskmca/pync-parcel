@@ -1,10 +1,10 @@
 <?php
-// initialize session
-session_start();
-include '../config.php';  // database connection
-include '../function.php';  // function
-include '../user-area/authorized-user.php';  // function
-$current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file name
+    // initialize session
+    session_start();
+    include '../config.php';                             // database connection
+    include '../function.php';                           // function
+    include '../user-area/authorized-user.php';          // function
+    $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
 ?>
 
 <!DOCTYPE html>
@@ -266,23 +266,23 @@ $current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file na
       <div class="container">
           <div class="page-inner">
 			<?php
-      if (isset($_SESSION['message'])) {
-        $message_type = $_SESSION['message_type'] ?? 'info';
-        $message = $_SESSION['message'];
-        echo "<div class='alert alert-{$message_type} mt-3' role='alert'>{$message}</div>";
-        unset($_SESSION['message']);
-        unset($_SESSION['message_type']);
-      }
-      ?>
+                if (isset($_SESSION['message'])) {
+                    $message_type = $_SESSION['message_type'] ?? 'info';
+                    $message      = $_SESSION['message'];
+                    echo "<div class='alert alert-{$message_type} mt-3' role='alert'>{$message}</div>";
+                    unset($_SESSION['message']);
+                    unset($_SESSION['message_type']);
+                }
+            ?>
 			<!--My package start-->
 		   <div class="row">
 			  <div class="col-md-12">
                 <div class="card card-round">
 				  	<?php
-            $sql = "SELECT * FROM packages WHERE user_id = $user_id ORDER BY created_at DESC";
-            $result = mysqli_query($conn, $sql);
-            if (mysqli_num_rows($result) > 0) {
-              ?>
+                          $sql    = "SELECT * FROM packages WHERE user_id = $user_id ORDER BY created_at DESC";
+                          $result = mysqli_query($conn, $sql);
+                          if (mysqli_num_rows($result) > 0) {
+                          ?>
                   <div class="card-header">
                     <div class="card-head-row card-tools-still-right justify-content-center">
                       <div style="font-size: 18px;" class="card-title"><h1>My Packages</h1></div>
@@ -291,50 +291,68 @@ $current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file na
                   <div class="p-0 card-body">
                     <div class="table-responsive">
                       <!-- Projects table -->
-                      <table id="mypackages" class="table mb-0 align-items-center">
+                      <table id="mypackages" class="table mb-0 ">
                         <thead class="thead-light">
-                          <tr>
+                          <!-- <tr>
                             <th scope="col">Tracking</th>
                             <th scope="col" class="text-end">Tracking Name</th>
                             <th scope="col" class="text-end">Description</th>
                             <th scope="col" class="text-end">Weight</th>
-                            <!-- <th scope="col" class="text-end">Value of Package (USD)</th> -->
-                            <!-- <th scope="col" class="text-end">Status</th> -->
+                            <th scope="col" class="text-end">Value of Package (USD)</th>
                             <th scope="col" class="text-end">Created At</th>
-                          </tr>
+                          </tr> -->
+                           <tr>
+                            <th>Tracking</th>
+                            <th>Courier Company</th>
+                            <th>Store</th>
+                            <!-- <th>Name</th> -->
+                            <th>Weight</th>
+                            <!-- <th>Dimensions (L x W x H)</th> -->
+                            <!-- <th>Shipment Status</th> -->
+                            <!-- <th>Shipment Type</th> -->
+                            <!-- <th>Branch</th> -->
+                            <!-- <th>Tag</th> -->
+                            <th>Value of Package (USD)</th>
+                            <th>Package Description</th>
+                            <!-- <th>Status</th> -->
+                            <!-- <th>Inv Status</th> -->
+                            <!-- <th>Invoice</th> -->
+                            <!-- <th>Inv Total</th> -->
+                            <th>Date</th>
+                        </tr>
                         </thead>
                         <tbody style="text-align-last: center;">
 
 						 <?php
 
-              while ($rows = mysqli_fetch_array($result)) {
-                // echo "<pre>";
-                // print_r($rows);die;
-                ?>
+                                 while ($rows = mysqli_fetch_array($result)) {
+                                     // echo "<pre>";
+                                     // print_r($rows);die;
+                                 ?>
                           <tr>
                             <td><?php echo $rows['tracking_number']; ?></td>
-                            <td class="text-end"><?php echo $rows['courier_company']; ?></td>
-                            <td class="text-end"><?php echo $rows['describe_package']; ?></td>
+                            <td class="text-end"><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
+                            <td class="text-end"><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : 'N/A'; ?></td>
                             <td class="text-end"><?php echo $rows['weight'] ? $rows['weight'] . ' lbs' : 'N/A'; ?></td>
-                            <!-- <td class="text-end">$<?php echo $rows['value_of_package']; ?></td> -->
-                            <!-- <td class="text-end"><?php echo $rows['status']; ?></td> -->
+                            <td class="text-end"><?php echo $rows['value_of_package'] ? '$' . $rows['value_of_package'] . ' ' : '$0'; ?></td>
+                            <td class="text-end"><?php echo $rows['describe_package']; ?></td>
                             <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at'])); ?></td>
                           </tr>
-					    <?php } ?>
+					    <?php }?>
 
 						 </tbody>
                       </table>
                     </div>
                   </div>
 				<?php
-            } else {
-              echo "
+                    } else {
+                        echo "
 \t\t\t\t\t    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
 \t\t\t\t\t        No Package available.
 \t\t\t\t\t    </h2>
 \t\t\t\t\t ";
-            }
-            ?>
+                    }
+                ?>
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 <?php
 include_once 'config.php';
-include_once 'function.php'; // for DB connection
+include_once __DIR__ . '/function.php'; // for DB connection
 
 // Function to push customer data to warehouse API
 function push_customer_to_warehouse($customer)
@@ -119,6 +119,17 @@ function pull_packages_from_warehouse($limit = 10)
             $addedToShipmentAt  = $package['addedToShipmentAt'] ?? null;
             $shipmentSimpleId   = $package['shipmentSimpleId'] ?? null;
 
+            // Get store from pre-alert merchant
+            $store = '-';
+            if (!empty($trackingNumber) && isset($user_id) && $user_id > 0) {
+                $sqlPreAlert = "SELECT Merchant FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "' AND User_id = " . intval($user_id) . " LIMIT 1";
+                $resPreAlert = mysqli_query($conn, $sqlPreAlert);
+                if ($resPreAlert && mysqli_num_rows($resPreAlert) > 0) {
+                    $rowPreAlert = mysqli_fetch_assoc($resPreAlert);
+                    $store = $rowPreAlert['Merchant'] ?? '-';
+                }
+            }
+
             $mysqlDate = '';
             if (! empty($dateCreated)) {
                 try {
@@ -170,11 +181,18 @@ function pull_packages_from_warehouse($limit = 10)
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
                 $row       = mysqli_fetch_assoc($resCheck);
+
+                // Calculate value_of_package using the function
+                include_once 'function.php';
+                $value_of_package = calculate_value_of_package(floatval($weight));
+
                 $sqlUpdate = "UPDATE packages SET
                     tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
                     describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
                     weight = " . floatval($weight) . ",
+                    value_of_package = " . floatval($value_of_package) . ",
+                    store = '" . mysqli_real_escape_string($conn, $store) . "',
                     tracking_name = '" . mysqli_real_escape_string($conn, $trackingName) . "',
                     dim_length = " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
                     dim_width = " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
@@ -199,13 +217,19 @@ function pull_packages_from_warehouse($limit = 10)
                     error_log("Warehouse API pull_packages_from_warehouse updated package: $trackingNumber");
                 }
             } else {
+                // Calculate value_of_package using the function
+                include_once 'function.php';
+                $value_of_package = calculate_value_of_package(floatval($weight));
+
                 $sqlInsert = "INSERT INTO packages
-                    (user_id, tracking_number, courier_company, describe_package, weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, courier_id, courier_customer_id, added_to_shipment_at, shipment_simple_id, warehouse_package_id, created_at, shipment_id) VALUES (
+                    (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, courier_id, courier_customer_id, added_to_shipment_at, shipment_simple_id, warehouse_package_id, created_at, shipment_id) VALUES (
                     " . intval($user_id) . ",
                     '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     '" . mysqli_real_escape_string($conn, $courierCompany) . "',
                     '" . mysqli_real_escape_string($conn, $description) . "',
                     " . floatval($weight) . ",
+                    " . floatval($value_of_package) . ",
+                    '" . mysqli_real_escape_string($conn, $store) . "',
                     '" . mysqli_real_escape_string($conn, $trackingName) . "',
                     " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
                     " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
@@ -374,6 +398,21 @@ function process_package_created($package, $conn)
         return false; // Skip packages without a matching user
     }
 
+    // Get store from pre-alert merchant
+    $store = '-';
+    if (!empty($trackingNumber) && isset($user_id) && $user_id > 0) {
+        $sqlPreAlert = "SELECT Merchant FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "' AND User_id = " . intval($user_id) . " LIMIT 1";
+        $resPreAlert = mysqli_query($conn, $sqlPreAlert);
+        if ($resPreAlert && mysqli_num_rows($resPreAlert) > 0) {
+            $rowPreAlert = mysqli_fetch_assoc($resPreAlert);
+            $store = $rowPreAlert['Merchant'] ?? '-';
+        }
+    }
+
+    // Calculate value_of_package using the function
+    include_once __DIR__ . '/function.php';
+    $value_of_package = calculate_value_of_package(floatval($weight));
+
     $shipment_id_value = "NULL";
     if ($shipmentId !== null) {
         $check_sql    = "SELECT id FROM shipments WHERE shipmentSimpleId = '" . mysqli_real_escape_string($conn, $shipmentId) . "' LIMIT 1";
@@ -403,6 +442,8 @@ function process_package_created($package, $conn)
             courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
             describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
             weight = " . floatval($weight) . ",
+            value_of_package = " . floatval($value_of_package) . ",
+            store = '" . mysqli_real_escape_string($conn, $store) . "',
             tracking_name = '" . mysqli_real_escape_string($conn, $trackingName) . "',
             dim_length = " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
             dim_width = " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
@@ -430,12 +471,14 @@ function process_package_created($package, $conn)
         }
     } else {
         $sqlInsert = "INSERT INTO packages
-            (user_id, tracking_number, courier_company, describe_package, weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, courier_id, courier_customer_id, added_to_shipment_at, shipment_simple_id, warehouse_package_id, created_at, shipment_id) VALUES (
+            (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, courier_id, courier_customer_id, added_to_shipment_at, shipment_simple_id, warehouse_package_id, created_at, shipment_id) VALUES (
             " . intval($user_id) . ",
             '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
             '" . mysqli_real_escape_string($conn, $courierCompany) . "',
             '" . mysqli_real_escape_string($conn, $description) . "',
             " . floatval($weight) . ",
+            " . floatval($value_of_package) . ",
+            '" . mysqli_real_escape_string($conn, $store) . "',
             '" . mysqli_real_escape_string($conn, $trackingName) . "',
             " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
             " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",
@@ -617,10 +660,25 @@ function process_package_updated($package, $conn)
         $shipmentSimpleId   = $package['shipmentSimpleId'] ?? null;
         $warehousePackageId = $package['id'] ?? null;
 
+        // Get user_id from existing package
+        $user_id = $row['user_id'] ?? 0;
+
+        // Get store from pre-alert merchant
+        $store = '-';
+        if (!empty($trackingNumber) && $user_id > 0) {
+            $sqlPreAlert = "SELECT Merchant FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "' AND User_id = " . intval($user_id) . " LIMIT 1";
+            $resPreAlert = mysqli_query($conn, $sqlPreAlert);
+            if ($resPreAlert && mysqli_num_rows($resPreAlert) > 0) {
+                $rowPreAlert = mysqli_fetch_assoc($resPreAlert);
+                $store = $rowPreAlert['Merchant'] ?? '-';
+            }
+        }
+
         $sqlUpdate = "UPDATE packages SET
             courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
             describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
             weight = " . floatval($weight) . ",
+            store = '" . mysqli_real_escape_string($conn, $store) . "',
             tracking_name = '" . mysqli_real_escape_string($conn, $trackingName) . "',
             dim_length = " . ($dimLength !== null ? floatval($dimLength) : "NULL") . ",
             dim_width = " . ($dimWidth !== null ? floatval($dimWidth) : "NULL") . ",

@@ -455,7 +455,7 @@
 							 <span class="value"><?php echo htmlspecialchars($package['describe_package'] ?? 'N/A'); ?></span>
 						</div>
 						 <div class="Tracking-value">
-							 <span class="heading">Merchant</span>
+							 <span class="heading">merchant</span>
 							 <span class="value"><?php echo htmlspecialchars($package['merchant'] ?? 'N/A'); ?></span>
 						</div>
 						  <div class="Tracking-value">

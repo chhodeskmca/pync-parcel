@@ -8,13 +8,14 @@
     include 'authorized-admin.php';
     $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
 
-    if (!function_exists('alert')) {
-        function alert($message, $type = 'info') {
+    if (! function_exists('alert')) {
+        function alert($message, $type = 'info')
+        {
             return "<div class='alert alert-{$type} mt-3' role='alert'>{$message}</div>";
         }
     }
 
-    // Pagination parameters
+                  // Pagination parameters
     $limit  = 50; // Number of packages per page
     $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $offset = ($page - 1) * $limit;
@@ -24,7 +25,7 @@
     $total_packages = mysqli_fetch_assoc($result_count)['total'];
 
     // Load demo packages if no packages in database and demo packages enabled in .env
-    $packages_list = [];
+    $packages_list         = [];
     $demo_packages_enabled = $_ENV['DEMO_PACKAGES_ENABLED'] === 'true';
 
     // Debug: Check environment variable and total packages
@@ -101,7 +102,7 @@
                                 <p>Home</p>
                             </a>
                         </li>
-                        <li class="nav-item                                                                                                                                                                                                                        <?php echo $current_file_name == 'packages.php' ? 'active' : ''; ?>">
+                        <li class="nav-item                                                                                                                                                                                                                                                                   <?php echo $current_file_name == 'packages.php' ? 'active' : ''; ?>">
                             <a href="packages.php">
                                 <img class="package-icon" src="assets/img/package.png" alt="package" />
                                 <p style="<?php echo $current_file_name == 'packages.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
@@ -306,8 +307,8 @@
                                     <form action="#" method="GET">
                                         <label for="sort">Sort by:</label>
                                         <select name="sort" id="sort" onchange="this.form.submit()">
-                                            <option value="latest"                                                                                                                                                                                                                                                                                                                                           <?php echo ! isset($_GET['sort']) || $_GET['sort'] == 'latest' ? 'selected' : ''; ?>>Latest First</option>
-                                            <option value="oldest"                                                                                                                                                                                                                                                                                                                                           <?php echo isset($_GET['sort']) && $_GET['sort'] == 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
+                                            <option value="latest"                                                                                                                                                                                                                                                                                                                                                                                                             <?php echo ! isset($_GET['sort']) || $_GET['sort'] == 'latest' ? 'selected' : ''; ?>>Latest First</option>
+                                            <option value="oldest"                                                                                                                                                                                                                                                                                                                                                                                                             <?php echo isset($_GET['sort']) && $_GET['sort'] == 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
                                         </select>
                                     </form>
                                 <form action="pull_packages.php" method="POST" style="margin:0;">
@@ -339,9 +340,9 @@
                 $order = ($sort == 'oldest') ? 'ASC' : 'DESC';
 
                 // Check if we have database packages
-    $sql             = "SELECT * FROM packages ORDER BY created_at $order LIMIT $limit OFFSET $offset";
-    $result          = mysqli_query($conn, $sql);
-    $has_db_packages = mysqli_num_rows($result) > 0;
+                $sql             = "SELECT * FROM packages ORDER BY created_at $order LIMIT $limit OFFSET $offset";
+                $result          = mysqli_query($conn, $sql);
+                $has_db_packages = mysqli_num_rows($result) > 0;
 
                 // If no database packages, use demo packages
                 if (! $has_db_packages && ! empty($packages_list)) {
@@ -369,22 +370,22 @@
         <thead class="table-light">
             <tr>
                 <th>Tracking</th>
-                <th>Tracking Name</th>
-                <!-- <th>Courier</th> -->
-                <th>Description</th>
-                <th>Name</th>
-                <th>Weight</th>
+                <th>Courier Company</th>
+                <th>Store</th>
+                <!-- <th>Name</th> -->
+                <!-- <th>Weight</th> -->
                 <!-- <th>Dimensions (L x W x H)</th> -->
                 <!-- <th>Shipment Status</th> -->
                 <!-- <th>Shipment Type</th> -->
                 <!-- <th>Branch</th> -->
                 <!-- <th>Tag</th> -->
-                <!-- <th>Item Value</th> -->
+                <th>Value of Package (USD)</th>
+                <th>Package Description</th>
                 <!-- <th>Status</th> -->
                 <!-- <th>Inv Status</th> -->
                 <!-- <th>Invoice</th> -->
                 <!-- <th>Inv Total</th> -->
-                <th>Created at</th>
+                <th>Date</th>
                 <th>View</th>
             </tr>
         </thead>
@@ -407,16 +408,16 @@
             <tr>
                 <td><?php echo $rows['tracking_number']; ?></td>
                 <td><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
-                <!-- <td><?php echo $rows['courier_company']; ?></td> -->
-                <td><?php echo $rows['describe_package']; ?></td>
-                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
-                <td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
-                <!-- <td><?php echo ($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td> -->
+                <td><?php echo $rows['courier_company']; ?></td>
+                <!-- <td> <span class="customer_name">                                                       <?php echo $customer_name ?>  </span></td><?php echo $customer_name; ?></span> </td> -->
+                <!-- <td><?php echo $rows['weight'] ?? 'N/A'; ?></td> -->
+                <!-- <td><?php echo($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td> -->
                 <!-- <td><?php echo $rows['shipment_status'] ?? 'N/A'; ?></td> -->
                 <!-- <td><?php echo ucfirst($rows['shipment_type']) ?? 'N/A'; ?></td> -->
                 <!-- <td><?php echo $rows['branch'] ?? 'N/A'; ?></td> -->
                 <!-- <td><?php echo $rows['tag'] ?? 'N/A'; ?></td> -->
-                <!-- <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td> -->
+                <td><?php echo $rows['describe_package']; ?></td>
+                <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
                 <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
                 <!-- <td><span class="Inv-status">Open</span></td> -->
                 <!-- <td> <span class="invoice">N/A</span></td> -->
@@ -444,7 +445,7 @@
                 <td><?php echo $package['tracking']; ?></td>
                 <!-- <td><?php echo $package['courierName']; ?></td> -->
                 <td><?php echo $package['description']; ?></td>
-                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
+                <td> <span class="customer_name">                                                                                                                                                                                                                                                                                                                                       <?php echo $customer_name; ?></span> </td>
                 <td><?php echo $package['weight']; ?> lbs</td>
                 <!-- <td><?php echo $package['dimLength'] . ' x ' . $package['dimWidth'] . ' x ' . $package['dimHeight']; ?></td> -->
                 <td><?php echo $package['shipmentStatus']; ?></td>

@@ -1,6 +1,6 @@
 <?php 
     session_start();  
-    $Tracking_Number = $_REQUEST['Tracking_Number'] ;
+    $tracking_number = $_REQUEST['tracking_number'] ;
 	include('config.php'); // database connection
 	include('function.php'); // function connection
 	 error_reporting(E_ALL);
@@ -214,11 +214,11 @@
  
      if( isset($_REQUEST['Pre-alert']) ){ 
 	    
-		$Tracking_Number = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Tracking_Number'])) );
+		$tracking_number = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['tracking_number'])) );
 	    $ValueofPackage = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['ValueofPackage'])) );
-	    $Courier_Company = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Courier_Company'])) );
-	    $Describe_Package = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Describe_Package']))); 
-	    $Merchant = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Merchant']))); 
+	    $courier_company = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['courier_company'])) );
+	    $describe_package = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['describe_package']))); 
+	    $merchant = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['merchant']))); 
 	    $File = $_FILES['file']['name'] == '' ? '' : $_FILES['file']['name'] ; 
 		    
 			if(  $File != ''){
@@ -246,7 +246,7 @@
 		        $fileTmp   =   $_FILES['file']['tmp_name'];  
 			};
 				
-		 $sql = "INSERT INTO pre_alert ( User_id , Tracking_Number, Value_of_Package, Courier_Company, Merchant, Describe_Package, invoice) VALUES ( $user_id, '$Tracking_Number', $ValueofPackage, '$Courier_Company', '$Merchant', '$Describe_Package',  '$File')";
+		 $sql = "INSERT INTO pre_alert ( User_id , tracking_number, value_of_package, courier_company, merchant, describe_package, invoice) VALUES ( $user_id, '$tracking_number', $ValueofPackage, '$courier_company', '$merchant', '$describe_package',  '$File')";
 		 
 		 if( mysqli_query( $conn,  $sql )){ 
 		 
@@ -288,11 +288,11 @@
  
   if( isset($_REQUEST['updatePreAltBtn']) ){ 
   
-    $Tracking_Number = $_REQUEST['Tracking_Number'] ;
-    $Value_of_Package = $_REQUEST['Value_of_Package'] ;
-    $Courier_Company = $_REQUEST['Courier_Company'] ;
+    $tracking_number = $_REQUEST['tracking_number'] ;
+    $value_of_package = $_REQUEST['value_of_package'] ;
+    $courier_company = $_REQUEST['courier_company'] ;
     $Package_Content = $_REQUEST['Package_Content'] ;
-    $Merchant = $_REQUEST['Merchant'] ;
+    $merchant = $_REQUEST['merchant'] ;
     $Pre_alert_id = $_REQUEST['Pre_alert_id'] ;
     $old_image = ltrim($_REQUEST['old_image']) ;
 	
@@ -321,7 +321,7 @@
 		
 		};
 	
-		$sql = "UPDATE pre_alert SET Tracking_Number = '$Tracking_Number', Value_of_Package =  $Value_of_Package, Courier_Company = '$Courier_Company', Merchant = '$Merchant', Describe_Package ='$Package_Content', invoice = '$File' WHERE id = $Pre_alert_id";
+		$sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$Package_Content', invoice = '$File' WHERE id = $Pre_alert_id";
 		if( mysqli_query($conn, $sql)){ 
 		 
 		      	    if(  $_FILES['file']['name'] != ''){ 
