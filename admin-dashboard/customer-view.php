@@ -921,6 +921,8 @@
 		  $('#credit_adding').on('change', function(){ 
 		  
 		         const newCredit = parseFloat($(this).val());
+				 const currentCredit = parseFloat($('#Current_Credit').text().replace(/[^0-9.-]+/g,""));
+				 const newBalance = currentCredit + newCredit;
 			     if( newCredit < 0 ){ 
 				    
 				   var negativeValues = '-$' + Math.abs(newCredit).toFixed(2);
@@ -928,7 +930,7 @@
 				   
 				 }else{ 
 				 
-				    const positiveValues = "$"+newCredit;
+				    const positiveValues = "$"+newBalance.toFixed(2);
 					$('.new_credit').text(positiveValues);
 				 };
 		}); 
