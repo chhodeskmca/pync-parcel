@@ -21,5 +21,6 @@ return [
     'assets' => $base_url . 'assets/',
     'css' => $base_url . 'css/',
     'js' => $base_url . 'js/',
+    'webhook_package_update' => $base_url . 'warehouse_api.php?webhook=package_update',
 ];
 ?>

@@ -318,6 +318,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['webhook']) && $_GET['w
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
 
+    echo "Received webhook data: " . $input . "\n"; // Log raw input for debugging
+    echo "<pre>";
+    print_r($data); // Log parsed data for debugging
+    die();
     if (json_last_error() !== JSON_ERROR_NONE) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid JSON payload']);
@@ -347,14 +351,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['webhook']) && $_GET['w
         $dateCreated = $package['createdAt'] ?? '';
         $accountId = $package['accountId'] ?? '';
 
-        $trackingName = $package['trackingName'] ?? null;
+        $trackingName = $package['trackingName'] ?? '';
         $dimLength = $package['dimLength'] ?? null;
         $dimWidth = $package['dimWidth'] ?? null;
         $dimHeight = $package['dimHeight'] ?? null;
-        $shipmentStatus = $package['shipmentStatus'] ?? null;
-        $shipmentType = $package['shipmentType'] ?? null;
-        $branch = $package['branch'] ?? null;
-        $tag = $package['tag'] ?? null;
+        $shipmentStatus = $package['shipmentStatus'] ?? '';
+        $shipmentType = $package['shipmentType'] ?? '';
+        $branch = $package['branch'] ?? '';
+        $tag = $package['tag'] ?? '';
 
         $firstName = $package['firstName'] ?? null;
         $lastName = $package['lastName'] ?? null;
