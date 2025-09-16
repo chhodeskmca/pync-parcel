@@ -425,7 +425,7 @@
                 <td>
                     <ul class="mb-0 action-list list-unstyled">
                         <li>
-                            <a href="package-view.php">
+                            <a href="package-view.php?tracking=<?php echo $rows['tracking_number']; ?>">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
                         </li>

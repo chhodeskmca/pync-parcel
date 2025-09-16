@@ -1,11 +1,54 @@
-<?php 
+<?php
     // initialize session
-    session_start();  
+    session_start();
 	include('../config.php'); // database connection
    	include('../function.php'); // function comes from user dashboard
    	include('function.php'); // function comes from admin dashboard
-    include('authorized-admin.php'); 
-	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name 
+    include('authorized-admin.php');
+	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name
+
+    // Get tracking number from URL
+    $tracking_number = isset($_GET['tracking']) ? mysqli_real_escape_string($conn, $_GET['tracking']) : '';
+
+    // Initialize variables
+    $package = null;
+    $customer_name = 'Unknown';
+    $shipment_number = 'N/A';
+    $total_packages = 0;
+    $active_packages = 0;
+
+    if (!empty($tracking_number)) {
+        // Query package details
+        $sql = "SELECT p.*, u.first_name, u.last_name, s.shipment_number
+                FROM packages p
+                LEFT JOIN users u ON p.user_id = u.id
+                LEFT JOIN shipments s ON p.shipment_id = s.id
+                WHERE p.tracking_number = '$tracking_number'";
+        $result = mysqli_query($conn, $sql);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $package = mysqli_fetch_assoc($result);
+            $customer_name = $package['first_name'] . ' ' . $package['last_name'];
+            $shipment_number = $package['shipmentId'] ?? 'N/A';
+
+            // Get total packages in shipment
+            if ($package['shipment_id']) {
+                $sql_total = "SELECT COUNT(*) as total FROM packages WHERE shipment_id = " . $package['shipment_id'];
+                $result_total = mysqli_query($conn, $sql_total);
+                $total_packages = mysqli_fetch_assoc($result_total)['total'];
+
+                // Active packages (not delivered)
+                $sql_active = "SELECT COUNT(*) as active FROM packages WHERE shipment_id = " . $package['shipment_id'] . " AND status != 'Delivered'";
+                $result_active = mysqli_query($conn, $sql_active);
+                $active_packages = mysqli_fetch_assoc($result_active)['active'];
+            }
+        }
+    }
+
+    // If no package found, show error
+    if (!$package) {
+        echo "<div class='alert alert-danger'>Package not found.</div>";
+        exit;
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,7 +69,7 @@
     <link rel="stylesheet" href="assets/css/admin.css" />
   </head>
   <body>
-    <div class="wrapper  admin trackingdetails">
+    <div class="wrapper admin trackingdetails">
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-logo">
@@ -263,7 +306,7 @@
 						 </a>
 					     <!--<h4>Packages</h4>
 						 <h2>Computer</h2>-->
-						 <p class="Created_at">Created on <b>Jun 6, 2025, 8:27 AM</b></p>
+						 <p class="Created_at">Created on <b><?php echo date('M j, Y, g:i A', strtotime($package['created_at'])); ?></b></p>
 					  </div>
 				      <div class="col-6 setting_icon_area"> 
 					      <i data-bs-toggle="dropdown" aria-expanded="false" class="fa-solid fa-ellipsis"></i>
@@ -292,51 +335,51 @@
 					     <img src="assets/img/Packages.png" alt="box" /> 
 					   </div>
 					  <div class="Package-info"> 
-						 <div class="Tracking-value"> 
+						 <div class="Tracking-value">
 							 <span class="heading"> Courier Company</span>
-							 <span class="value"> Amazon</span>
+							 <span class="value"><?php echo htmlspecialchars($package['courier_company'] ?? 'N/A'); ?></span>
 						</div>
 
-						<div class="Tracking-value"> 
+						<div class="Tracking-value">
 							 <span class="heading">Value of Package</span>
-							 <span id="Package-value" class="value">$10.21</span>
+							 <span id="Package-value" class="value">$<?php echo number_format($package['value_of_package'] ?? 0, 2); ?></span>
 						</div>
-						<div class="Tracking-value"> 
+						<div class="Tracking-value">
 							 <span class="heading"> Package Content</span>
-							 <span class="value">shoes</span>
-						</div>  
-						 <div class="Tracking-value"> 
-							 <span class="heading">Merchant</span>
-							 <span class="value">Alibaba</span>
+							 <span class="value"><?php echo htmlspecialchars($package['describe_package'] ?? 'N/A'); ?></span>
 						</div>
-						  <div class="Tracking-value"> 
+						 <div class="Tracking-value">
+							 <span class="heading">Merchant</span>
+							 <span class="value"><?php echo htmlspecialchars($package['merchant'] ?? 'N/A'); ?></span>
+						</div>
+						  <div class="Tracking-value">
 							 <span  class="heading">Weight</span>
-							 <span id="Package-Weight" class="value">1 lbs</span>
-						</div> 
-                        <div class="Tracking-value"> 
+							 <span id="Package-Weight" class="value"><?php echo htmlspecialchars($package['weight'] ?? 'N/A'); ?> lbs</span>
+						</div>
+                        <div class="Tracking-value">
 							 <span class="heading">Charges</span>
-							 <span class="value Charges"><span> N/A</span></span>
-						</div>   						
+							 <span class="value Charges"><span><?php echo $package['invoice_total'] ? '$' . number_format($package['invoice_total'], 2) : 'N/A'; ?></span></span>
+						</div>
 				  </div>
 				</div>
 				<div class="col-md-9"> 
 				    <div class="row"> 
-						<div id="Tracking_number" class="col-md-5 "> 	
+						<div id="Tracking_number" class="col-md-5 ">
 							<h3>Tracking Number</h3>
-							<p>76rt3276i45786324</p>					
-						</div> 
+							<p><?php echo htmlspecialchars($package['tracking_number']); ?></p>
+						</div>
 						<div id="shipping" class="col-md-5">
 							<h3>On Shipment</h3>
-							<p>N/A</p>
+							<p><?php echo htmlspecialchars($shipment_number); ?></p>
 						</div>
-						<div id="Totall-Packages" class="col-md-5 "> 	
+						<div id="Totall-Packages" class="col-md-5 ">
 							<h3>Total Packages</h3>
-							<p>10</p>					
-						</div> 
-						<div id="Active-Packages" class="col-md-5 "> 	
+							<p><?php echo $total_packages; ?></p>
+						</div>
+						<div id="Active-Packages" class="col-md-5 ">
 							<h3>Active Packages</h3>
-							<p>1</p>					
-						</div> 
+							<p><?php echo $active_packages; ?></p>
+						</div>
 					     <!--Invoice-->
 						<div class="invoice"> 
 						   <h2 style="color:#222; font-family:avenir-light !important;text-align: center;margin-top: 30px;margin-bottom: 16px;"> No invoice attached </h2>
