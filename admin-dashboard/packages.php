@@ -25,10 +25,10 @@
 
     // Load demo packages if no packages in database and demo packages enabled in .env
     $packages_list = [];
-    $demo_packages_enabled = getenv('DEMO_PACKAGES_ENABLED') === 'true';
+    $demo_packages_enabled = $_ENV['DEMO_PACKAGES_ENABLED'] === 'true';
 
     // Debug: Check environment variable and total packages
-    error_log("DEMO_PACKAGES_ENABLED: " . getenv('DEMO_PACKAGES_ENABLED'));
+    error_log("DEMO_PACKAGES_ENABLED: " . $_ENV['DEMO_PACKAGES_ENABLED']);
     error_log("demo_packages_enabled: " . ($demo_packages_enabled ? 'true' : 'false'));
     error_log("total_packages: " . $total_packages);
 
@@ -368,22 +368,22 @@
     <table class="table m-auto shadow table-striped table-hover table-bordered">
         <thead class="table-light">
             <tr>
-                <th>Tracking Name</th>
                 <th>Tracking</th>
-                <th>Courier</th>
+                <th>Tracking Name</th>
+                <!-- <th>Courier</th> -->
                 <th>Description</th>
-                <th>Customer</th>
+                <th>Name</th>
                 <th>Weight</th>
                 <!-- <th>Dimensions (L x W x H)</th> -->
-                <th>Shipment Status</th>
-                <th>Shipment Type</th>
-                <th>Branch</th>
-                <th>Tag</th>
-                <th>Item Value</th>
-                <th>Status</th>
-                <th>Inv Status</th>
-                <th>Invoice</th>
-                <th>Inv Total</th>
+                <!-- <th>Shipment Status</th> -->
+                <!-- <th>Shipment Type</th> -->
+                <!-- <th>Branch</th> -->
+                <!-- <th>Tag</th> -->
+                <!-- <th>Item Value</th> -->
+                <!-- <th>Status</th> -->
+                <!-- <th>Inv Status</th> -->
+                <!-- <th>Invoice</th> -->
+                <!-- <th>Inv Total</th> -->
                 <th>Created at</th>
                 <th>View</th>
             </tr>
@@ -405,22 +405,22 @@
                             }
                         ?>
             <tr>
-                <td><?php echo ucfirst($rows['tracking_name']) ?? 'N/A'; ?></td>
                 <td><?php echo $rows['tracking_number']; ?></td>
-                <td><?php echo $rows['courier_company']; ?></td>
+                <td><?php echo ucfirst($rows['tracking_name']) ?? 'N/A'; ?></td>
+                <!-- <td><?php echo $rows['courier_company']; ?></td> -->
                 <td><?php echo $rows['describe_package']; ?></td>
                 <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
                 <td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
                 <!-- <td><?php echo ($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td> -->
-                <td><?php echo $rows['shipment_status'] ?? 'N/A'; ?></td>
-                <td><?php echo ucfirst($rows['shipment_type']) ?? 'N/A'; ?></td>
-                <td><?php echo $rows['branch'] ?? 'N/A'; ?></td>
-                <td><?php echo $rows['tag'] ?? 'N/A'; ?></td>
-                <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
-                <td> <span class="status">Undergoing Customs Clearance</span> </td>
-                <td><span class="Inv-status">Open</span></td>
-                <td> <span class="invoice">N/A</span></td>
-                <td>$10</td>
+                <!-- <td><?php echo $rows['shipment_status'] ?? 'N/A'; ?></td> -->
+                <!-- <td><?php echo ucfirst($rows['shipment_type']) ?? 'N/A'; ?></td> -->
+                <!-- <td><?php echo $rows['branch'] ?? 'N/A'; ?></td> -->
+                <!-- <td><?php echo $rows['tag'] ?? 'N/A'; ?></td> -->
+                <!-- <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td> -->
+                <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
+                <!-- <td><span class="Inv-status">Open</span></td> -->
+                <!-- <td> <span class="invoice">N/A</span></td> -->
+                <!-- <td>$10</td> -->
                 <td><?php echo timeAgo($rows['created_at']); ?></td>
                 <td>
                     <ul class="mb-0 action-list list-unstyled">
@@ -442,20 +442,20 @@
             <tr>
                 <td><?php echo $package['trackingName']; ?></td>
                 <td><?php echo $package['tracking']; ?></td>
-                <td><?php echo $package['courierName']; ?></td>
+                <!-- <td><?php echo $package['courierName']; ?></td> -->
                 <td><?php echo $package['description']; ?></td>
                 <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>
                 <td><?php echo $package['weight']; ?> lbs</td>
-                <td><?php echo $package['dimLength'] . ' x ' . $package['dimWidth'] . ' x ' . $package['dimHeight']; ?></td>
+                <!-- <td><?php echo $package['dimLength'] . ' x ' . $package['dimWidth'] . ' x ' . $package['dimHeight']; ?></td> -->
                 <td><?php echo $package['shipmentStatus']; ?></td>
                 <td><?php echo $package['shipmentType']; ?></td>
                 <td><?php echo $package['branch']; ?></td>
-                <td><?php echo $package['tag']; ?></td>
-                <td> <span class="item_value">$<?php echo rand(50, 500); ?></span></td>
-                <td> <span class="status">Undergoing Customs Clearance</span> </td>
-                <td><span class="Inv-status">Open</span></td>
-                <td> <span class="invoice">N/A</span></td>
-                <td>$<?php echo rand(10, 100); ?></td>
+                <!-- <td><?php echo $package['tag']; ?></td> -->
+                <!-- <td> <span class="item_value">$<?php echo rand(50, 500); ?></span></td> -->
+                <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
+                <!-- <td><span class="Inv-status">Open</span></td> -->
+                <!-- <td> <span class="invoice">N/A</span></td> -->
+                <!-- <td>$<?php echo rand(10, 100); ?></td> -->
                 <td><?php echo timeAgo($package['createdAt']); ?></td>
                 <td>
                     <ul class="mb-0 action-list list-unstyled">

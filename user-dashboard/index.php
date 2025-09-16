@@ -4,7 +4,38 @@
 	include('../config.php'); // database connection
 	include('../function.php'); // function
     include('../user-area/authorized-user.php'); // function
-	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name 
+	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name
+
+	// Initialize status counts
+	$status_counts = array(
+	    'Received at Warehouse' => 0,
+	    'In transit to Jamaica' => 0,
+	    'Undergoing Customs Clearance' => 0,
+	    'Ready for Delivery Instructions' => 0,
+	    'Delivered' => 0
+	);
+
+	// Query to get package counts by status for the logged-in user
+	$sql = "SELECT status, COUNT(*) as count FROM packages WHERE user_id = $user_id GROUP BY status";
+	$result = mysqli_query($conn, $sql);
+	if ($result) {
+	    while ($row = mysqli_fetch_assoc($result)) {
+	        $status = $row['status'];
+	        $count = $row['count'];
+	        // Map statuses to dashboard categories
+	        if ($status == 'Received at Origin' || $status == 'At Sorting Facility') {
+	            $status_counts['Received at Warehouse'] += $count;
+	        } elseif ($status == 'In Transit' || $status == 'Shipped') {
+	            $status_counts['In transit to Jamaica'] += $count;
+	        } elseif ($status == 'Processing at Customs') {
+	            $status_counts['Undergoing Customs Clearance'] += $count;
+	        } elseif ($status == 'Ready for Pickup' || $status == 'Out for Delivery' || $status == 'Scheduled for Delivery') {
+	            $status_counts['Ready for Delivery Instructions'] += $count;
+	        } elseif ($status == 'Delivered') {
+	            $status_counts['Delivered'] += $count;
+	        }
+	    }
+	}
 ?>
 
 <!DOCTYPE html>
@@ -272,6 +303,7 @@
               </div>
               <div class="ms-md-auto py-2 py-md-0 pre-alert-btn ">
                 <a href="createprealert.php" class="btn btn-round">Create Pre-alert</a>
+                <a href="pull_packages.php" class="btn btn-round ms-2">Pull Packages</a>
               </div>
             </div>
             <div class="row">
@@ -289,7 +321,7 @@
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                           <p class="card-category">Received at Warehouse</p>
-                          <h4 class="card-title">0</h4>
+                          <h4 class="card-title"><?php echo $status_counts['Received at Warehouse']; ?></h4>
                         </div>
                       </div>
                     </div>
@@ -310,7 +342,7 @@
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                           <p class="card-category">In transit to Jamaica</p>
-                          <h4 class="card-title">0</h4>
+                          <h4 class="card-title"><?php echo $status_counts['In transit to Jamaica']; ?></h4>
                         </div>
                       </div>
                     </div>
@@ -331,7 +363,7 @@
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                           <p class="card-category">Undergoing Customs Clearance</p>
-                          <h4 class="card-title">0</h4>
+                          <h4 class="card-title"><?php echo $status_counts['Undergoing Customs Clearance']; ?></h4>
                         </div>
                       </div>
                     </div>
@@ -352,7 +384,7 @@
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                           <p class="card-category">Ready for Delivery Instructions</p>
-                          <h4 class="card-title">0</h4>
+                          <h4 class="card-title"><?php echo $status_counts['Ready for Delivery Instructions']; ?></h4>
                         </div>
                       </div>
                     </div>
@@ -373,7 +405,7 @@
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                           <p class="card-category">Delivered</p>
-                          <h4 class="card-title">0</h4>
+                          <h4 class="card-title"><?php echo $status_counts['Delivered']; ?></h4>
                         </div>
                       </div>
                     </div>

@@ -1,10 +1,10 @@
-<?php 
-    // initialize session
-    session_start();  
-	include('../config.php'); // database connection
-	include('../function.php'); // function
-    include('../user-area/authorized-user.php'); // function
-	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name 
+<?php
+// initialize session
+session_start();
+include '../config.php';  // database connection
+include '../function.php';  // function
+include '../user-area/authorized-user.php';  // function
+$current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file name
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +15,7 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no"  name="viewport" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
@@ -56,13 +56,13 @@
               <li class="nav-item active">
                 <a  href="index.php">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Dashboard</p> 
+                  <p>Dashboard</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a  href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
-                  <p style="<?php echo  $current_file_name == 'package.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
+                  <p style="<?php echo $current_file_name == 'package.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
                 </a>
 			  </li>
               <li class="nav-item">
@@ -76,7 +76,7 @@
                 <img class="calculator-icon" src="assets/img/calculator.png" alt="Calculator" />
                   <p>Cost Calculator</p>
                 </a>
-              </li> 
+              </li>
 			  <li class="nav-item">
                 <a href="makepayment.php">
                   <img class="payment-icon" src="assets/img/payment-protection.png" alt="payment" />
@@ -165,7 +165,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -179,7 +179,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -195,7 +195,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -214,7 +214,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -231,7 +231,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -255,7 +255,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name'] ; ?></span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
                 </li>
               </ul>
             </div>
@@ -265,15 +265,24 @@
 
       <div class="container">
           <div class="page-inner">
+			<?php
+      if (isset($_SESSION['message'])) {
+        $message_type = $_SESSION['message_type'] ?? 'info';
+        $message = $_SESSION['message'];
+        echo "<div class='alert alert-{$message_type} mt-3' role='alert'>{$message}</div>";
+        unset($_SESSION['message']);
+        unset($_SESSION['message_type']);
+      }
+      ?>
 			<!--My package start-->
 		   <div class="row">
 			  <div class="col-md-12">
                 <div class="card card-round">
-				  	<?php 
-				        $sql = "SELECT* FROM pre_alert where User_id = $user_id"; 
-				        if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ){ 
-				 
-			        ?> 
+				  	<?php
+            $sql = "SELECT * FROM packages WHERE user_id = $user_id ORDER BY created_at DESC";
+            $result = mysqli_query($conn, $sql);
+            if (mysqli_num_rows($result) > 0) {
+              ?>
                   <div class="card-header">
                     <div class="card-head-row card-tools-still-right justify-content-center">
                       <div style="font-size: 18px;" class="card-title"><h1>My Packages</h1></div>
@@ -285,52 +294,51 @@
                       <table id="mypackages" class="table mb-0 align-items-center">
                         <thead class="thead-light">
                           <tr>
-                            <th scope="col">Tracking Number</th>
-                            <th scope="col" class="text-end">Courier Company</th>
-                            <th scope="col" class="text-end">Store</th>
+                            <th scope="col">Tracking</th>
+                            <th scope="col" class="text-end">Tracking Name</th>
+                            <th scope="col" class="text-end">Description</th>
                             <th scope="col" class="text-end">Weight</th>
-                            <th scope="col" class="text-end">Value of Package (USD)</th>
-                            <th scope="col" class="text-end">Package Description</th>
-                            <th scope="col" class="text-end">Date</th>
+                            <!-- <th scope="col" class="text-end">Value of Package (USD)</th> -->
+                            <!-- <th scope="col" class="text-end">Status</th> -->
+                            <th scope="col" class="text-end">Created At</th>
                           </tr>
                         </thead>
-                        <tbody>
-						 <?php 
-							
-							  $result = mysqli_query($conn, $sql) ;
-                              while( $rows = mysqli_fetch_array($result) ){ 	
-                                  
-                                  
-						?>
+                        <tbody style="text-align-last: center;">
+
+						 <?php
+
+              while ($rows = mysqli_fetch_array($result)) {
+                // echo "<pre>";
+                // print_r($rows);die;
+                ?>
                           <tr>
-                            <td class="text-end"><?php echo $rows['Tracking_Number']; ?></td>
-                            <td class="text-end"><?php echo $rows['Courier_Company']; ?></td>
-                            <td class="text-end"><?php echo $rows['Merchant']; ?></td>
-                            <td class="text-end"><?php echo $rows['Weight'] == 0 ? 'N/A' : $rows['Weight'] ; ?></td>
-                            <td class="text-end"><?php echo $rows['Value_of_Package']; ?></td>
-                            <td class="text-end"><?php echo $rows['Describe_Package']; ?></td>
-                            <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at']) ) ; ?></td>
-                          </tr> 
-					    <?php } ; ?>
-						   
+                            <td><?php echo $rows['tracking_number']; ?></td>
+                            <td class="text-end"><?php echo $rows['courier_company']; ?></td>
+                            <td class="text-end"><?php echo $rows['describe_package']; ?></td>
+                            <td class="text-end"><?php echo $rows['weight'] ? $rows['weight'] . ' lbs' : 'N/A'; ?></td>
+                            <!-- <td class="text-end">$<?php echo $rows['value_of_package']; ?></td> -->
+                            <!-- <td class="text-end"><?php echo $rows['status']; ?></td> -->
+                            <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at'])); ?></td>
+                          </tr>
+					    <?php } ?>
+
 						 </tbody>
                       </table>
                     </div>
                   </div>
-				<?php  
-				  }else{ 
-				  
-				   echo "
-					    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
-					        No Package available.
-					    </h2> 
-					 ";
-				  }				  
-				?> 
+				<?php
+            } else {
+              echo "
+\t\t\t\t\t    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
+\t\t\t\t\t        No Package available.
+\t\t\t\t\t    </h2>
+\t\t\t\t\t ";
+            }
+            ?>
                 </div>
               </div>
             </div>
-           <!--My package end--> 
+           <!--My package end-->
         </div>
         <footer class="footer">
           <div>
@@ -339,7 +347,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>
@@ -347,7 +355,7 @@
     <!-- jQuery Scrollbar -->
     <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <!-- Kaiadmin JS -->
-     <script src="assets/js/kaiadmin.min.js"></script> 
+     <script src="assets/js/kaiadmin.min.js"></script>
 	  <!-- custom JS -->
 	 <script src="assets/js/custom.js" > </script>
   </body>

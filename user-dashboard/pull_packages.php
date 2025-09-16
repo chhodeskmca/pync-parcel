@@ -10,5 +10,6 @@ if (pull_packages_from_warehouse()) {
     $_SESSION['message_type'] = "error";
 }
 
-header("Location: packages.php");
+header("Location: package.php");
 exit;
+?>

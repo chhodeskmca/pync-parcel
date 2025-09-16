@@ -142,7 +142,7 @@ if (mysqli_query($conn, $sql)) {
 
         $routes = include __DIR__ . '/../routes/web.php';
 
-        $redirect_url = IS_PRODUCTION ? getenv('SIGNUP_REDIRECT_URL_PROD') : getenv('SIGNUP_REDIRECT_URL_DEV');
+        $redirect_url = IS_PRODUCTION ? $_ENV['SIGNUP_REDIRECT_URL_PROD'] : $_ENV['SIGNUP_REDIRECT_URL_DEV'];
         if (! $redirect_url) {
             $redirect_url = $routes['sendmail'];
         }
