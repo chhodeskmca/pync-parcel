@@ -899,8 +899,10 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
         }
     }
 
-    // Empty the log file after processing
-    file_put_contents('webhook_log.txt', '');
+    // Clear the log file after processing
+    if (file_exists('webhook_log.txt')) {
+        unlink('webhook_log.txt');
+    }
 
     http_response_code(200);
     echo json_encode([
