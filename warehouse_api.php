@@ -3,12 +3,13 @@ include_once 'config.php';
 include_once 'function.php'; // for DB connection
 
 // Function to push customer data to warehouse API
-function push_customer_to_warehouse($customer) {
+function push_customer_to_warehouse($customer)
+{
     $data = [
         'firstName' => $customer['first_name'],
-        'lastName' => $customer['last_name'],
+        'lastName'  => $customer['last_name'],
         'accountId' => $customer['account_number'],
-        'branch' => $customer['region'],
+        'branch'    => $customer['region'],
     ];
 
     $payload = json_encode($data);
@@ -23,7 +24,7 @@ function push_customer_to_warehouse($customer) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $response = curl_exec($ch);
-    $err = curl_error($ch);
+    $err      = curl_error($ch);
     curl_close($ch);
 
     if ($err) {
@@ -41,16 +42,17 @@ function push_customer_to_warehouse($customer) {
 }
 
 // Function to pull package data from warehouse API and update local pre_alert table
-function pull_packages_from_warehouse($limit = 10) {
+function pull_packages_from_warehouse($limit = 10)
+{
     global $conn;
 
-    $cursor = '';
+    $cursor  = '';
     $hasMore = true;
 
     while ($hasMore) {
         $payload = json_encode([
             'cursor' => $cursor,
-            'limit' => $limit,
+            'limit'  => $limit,
         ]);
 
         $ch = curl_init(WAREHOUSE_API_URL . '/public.v1.PublicService/ListCourierPackages');
@@ -62,9 +64,9 @@ function pull_packages_from_warehouse($limit = 10) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        $response = curl_exec($ch);
+        $response  = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $err = curl_error($ch);
+        $err       = curl_error($ch);
         curl_close($ch);
 
         if ($err) {
@@ -83,7 +85,7 @@ function pull_packages_from_warehouse($limit = 10) {
             return false;
         }
 
-        if (!isset($result['packages'])) {
+        if (! isset($result['packages'])) {
             error_log("Warehouse API pull_packages_from_warehouse invalid response structure, missing 'packages' key. Response: " . json_encode($result));
             return false;
         }
@@ -92,35 +94,35 @@ function pull_packages_from_warehouse($limit = 10) {
         foreach ($result['packages'] as $package) {
             $trackingNumber = $package['tracking'] ?? '';
             $courierCompany = $package['courierName'] ?? '';
-            $description = $package['description'] ?? '';
-            $customerName = trim(($package['firstName'] ?? '') . ' ' . ($package['lastName'] ?? ''));
-            $weight = $package['weight'] ?? 0;
-            $dateCreated = $package['createdAt'] ?? '';
-            $accountId = $package['accountId'] ?? '';
+            $description    = $package['description'] ?? '';
+            $customerName   = trim(($package['firstName'] ?? '') . ' ' . ($package['lastName'] ?? ''));
+            $weight         = $package['weight'] ?? 0;
+            $dateCreated    = $package['createdAt'] ?? '';
+            $accountId      = $package['accountId'] ?? '';
 
-            $trackingName = $package['trackingName'] ?? null;
-            $dimLength = $package['dimLength'] ?? null;
-            $dimWidth = $package['dimWidth'] ?? null;
-            $dimHeight = $package['dimHeight'] ?? null;
+            $trackingName   = $package['trackingName'] ?? null;
+            $dimLength      = $package['dimLength'] ?? null;
+            $dimWidth       = $package['dimWidth'] ?? null;
+            $dimHeight      = $package['dimHeight'] ?? null;
             $shipmentStatus = $package['shipmentStatus'] ?? null;
-            $shipmentType = $package['shipmentType'] ?? null;
-            $branch = $package['branch'] ?? null;
-            $tag = $package['tag'] ?? null;
+            $shipmentType   = $package['shipmentType'] ?? null;
+            $branch         = $package['branch'] ?? null;
+            $tag            = $package['tag'] ?? null;
 
             // New warehouse API fields
-            $firstName = $package['firstName'] ?? null;
-            $lastName = $package['lastName'] ?? null;
-            $shipmentId = $package['shipmentId'] ?? null;
+            $firstName          = $package['firstName'] ?? null;
+            $lastName           = $package['lastName'] ?? null;
+            $shipmentId         = $package['shipmentId'] ?? null;
             $warehousePackageId = $package['id'] ?? null;
-            $courierId = $package['courierId'] ?? null;
-            $courierCustomerId = $package['courierCustomerId'] ?? null;
-            $addedToShipmentAt = $package['addedToShipmentAt'] ?? null;
-            $shipmentSimpleId = $package['shipmentSimpleId'] ?? null;
+            $courierId          = $package['courierId'] ?? null;
+            $courierCustomerId  = $package['courierCustomerId'] ?? null;
+            $addedToShipmentAt  = $package['addedToShipmentAt'] ?? null;
+            $shipmentSimpleId   = $package['shipmentSimpleId'] ?? null;
 
             $mysqlDate = '';
-            if (!empty($dateCreated)) {
+            if (! empty($dateCreated)) {
                 try {
-                    $dt = new DateTime($dateCreated);
+                    $dt        = new DateTime($dateCreated);
                     $mysqlDate = $dt->format('Y-m-d H:i:s');
                 } catch (Exception $e) {
                     $mysqlDate = date('Y-m-d H:i:s');
@@ -131,7 +133,7 @@ function pull_packages_from_warehouse($limit = 10) {
 
             $user_id = 0;
             if ($accountId) {
-            $sqlUser = "SELECT id FROM users WHERE account_number = '" . mysqli_real_escape_string($conn, $accountId) . "' LIMIT 1";
+                $sqlUser = "SELECT id FROM users WHERE account_number = '" . mysqli_real_escape_string($conn, $accountId) . "' LIMIT 1";
                 $resUser = mysqli_query($conn, $sqlUser);
                 if ($resUser && mysqli_num_rows($resUser) > 0) {
                     $rowUser = mysqli_fetch_assoc($resUser);
@@ -146,7 +148,7 @@ function pull_packages_from_warehouse($limit = 10) {
             // Check if shipmentId exists in shipments table
             $shipment_id_value = "NULL";
             if ($shipmentId !== null) {
-                $check_sql = "SELECT id FROM shipments WHERE id = " . intval($shipmentId);
+                $check_sql    = "SELECT id FROM shipments WHERE id = " . intval($shipmentId);
                 $check_result = mysqli_query($conn, $check_sql);
                 if ($check_result && mysqli_num_rows($check_result) > 0) {
                     $shipment_id_value = intval($shipmentId);
@@ -157,7 +159,7 @@ function pull_packages_from_warehouse($limit = 10) {
             $added_to_shipment_at_value = "NULL";
             if ($addedToShipmentAt !== null) {
                 try {
-                    $dt = new DateTime($addedToShipmentAt);
+                    $dt                         = new DateTime($addedToShipmentAt);
                     $added_to_shipment_at_value = "'" . $dt->format('Y-m-d H:i:s') . "'";
                 } catch (Exception $e) {
                     $added_to_shipment_at_value = "NULL";
@@ -167,7 +169,7 @@ function pull_packages_from_warehouse($limit = 10) {
             $sqlCheck = "SELECT id FROM packages WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
-                $row = mysqli_fetch_assoc($resCheck);
+                $row       = mysqli_fetch_assoc($resCheck);
                 $sqlUpdate = "UPDATE packages SET
                     tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
@@ -191,7 +193,7 @@ function pull_packages_from_warehouse($limit = 10) {
                     shipment_id = " . $shipment_id_value . "
                     WHERE id = " . intval($row['id']);
                 $updateResult = mysqli_query($conn, $sqlUpdate);
-                if (!$updateResult) {
+                if (! $updateResult) {
                     error_log("Warehouse API pull_packages_from_warehouse DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
                 } else {
                     error_log("Warehouse API pull_packages_from_warehouse updated package: $trackingNumber");
@@ -221,7 +223,7 @@ function pull_packages_from_warehouse($limit = 10) {
                     " . $shipment_id_value . "
                     )";
                 $insertResult = mysqli_query($conn, $sqlInsert);
-                if (!$insertResult) {
+                if (! $insertResult) {
                     error_log("Warehouse API pull_packages_from_warehouse DB insert error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
                 } else {
                     error_log("Warehouse API pull_packages_from_warehouse inserted package: $trackingNumber");
@@ -229,14 +231,15 @@ function pull_packages_from_warehouse($limit = 10) {
             }
         }
 
-        $cursor = $result['nextCursor'] ?? '';
-        $hasMore = !empty($cursor);
+        $cursor  = $result['nextCursor'] ?? '';
+        $hasMore = ! empty($cursor);
     }
 
     return true;
 }
 
-function fetch_customers_from_warehouse() {
+function fetch_customers_from_warehouse()
+{
     $ch = curl_init(WAREHOUSE_API_URL . '/public.v1.PublicService/ListCourierCustomers');
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
@@ -246,7 +249,7 @@ function fetch_customers_from_warehouse() {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $response = curl_exec($ch);
-    $err = curl_error($ch);
+    $err      = curl_error($ch);
     curl_close($ch);
 
     if ($err) {
@@ -255,7 +258,7 @@ function fetch_customers_from_warehouse() {
     }
 
     $result = json_decode($response, true);
-    if (!isset($result['customers'])) {
+    if (! isset($result['customers'])) {
         error_log("Warehouse API fetch_customers_from_warehouse invalid response");
         return false;
     }
@@ -264,7 +267,8 @@ function fetch_customers_from_warehouse() {
 }
 
 // New function to sync local DB customers with warehouse API customers
-function sync_customers_with_warehouse($local_customers) {
+function sync_customers_with_warehouse($local_customers)
+{
     $warehouse_customers = fetch_customers_from_warehouse();
     if ($warehouse_customers === false) {
         // API fetch failed, return local customers only
@@ -281,21 +285,21 @@ function sync_customers_with_warehouse($local_customers) {
 
     // Push missing local customers to warehouse API
     foreach ($local_customers as $lc) {
-        if (!isset($warehouse_map[$lc['account_number']])) {
+        if (! isset($warehouse_map[$lc['account_number']])) {
             // Push to warehouse API
             $push_result = push_customer_to_warehouse([
-                'first_name' => $lc['first_name'],
-                'last_name' => $lc['last_name'],
+                'first_name'     => $lc['first_name'],
+                'last_name'      => $lc['last_name'],
                 'account_number' => $lc['account_number'],
-                'region' => $lc['region'],
+                'region'         => $lc['region'],
             ]);
             if ($push_result !== false) {
                 // Add pushed customer to merged list
                 $merged_customers[] = [
                     'accountId' => $lc['account_number'],
                     'firstName' => $lc['first_name'],
-                    'lastName' => $lc['last_name'],
-                    'branch' => $lc['region'],
+                    'lastName'  => $lc['last_name'],
+                    'branch'    => $lc['region'],
                 ];
             }
         }
@@ -304,7 +308,7 @@ function sync_customers_with_warehouse($local_customers) {
     // Add warehouse customers not in local DB to merged list
     $local_account_numbers = array_column($local_customers, 'account_number');
     foreach ($warehouse_customers as $wc) {
-        if (!in_array($wc['accountId'], $local_account_numbers)) {
+        if (! in_array($wc['accountId'], $local_account_numbers)) {
             $merged_customers[] = $wc;
         }
     }
@@ -491,23 +495,22 @@ function sync_customers_with_warehouse($local_customers) {
 //     exit;
 // }
 
-
-
-
 if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
-    $data = file_get_contents("php://input"); // get raw POST data
+    $logFile = __DIR__ . "/webhook_log.txt";
 
-    // If it's JSON:
-    $payload = json_decode($data, true);
+    // Capture request info
+    $method  = $_SERVER['REQUEST_METHOD'];
+    $headers = getallheaders();
+    $body    = file_get_contents("php://input");
 
-    // Log or process event
-    file_put_contents("webhook_log.txt", date('c') . " - " . print_r($payload, true) . "\n", FILE_APPEND);
+    // Log full request
+    file_put_contents($logFile,
+        date('c') . " - METHOD: $method\n" .
+        "HEADERS: " . print_r($headers, true) .
+        "BODY: " . $body . "\n\n", FILE_APPEND
+    );
 
-    // Do your logic here: update DB, trigger notifications, etc.
-
-    http_response_code(200); // important: acknowledge receipt
-    echo json_encode(['status' => 'success']);
+    http_response_code(200);
+    echo json_encode(['status' => 'logged']);
     exit;
 }
-
-?>
