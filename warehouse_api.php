@@ -775,7 +775,11 @@ function process_shipment_deleted($shipment, $conn) {
 if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
     // Read the raw input data
     $input = file_get_contents('php://input');
+    if (empty($input) && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['data'])) {
+        $input = $_GET['data'];
+    }
     error_log("Webhook input: $input");
+    error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
 
     if (empty($input)) {
         http_response_code(400);
