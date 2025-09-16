@@ -818,9 +818,8 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
         exit;
     }
 
-    // Include DB connection
+    // Process the event
     global $conn;
-
     if (!isset($conn) || !$conn) {
         error_log("Webhook: Database connection not available");
         http_response_code(500);
@@ -878,6 +877,9 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
             $processed = process_shipment_deleted($shipment, $conn);
         }
     }
+
+    // Empty the log file after processing
+    file_put_contents('webhook_log.txt', '');
 
     if ($processed) {
         http_response_code(200);
