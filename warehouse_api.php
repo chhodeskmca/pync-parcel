@@ -318,20 +318,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['webhook']) && $_GET['w
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
 
-    echo "Received webhook data: " . $input . "\n"; // Log raw input for debugging
-    echo "<pre>";
-    print_r($data); // Log parsed data for debugging
-    die();
     if (json_last_error() !== JSON_ERROR_NONE) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid JSON payload']);
         exit;
     }
 
-    // Basic validation of required fields
-    if (!isset($data['packages']) || !is_array($data['packages'])) {
+    // Support both 'packages' array and single 'package' object in payload
+    $packages = [];
+    if (isset($data['packages']) && is_array($data['packages'])) {
+        $packages = $data['packages'];
+    } elseif (isset($data['package']) && is_array($data['package'])) {
+        $packages = [$data['package']];
+    } else {
         http_response_code(400);
-        echo json_encode(['error' => 'Missing or invalid packages data']);
+        echo json_encode(['error' => 'Missing or invalid package data']);
         exit;
     }
 
@@ -341,7 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['webhook']) && $_GET['w
     $updatedCount = 0;
     $errorCount = 0;
 
-    foreach ($data['packages'] as $package) {
+    foreach ($packages as $package) {
         // Extract package fields with fallback defaults
         $trackingNumber = $package['tracking'] ?? '';
         $courierCompany = $package['courierName'] ?? '';
