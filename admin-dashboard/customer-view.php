@@ -294,66 +294,74 @@
 				   </div>
 				    <div class="row" id="Customer_info"> 
 					 
-					   <?php 
-					         
-					     if( isset($_REQUEST['user_id']) && isset($_REQUEST['user_name']) && isset($_REQUEST['account_number'])){ 
-						 
+					   <?php
+
+					     if( isset($_REQUEST['user_id']) && isset($_REQUEST['user_name']) && isset($_REQUEST['account_number'])){
+
+							$user_id = $_REQUEST['user_id'];
+							$user_sql = "SELECT * FROM users WHERE id = $user_id";
+							$user_result = mysqli_query($conn, $user_sql);
+							$user_row = mysqli_fetch_array($user_result);
+
+							// Credit balance
+							$balance_sql = "SELECT total_balance FROM balance WHERE user_id = $user_id";
+							$balance_result = mysqli_query($conn, $balance_sql);
+							$balance = 0.00;
+							if (mysqli_num_rows($balance_result) > 0) {
+								$balance_row = mysqli_fetch_array($balance_result);
+								$balance = isset($balance_row['total_balance']) ? $balance_row['total_balance'] : 0.00;
+							}
+
+							// Outstanding balance (amount owed by customer, if credit is negative)
+							$outstanding = ($balance < 0) ? abs($balance) : 0.00;
+
+							// Packages count
+							$packages_count_sql = "SELECT COUNT(*) as count FROM packages WHERE user_id = $user_id";
+							$packages_count_result = mysqli_query($conn, $packages_count_sql);
+							$packages_count_row = mysqli_fetch_array($packages_count_result);
+							$packages_count = $packages_count_row['count'];
+
 					    ?>
-						<div  class="col-md-3 col-lg-2">	
+						<div  class="col-md-3 col-lg-2">
 							<p>Customer info</p>
-							<h3><?php echo $_REQUEST['user_name'] ; ?></h3>				
-							<h4><?php echo $_REQUEST['account_number'] ; ?></h4>	
-                            <div class="text-center"><span>unverified</span></div>							
-						</div> 
+							<h3><?php echo $_REQUEST['user_name'] ; ?></h3>
+							<h4><?php echo $_REQUEST['account_number'] ; ?></h4>
+                            <div class="text-center"><span><?php echo $user_row['status'] ?? 'unverified'; ?></span></div>
+						</div>
 						<div  class="col-md-3  col-lg-2">
 							<p class="d-flex justify-content-between"> <span>Credit Balance </span>
-							  <span data-toggle="modal" data-target="#credit_Increase_area" 
-								 class="plus-sign"> 
-							      <i  class="fa-solid fa-plus"> </i> 
-							  </span>   
+							  <span data-toggle="modal" data-target="#credit_Increase_area"
+								 class="plus-sign">
+							      <i  class="fa-solid fa-plus"> </i>
+							  </span>
 						    </p>
-							<h3>
-							   <?php
-
-									$user_id =  $_REQUEST['user_id'] ;
-									$sql     = "SELECT total_balance FROM balance WHERE user_id = $user_id ";
-									$result  =  mysqli_query($conn, $sql);
-									if (mysqli_num_rows($result) > 0) {
-										$rows    = mysqli_fetch_array($result);
-										$balance = isset($rows['total_balance']) ? $rows['total_balance'] : 0.00;
-										echo "$" . number_format($balance, 2);
-									} else {
-										echo "$0.00";
-									}
-
-								?>
-							 </h3>
-                            <div class="text-center"> 
+							<h3>$<?php echo number_format($balance, 2); ?></h3>
+                            <div class="text-center">
 							  Amount on account owed to customer
 							</div>
-							
+
 						</div>
-						<div class="col-md-3 col-lg-2"> 
-						
+						<div class="col-md-3 col-lg-2">
+
 							<p>Outstanding Balance</p>
-							<h3>$0.00</h3>				
+							<h3>$<?php echo number_format($outstanding, 2); ?></h3>
                             <div class="text-center">
-							  balance when credit applied
-							</div>			
-						</div> 
-						<div class="col-md-3  col-lg-2 "> 	
-						
+							  Amount owed by customer
+							</div>
+						</div>
+						<div class="col-md-3  col-lg-2 ">
+
 						    <p>Packages Ready</p>
-							<h3>0</h3>				
-                            <div class="text-center"> 
+							<h3><?php echo $packages_count; ?></h3>
+                            <div class="text-center">
 							  Packages available
-							</div>				
-						</div> 
-					    <div  class="col-md-3 col-lg-2"> 	
-						
+							</div>
+						</div>
+					    <div  class="col-md-3 col-lg-2">
+
 							<p>Store Location</p>
-							<h3>Portland (Knutsford)</h3>									
-						</div> 
+							<h3><?php echo $user_row['region'] ?? 'Portland (Knutsford)'; ?></h3>
+						</div>
 					<div class="package-details customerview"> 
 					   <div class="card">
 						<div class="card-body">
