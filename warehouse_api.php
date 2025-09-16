@@ -773,13 +773,6 @@ function process_shipment_deleted($shipment, $conn) {
 }
 
 if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
-    // Only accept POST requests for webhook
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['error' => 'Method not allowed. Use POST.']);
-        exit;
-    }
-
     // Log request details for debugging
     error_log("Webhook request method: " . $_SERVER['REQUEST_METHOD']);
     error_log("Webhook content-type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
@@ -792,8 +785,20 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
     error_log("Webhook raw input length: " . strlen($input));
     error_log("Webhook raw input (first 500 chars): " . substr($input, 0, 500));
 
-    // Support for form-encoded payload if JSON not sent
-    if (empty($input) && isset($_POST['payload'])) {
+    // Fallback to GET data if input is empty and method is GET
+    if (empty($input) && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['data'])) {
+        $input = $_GET['data'];
+        error_log("Using GET data as input");
+    }
+
+    // Support for payload in GET parameter
+    if (empty($input) && isset($_GET['payload'])) {
+        $input = $_GET['payload'];
+        error_log("Using GET payload as input");
+    }
+
+    // Support for form-encoded payload
+    if (empty($input) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payload'])) {
         $input = $_POST['payload'];
         error_log("Using POST payload as input");
     }
