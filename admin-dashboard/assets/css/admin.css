@@ -163,8 +163,8 @@
 }
 .panel .panel-footer .col{ line-height: 35px; }
 .pagination{ margin: 0; }
-.pagination li a{
-    color: #fff;
+.pagination li a {
+    color: black;
     background-color: transparent;
     border: 2px solid transparent;
     font-size: 18px;
