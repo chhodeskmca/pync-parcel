@@ -803,22 +803,7 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
 
     file_put_contents('webhook_log.txt', $log_entry, FILE_APPEND);
 
-    if (empty($input)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Empty payload']);
-        exit;
-    }
-
-    $data = json_decode($input, true);
-
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log("Webhook JSON error: " . json_last_error_msg());
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid JSON payload']);
-        exit;
-    }
-
-    // Process the event
+    // Process all events in the log file
     global $conn;
     if (!isset($conn) || !$conn) {
         error_log("Webhook: Database connection not available");
@@ -827,66 +812,101 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
         exit;
     }
 
-    $event = $data['event'] ?? '';
-    $processed = false;
+    $log_content = file_get_contents('webhook_log.txt');
+    $entries = explode("\n\n", trim($log_content));
+    $processed_count = 0;
+    $errors = [];
 
-    if ($event === 'package.created') {
-        $package = $data['package'] ?? [];
-        if (!empty($package)) {
-            $processed = process_package_created($package, $conn);
+    foreach ($entries as $entry) {
+        if (empty(trim($entry))) continue;
+
+        // Extract BODY from entry
+        $lines = explode("\n", $entry);
+        $body_line = '';
+        $in_body = false;
+        foreach ($lines as $line) {
+            if (strpos($line, 'BODY: ') === 0) {
+                $body_line = substr($line, 6);
+                $in_body = true;
+            } elseif ($in_body) {
+                $body_line .= "\n" . $line;
+            }
         }
-    } elseif ($event === 'package.updated') {
-        $package = $data['package'] ?? [];
-        if (!empty($package)) {
-            $processed = process_package_updated($package, $conn);
+
+        if (empty($body_line)) continue;
+
+        $data = json_decode($body_line, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errors[] = 'Invalid JSON in log entry: ' . json_last_error_msg();
+            continue;
         }
-    } elseif ($event === 'package.deleted') {
-        $package = $data['package'] ?? [];
-        if (!empty($package)) {
-            $processed = process_package_deleted($package, $conn);
+
+        $event = $data['event'] ?? '';
+        $processed = false;
+
+        if ($event === 'package.created') {
+            $package = $data['package'] ?? [];
+            if (!empty($package)) {
+                $processed = process_package_created($package, $conn);
+            }
+        } elseif ($event === 'package.updated') {
+            $package = $data['package'] ?? [];
+            if (!empty($package)) {
+                $processed = process_package_updated($package, $conn);
+            }
+        } elseif ($event === 'package.deleted') {
+            $package = $data['package'] ?? [];
+            if (!empty($package)) {
+                $processed = process_package_deleted($package, $conn);
+            }
+        } elseif ($event === 'package.added.to.shipment') {
+            $package = $data['package'] ?? [];
+            $shipment = $data['shipment'] ?? [];
+            if (!empty($package) && !empty($shipment)) {
+                $processed = process_package_added_to_shipment($package, $shipment, $conn);
+            }
+        } elseif ($event === 'package.removed.from.shipment') {
+            $package = $data['package'] ?? [];
+            if (!empty($package)) {
+                $processed = process_package_removed_from_shipment($package, $conn);
+            }
+        } elseif ($event === 'package.change.ownership') {
+            $package = $data['package'] ?? [];
+            if (!empty($package)) {
+                $processed = process_package_change_ownership($package, $conn);
+            }
+        } elseif ($event === 'shipment.created') {
+            $shipment = $data['shipment'] ?? [];
+            if (!empty($shipment)) {
+                $processed = process_shipment_created($shipment, $conn);
+            }
+        } elseif ($event === 'shipment.updated') {
+            $shipment = $data['shipment'] ?? [];
+            if (!empty($shipment)) {
+                $processed = process_shipment_updated($shipment, $conn);
+            }
+        } elseif ($event === 'shipment.deleted') {
+            $shipment = $data['shipment'] ?? [];
+            if (!empty($shipment)) {
+                $processed = process_shipment_deleted($shipment, $conn);
+            }
         }
-    } elseif ($event === 'package.added.to.shipment') {
-        $package = $data['package'] ?? [];
-        $shipment = $data['shipment'] ?? [];
-        if (!empty($package) && !empty($shipment)) {
-            $processed = process_package_added_to_shipment($package, $shipment, $conn);
-        }
-    } elseif ($event === 'package.removed.from.shipment') {
-        $package = $data['package'] ?? [];
-        if (!empty($package)) {
-            $processed = process_package_removed_from_shipment($package, $conn);
-        }
-    } elseif ($event === 'package.change.ownership') {
-        $package = $data['package'] ?? [];
-        if (!empty($package)) {
-            $processed = process_package_change_ownership($package, $conn);
-        }
-    } elseif ($event === 'shipment.created') {
-        $shipment = $data['shipment'] ?? [];
-        if (!empty($shipment)) {
-            $processed = process_shipment_created($shipment, $conn);
-        }
-    } elseif ($event === 'shipment.updated') {
-        $shipment = $data['shipment'] ?? [];
-        if (!empty($shipment)) {
-            $processed = process_shipment_updated($shipment, $conn);
-        }
-    } elseif ($event === 'shipment.deleted') {
-        $shipment = $data['shipment'] ?? [];
-        if (!empty($shipment)) {
-            $processed = process_shipment_deleted($shipment, $conn);
+
+        if ($processed) {
+            $processed_count++;
+        } else {
+            $errors[] = 'Failed to process event: ' . $event;
         }
     }
 
     // Empty the log file after processing
     file_put_contents('webhook_log.txt', '');
 
-    if ($processed) {
-        http_response_code(200);
-        echo json_encode(['status' => 'success']);
-    } else {
-        http_response_code(400);
-        echo json_encode(['error' => 'Event not processed']);
-    }
+    http_response_code(200);
+    echo json_encode([
+        'status' => 'success',
+        'processed_events' => $processed_count,
+        'errors' => $errors
+    ]);
     exit;
 }
