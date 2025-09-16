@@ -193,10 +193,10 @@
 				       $rows = mysqli_fetch_array($result);
 					   $total_balance =  $rows['total_balance'] + $new_credit;
 
-						$sql =  "UPDATE balance SET total_balance = $total_balance WHERE user_id = $user_id";
+						$sql =  "UPDATE balance SET total_balance = $total_balance, add_new_credit = $new_credit WHERE user_id = $user_id";
 
 						if( mysqli_query($conn, $sql)){
-						$sql = "INSERT INTO balance (user_id, amount, created_at) VALUES ($user_id, $new_credit, NOW())";
+						$sql = "INSERT INTO balance (user_id, add_new_credit, created_at) VALUES ($user_id, $new_credit, NOW())";
 						  if( mysqli_query($conn, $sql) ){
 
 								$_SESSION['message']   =  'Credit updated successfully';
@@ -219,7 +219,7 @@
 				    }else{
 
 						// If no balance record exists, insert new one
-						$sql = "INSERT INTO balance (user_id, total_balance, amount, created_at) VALUES ($user_id, $new_credit, $new_credit, NOW())";
+						$sql = "INSERT INTO balance (user_id, total_balance, add_new_credit, created_at) VALUES ($user_id, $new_credit, $new_credit, NOW())";
 						if( mysqli_query($conn, $sql) ){
 
 							$_SESSION['message']   =  'Credit updated successfully';

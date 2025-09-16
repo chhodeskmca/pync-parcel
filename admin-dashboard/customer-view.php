@@ -338,7 +338,7 @@
 							<p>Outstanding Balance</p>
 							<h3>$0.00</h3>				
                             <div class="text-center">
-							  00 balance when credit applied
+							  balance when credit applied
 							</div>			
 						</div> 
 						<div class="col-md-3  col-lg-2 "> 	
@@ -374,16 +374,18 @@
 									<div class="panel-heading">
 									 <p style="font-size: 30px;   font-weight: 900; font-weight: 700;color: #E87946;" class="title text-center">Packages</p>
 									</div>   
-											<?php 
-											    $user_id =  $_REQUEST['user_id'] ; 
-												$sql = "SELECT* FROM pre_alert where User_id = $user_id"; 
-												if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ){ 
-												  
-										 
-											?> 
-										<div class="loading" style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;"> 
-											<span style="background: #E87946;  margin-right: 10px;"  
-											class="spinner-grow spinner-grow-sm"  
+											<?php
+											    $user_id =  $_REQUEST['user_id'] ;
+												$sql = "SELECT * FROM packages WHERE user_id = $user_id";
+												if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ){
+
+
+
+
+											?>
+										<div class="loading" style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;">
+											<span style="background: #E87946;  margin-right: 10px;"
+											class="spinner-grow spinner-grow-sm"
 											role="status" aria-hidden="true"> </span>Loading...
 										</div>
 									  <div class="panel-body table-responsive">
@@ -391,80 +393,48 @@
 											<thead>
 												<tr>
 													<th>Tracking</th>
-													<th>Courier</th>
+													<th>Tracking Name</th>
 													<th>Description</th>
 													<th>Customer</th>
 													<th>Weight</th>
-													<th>Item Value</th>
-													<th>Status</th>
-													<th>Inv Status</th>
-													<th>Invoice</th>
-													<th>Inv Total</th>
 													<th>Created at</th>
 													<th>View</th>
 												</tr>
 											</thead>
-											<tbody> 
-										   <?php 
-											 
-												  $result = mysqli_query($conn, $sql) ;
-												  while( $rows = mysqli_fetch_array($result) ){  
-											?>
-											
-												<tr>
-													<td><?php echo $rows['Tracking_Number']; ?></td>
-													<td><?php echo $rows['Courier_Company']; ?></td>
-													<td><?php echo $rows['Describe_Package']; ?></td>
-													<td> <span class="customer_name"><?php echo $_REQUEST['user_name']; ?></span> </td>
-													<td>6 lbs</td>
-													<td> <span class="item_value"><?php echo $rows['Value_of_Package']; ?></span></td>
-													<td> <span class="status">Undergoing Customs Clearance</span> </td>
-													<td><span class="Inv-status">Open</span></td>
-													<td> <span class="invoice"> 
-													    <?php 
-													    
-														   if( ! ltrim($rows['invoice']) == ''){  
-														 
-														 ?>
+											<tbody>
+										   <?php
 
-														<a
-														 style=" 
-														    width: 50px;
-														    display: -webkit-box !important;  -webkit-line-clamp: 1;  -webkit-box-orient: vertical;overflow: hidden;padding: 0px 4px;  margin: 0px;  border: 1px solid #e3e3e34f;  color: #514f4f;  border-radius: 3px;  font-size: 12px; 
-														   "
-														 class="d-flex" 
-														 href="../uploaded-file/<?php echo $rows['invoice'] ; ?>">
-														 <?php echo $rows['invoice'] ; ?>
-														</a> 
-														<?php
-															 }else{ 
-															 echo "N/A";
-															 
-															 }
-													    ?>			  
-													</span></td>
-													<td>$10</td>
+												  $result = mysqli_query($conn, $sql) ;
+												  while( $rows = mysqli_fetch_array($result) ){
+											?>
+
+												<tr>
+													<td><?php echo $rows['tracking_number']; ?></td>
+													<td><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
+													<td><?php echo $rows['describe_package']; ?></td>
+													<td> <span class="customer_name"><?php echo $_REQUEST['user_name']; ?></span> </td>
+													<td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
 													<td><?php echo timeAgo($rows['created_at']); ?></td>
 													<td>
 														<ul class="action-list">
-															<li> 
-															  <a href="packages.php"> 
+															<li>
+															  <a href="package-view.php?tracking=<?php echo $rows['tracking_number']; ?>">
 																 <i class="fa-solid fa-eye"></i>
-															  </a> 
+															  </a>
 															</li>
 														</ul>
 													</td>
-												</tr> 
+												</tr>
 												<?php }; ?>
 											</tbody>
 										</table>
-									</div> 
-										<?php  
-										  }else{ 
-										   
+									</div>
+										<?php
+										  }else{
+
 												echo "<p class='text-center' style='font-size: 25px'>No Package available.</p>";
-										  }				  
-										?> 
+										  }
+										?>
 								</div>
 					    </div>
 						 <div class="tab-pane fade pending_payment" id="pills-profile-nobd" role="tabpanel" aria-labelledby="pills-profile-tab-nobd">
@@ -480,7 +450,7 @@
 
 									        while( $rows = mysqli_fetch_array($result)  ){
 
-											        $amount = isset($rows['amount']) ? $rows['amount'] : 0;
+											        $amount = isset($rows['add_new_credit']) ? $rows['add_new_credit'] : 0;
 													$timestamp = $rows['created_at'] ;
 													$date = new DateTime($timestamp);
 													$created_at =  $date->format("M j, Y, g:i A");
@@ -676,10 +646,23 @@
 						    <div class="credit_titile"> 
 							    <h2>Credit</h2>
                                 <p>Add credit to customer account</p>
-                             							<div class="row"> 
-							   <div class="col-6"> 
-							      <h5>Current Credit Balance</5> 
-								  <h3 id="Current_Credit">7.00</h3>
+                             							<div class="row">
+							   <div class="col-6">
+							      <h5>Current Credit Balance</5>
+								  <h3 id="Current_Credit">
+								      <?php
+										$user_id =  $_REQUEST['user_id'] ;
+										$sql     = "SELECT total_balance FROM balance WHERE user_id = $user_id ";
+										$result  =  mysqli_query($conn, $sql);
+										if (mysqli_num_rows($result) > 0) {
+											$rows    = mysqli_fetch_array($result);
+											$balance = isset($rows['total_balance']) ? $rows['total_balance'] : 0.00;
+											echo "$" . number_format($balance, 2);
+										} else {
+											echo "$0.00";
+										}
+									  ?>
+								  </h3>
 							   </div>
 							    <div class="col-6"> 
 							         <h5>New Balance</h5> 
