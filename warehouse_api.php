@@ -318,38 +318,39 @@ function sync_customers_with_warehouse($local_customers)
 
 // Webhook handler to receive package updates from warehouse system
 
-function process_package_created($package, $conn) {
+function process_package_created($package, $conn)
+{
     // Extract package fields with fallback defaults
     $trackingNumber = $package['tracking'] ?? '';
     $courierCompany = $package['courierName'] ?? '';
-    $description = $package['description'] ?? '';
-    $customerName = trim(($package['firstName'] ?? '') . ' ' . ($package['lastName'] ?? ''));
-    $weight = $package['weight'] ?? 0;
-    $dateCreated = $package['createdAt'] ?? '';
-    $accountId = $package['accountId'] ?? '';
+    $description    = $package['description'] ?? '';
+    $customerName   = trim(($package['firstName'] ?? '') . ' ' . ($package['lastName'] ?? ''));
+    $weight         = $package['weight'] ?? 0;
+    $dateCreated    = $package['createdAt'] ?? '';
+    $accountId      = $package['accountId'] ?? '';
 
-    $trackingName = $package['trackingName'] ?? '';
-    $dimLength = $package['dimLength'] ?? null;
-    $dimWidth = $package['dimWidth'] ?? null;
-    $dimHeight = $package['dimHeight'] ?? null;
+    $trackingName   = $package['trackingName'] ?? '';
+    $dimLength      = $package['dimLength'] ?? null;
+    $dimWidth       = $package['dimWidth'] ?? null;
+    $dimHeight      = $package['dimHeight'] ?? null;
     $shipmentStatus = $package['shipmentStatus'] ?? '';
-    $shipmentType = $package['shipmentType'] ?? '';
-    $branch = $package['branch'] ?? '';
-    $tag = $package['tag'] ?? '';
+    $shipmentType   = $package['shipmentType'] ?? '';
+    $branch         = $package['branch'] ?? '';
+    $tag            = $package['tag'] ?? '';
 
-    $firstName = $package['firstName'] ?? null;
-    $lastName = $package['lastName'] ?? null;
-    $shipmentId = $package['shipmentId'] ?? null;
+    $firstName          = $package['firstName'] ?? null;
+    $lastName           = $package['lastName'] ?? null;
+    $shipmentId         = $package['shipmentId'] ?? null;
     $warehousePackageId = $package['id'] ?? null;
-    $courierId = $package['courierId'] ?? null;
-    $courierCustomerId = $package['courierCustomerId'] ?? null;
-    $addedToShipmentAt = $package['addedToShipmentAt'] ?? null;
-    $shipmentSimpleId = $package['shipmentSimpleId'] ?? null;
+    $courierId          = $package['courierId'] ?? null;
+    $courierCustomerId  = $package['courierCustomerId'] ?? null;
+    $addedToShipmentAt  = $package['addedToShipmentAt'] ?? null;
+    $shipmentSimpleId   = $package['shipmentSimpleId'] ?? null;
 
     $mysqlDate = '';
-    if (!empty($dateCreated)) {
+    if (! empty($dateCreated)) {
         try {
-            $dt = new DateTime($dateCreated);
+            $dt        = new DateTime($dateCreated);
             $mysqlDate = $dt->format('Y-m-d H:i:s');
         } catch (Exception $e) {
             $mysqlDate = date('Y-m-d H:i:s');
@@ -375,17 +376,18 @@ function process_package_created($package, $conn) {
 
     $shipment_id_value = "NULL";
     if ($shipmentId !== null) {
-        $check_sql = "SELECT id FROM shipments WHERE id = '" . mysqli_real_escape_string($conn, $shipmentId) . "'";
+        $check_sql    = "SELECT id FROM shipments WHERE shipmentSimpleId = '" . mysqli_real_escape_string($conn, $shipmentId) . "' LIMIT 1";
         $check_result = mysqli_query($conn, $check_sql);
         if ($check_result && mysqli_num_rows($check_result) > 0) {
-            $shipment_id_value = "'" . mysqli_real_escape_string($conn, $shipmentId) . "'";
+            $row               = mysqli_fetch_assoc($check_result);
+            $shipment_id_value = intval($row['id']);
         }
     }
 
     $added_to_shipment_at_value = "NULL";
     if ($addedToShipmentAt !== null) {
         try {
-            $dt = new DateTime($addedToShipmentAt);
+            $dt                         = new DateTime($addedToShipmentAt);
             $added_to_shipment_at_value = "'" . $dt->format('Y-m-d H:i:s') . "'";
         } catch (Exception $e) {
             $added_to_shipment_at_value = "NULL";
@@ -395,7 +397,7 @@ function process_package_created($package, $conn) {
     $sqlCheck = "SELECT id FROM packages WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
     $resCheck = mysqli_query($conn, $sqlCheck);
     if (mysqli_num_rows($resCheck) > 0) {
-        $row = mysqli_fetch_assoc($resCheck);
+        $row       = mysqli_fetch_assoc($resCheck);
         $sqlUpdate = "UPDATE packages SET
             tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
             courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
@@ -419,7 +421,7 @@ function process_package_created($package, $conn) {
             shipment_id = " . $shipment_id_value . "
             WHERE id = " . intval($row['id']);
         $updateResult = mysqli_query($conn, $sqlUpdate);
-        if (!$updateResult) {
+        if (! $updateResult) {
             error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
             return false;
         } else {
@@ -451,7 +453,7 @@ function process_package_created($package, $conn) {
             " . $shipment_id_value . "
             )";
         $insertResult = mysqli_query($conn, $sqlInsert);
-        if (!$insertResult) {
+        if (! $insertResult) {
             error_log("Warehouse API webhook DB insert error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
             return false;
         } else {
@@ -461,27 +463,28 @@ function process_package_created($package, $conn) {
     }
 }
 
-function process_shipment_created($shipment, $conn) {
-    $shipmentNumber = $shipment['shipmentNumber'] ?? '';
-    $type = $shipment['type'] ?? '';
-    $origin = $shipment['origin'] ?? '';
-    $destination = $shipment['destination'] ?? '';
-    $description = $shipment['description'] ?? '';
-    $grossRevenue = $shipment['grossRevenue'] ?? 0;
-    $totalPackages = $shipment['totalPackages'] ?? 0;
-    $totalWeight = $shipment['totalWeight'] ?? 0;
-    $volume = $shipment['volume'] ?? 0;
-    $userId = $shipment['userId'] ?? null;
-    $departureDate = $shipment['departureDate'] ?? null;
-    $arrivalDate = $shipment['arrivalDate'] ?? null;
-    $status = $shipment['status'] ?? 'Preparing';
+function process_shipment_created($shipment, $conn)
+{
+    $shipmentNumber   = $shipment['shipmentNumber'] ?? '';
+    $type             = $shipment['type'] ?? '';
+    $origin           = $shipment['origin'] ?? '';
+    $destination      = $shipment['destination'] ?? '';
+    $description      = $shipment['description'] ?? '';
+    $grossRevenue     = $shipment['grossRevenue'] ?? 0;
+    $totalPackages    = $shipment['totalPackages'] ?? 0;
+    $totalWeight      = $shipment['totalWeight'] ?? 0;
+    $volume           = $shipment['volume'] ?? 0;
+    $userId           = $shipment['userId'] ?? null;
+    $departureDate    = $shipment['departureDate'] ?? null;
+    $arrivalDate      = $shipment['arrivalDate'] ?? null;
+    $status           = $shipment['status'] ?? 'Preparing';
     $shipmentSimpleId = $shipment['shipmentSimpleId'] ?? null;
-    $shipmentStatus = $shipment['shipmentStatus'] ?? null;
+    $shipmentStatus   = $shipment['shipmentStatus'] ?? null;
 
     $sqlCheck = "SELECT id FROM shipments WHERE shipment_number = '" . mysqli_real_escape_string($conn, $shipmentNumber) . "'";
     $resCheck = mysqli_query($conn, $sqlCheck);
     if (mysqli_num_rows($resCheck) > 0) {
-        $row = mysqli_fetch_assoc($resCheck);
+        $row       = mysqli_fetch_assoc($resCheck);
         $sqlUpdate = "UPDATE shipments SET
             type = '" . mysqli_real_escape_string($conn, $type) . "',
             origin = '" . mysqli_real_escape_string($conn, $origin) . "',
@@ -499,7 +502,7 @@ function process_shipment_created($shipment, $conn) {
             shipmentStatus = " . ($shipmentStatus !== null ? "'" . mysqli_real_escape_string($conn, $shipmentStatus) . "'" : "NULL") . "
             WHERE id = " . intval($row['id']);
         $updateResult = mysqli_query($conn, $sqlUpdate);
-        if (!$updateResult) {
+        if (! $updateResult) {
             error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for shipment: $shipmentNumber");
             return false;
         } else {
@@ -526,7 +529,7 @@ function process_shipment_created($shipment, $conn) {
             " . ($shipmentStatus !== null ? "'" . mysqli_real_escape_string($conn, $shipmentStatus) . "'" : "NULL") . "
             )";
         $insertResult = mysqli_query($conn, $sqlInsert);
-        if (!$insertResult) {
+        if (! $insertResult) {
             error_log("Warehouse API webhook DB insert error: " . mysqli_error($conn) . " for shipment: $shipmentNumber");
             return false;
         } else {
@@ -536,9 +539,10 @@ function process_shipment_created($shipment, $conn) {
     }
 }
 
-function process_package_added_to_shipment($package, $shipment, $conn) {
-    $trackingNumber = $package['tracking'] ?? '';
-    $shipmentId = $shipment['id'] ?? null;
+function process_package_added_to_shipment($package, $shipment, $conn)
+{
+    $trackingNumber    = $package['tracking'] ?? '';
+    $shipmentId        = $shipment['id'] ?? null;
     $addedToShipmentAt = $package['addedToShipmentAt'] ?? null;
 
     if (empty($trackingNumber) || $shipmentId === null) {
@@ -546,10 +550,22 @@ function process_package_added_to_shipment($package, $shipment, $conn) {
         return false;
     }
 
+    // Find the shipment DB id by shipmentSimpleId
+    $shipment_db_id  = null;
+    $sql_shipment    = "SELECT id FROM shipments WHERE shipmentSimpleId = '" . mysqli_real_escape_string($conn, $shipmentId) . "' LIMIT 1";
+    $result_shipment = mysqli_query($conn, $sql_shipment);
+    if ($result_shipment && mysqli_num_rows($result_shipment) > 0) {
+        $row_shipment   = mysqli_fetch_assoc($result_shipment);
+        $shipment_db_id = intval($row_shipment['id']);
+    } else {
+        error_log("Warehouse API webhook: Shipment not found for shipmentSimpleId: $shipmentId");
+        return false;
+    }
+
     $added_to_shipment_at_value = "NULL";
     if ($addedToShipmentAt !== null) {
         try {
-            $dt = new DateTime($addedToShipmentAt);
+            $dt                         = new DateTime($addedToShipmentAt);
             $added_to_shipment_at_value = "'" . $dt->format('Y-m-d H:i:s') . "'";
         } catch (Exception $e) {
             $added_to_shipment_at_value = "NULL";
@@ -557,11 +573,11 @@ function process_package_added_to_shipment($package, $shipment, $conn) {
     }
 
     $sqlUpdate = "UPDATE packages SET
-        shipment_id = '" . mysqli_real_escape_string($conn, $shipmentId) . "',
+        shipment_id = " . $shipment_db_id . ",
         added_to_shipment_at = " . $added_to_shipment_at_value . "
         WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
     $updateResult = mysqli_query($conn, $sqlUpdate);
-    if (!$updateResult) {
+    if (! $updateResult) {
         error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
         return false;
     } else {
@@ -570,7 +586,8 @@ function process_package_added_to_shipment($package, $shipment, $conn) {
     }
 }
 
-function process_package_updated($package, $conn) {
+function process_package_updated($package, $conn)
+{
     // Similar to created, but update if exists, else insert
     $trackingNumber = $package['tracking'] ?? '';
     if (empty($trackingNumber)) {
@@ -584,20 +601,20 @@ function process_package_updated($package, $conn) {
         // Update existing
         $row = mysqli_fetch_assoc($resCheck);
         // Extract fields
-        $courierCompany = $package['courierName'] ?? '';
-        $description = $package['description'] ?? '';
-        $weight = $package['weight'] ?? 0;
-        $trackingName = $package['trackingName'] ?? '';
-        $dimLength = $package['dimLength'] ?? null;
-        $dimWidth = $package['dimWidth'] ?? null;
-        $dimHeight = $package['dimHeight'] ?? null;
-        $shipmentStatus = $package['shipmentStatus'] ?? '';
-        $shipmentType = $package['shipmentType'] ?? '';
-        $branch = $package['branch'] ?? '';
-        $tag = $package['tag'] ?? '';
-        $courierId = $package['courierId'] ?? null;
-        $courierCustomerId = $package['courierCustomerId'] ?? null;
-        $shipmentSimpleId = $package['shipmentSimpleId'] ?? null;
+        $courierCompany     = $package['courierName'] ?? '';
+        $description        = $package['description'] ?? '';
+        $weight             = $package['weight'] ?? 0;
+        $trackingName       = $package['trackingName'] ?? '';
+        $dimLength          = $package['dimLength'] ?? null;
+        $dimWidth           = $package['dimWidth'] ?? null;
+        $dimHeight          = $package['dimHeight'] ?? null;
+        $shipmentStatus     = $package['shipmentStatus'] ?? '';
+        $shipmentType       = $package['shipmentType'] ?? '';
+        $branch             = $package['branch'] ?? '';
+        $tag                = $package['tag'] ?? '';
+        $courierId          = $package['courierId'] ?? null;
+        $courierCustomerId  = $package['courierCustomerId'] ?? null;
+        $shipmentSimpleId   = $package['shipmentSimpleId'] ?? null;
         $warehousePackageId = $package['id'] ?? null;
 
         $sqlUpdate = "UPDATE packages SET
@@ -618,7 +635,7 @@ function process_package_updated($package, $conn) {
             warehouse_package_id = " . ($warehousePackageId !== null ? "'" . mysqli_real_escape_string($conn, $warehousePackageId) . "'" : "NULL") . "
             WHERE id = " . intval($row['id']);
         $updateResult = mysqli_query($conn, $sqlUpdate);
-        if (!$updateResult) {
+        if (! $updateResult) {
             error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
             return false;
         } else {
@@ -631,16 +648,17 @@ function process_package_updated($package, $conn) {
     }
 }
 
-function process_package_deleted($package, $conn) {
+function process_package_deleted($package, $conn)
+{
     $trackingNumber = $package['tracking'] ?? '';
     if (empty($trackingNumber)) {
         error_log("Warehouse API webhook: Missing tracking for package.deleted");
         return false;
     }
 
-    $sqlUpdate = "UPDATE packages SET shipment_status = 'Deleted' WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
+    $sqlUpdate    = "UPDATE packages SET shipment_status = 'Deleted' WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
     $updateResult = mysqli_query($conn, $sqlUpdate);
-    if (!$updateResult) {
+    if (! $updateResult) {
         error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
         return false;
     } else {
@@ -649,16 +667,17 @@ function process_package_deleted($package, $conn) {
     }
 }
 
-function process_package_removed_from_shipment($package, $conn) {
+function process_package_removed_from_shipment($package, $conn)
+{
     $trackingNumber = $package['tracking'] ?? '';
     if (empty($trackingNumber)) {
         error_log("Warehouse API webhook: Missing tracking for package.removed.from.shipment");
         return false;
     }
 
-    $sqlUpdate = "UPDATE packages SET shipment_id = NULL, added_to_shipment_at = NULL WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
+    $sqlUpdate    = "UPDATE packages SET shipment_id = NULL, added_to_shipment_at = NULL WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
     $updateResult = mysqli_query($conn, $sqlUpdate);
-    if (!$updateResult) {
+    if (! $updateResult) {
         error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
         return false;
     } else {
@@ -667,9 +686,10 @@ function process_package_removed_from_shipment($package, $conn) {
     }
 }
 
-function process_package_change_ownership($package, $conn) {
+function process_package_change_ownership($package, $conn)
+{
     $trackingNumber = $package['tracking'] ?? '';
-    $accountId = $package['accountId'] ?? '';
+    $accountId      = $package['accountId'] ?? '';
     if (empty($trackingNumber) || empty($accountId)) {
         error_log("Warehouse API webhook: Missing tracking or accountId for package.change.ownership");
         return false;
@@ -688,9 +708,9 @@ function process_package_change_ownership($package, $conn) {
         return false;
     }
 
-    $sqlUpdate = "UPDATE packages SET user_id = " . intval($user_id) . " WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
+    $sqlUpdate    = "UPDATE packages SET user_id = " . intval($user_id) . " WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
     $updateResult = mysqli_query($conn, $sqlUpdate);
-    if (!$updateResult) {
+    if (! $updateResult) {
         error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for tracking: $trackingNumber");
         return false;
     } else {
@@ -699,7 +719,8 @@ function process_package_change_ownership($package, $conn) {
     }
 }
 
-function process_shipment_updated($shipment, $conn) {
+function process_shipment_updated($shipment, $conn)
+{
     // Similar to created, update if exists, else insert
     $shipmentId = $shipment['id'] ?? '';
     if (empty($shipmentId)) {
@@ -707,23 +728,23 @@ function process_shipment_updated($shipment, $conn) {
         return false;
     }
 
-    $sqlCheck = "SELECT id FROM shipments WHERE id = '" . mysqli_real_escape_string($conn, $shipmentId) . "'";
+    $sqlCheck = "SELECT id FROM shipments WHERE shipmentSimpleId = '" . mysqli_real_escape_string($conn, $shipmentId) . "' LIMIT 1";
     $resCheck = mysqli_query($conn, $sqlCheck);
     if (mysqli_num_rows($resCheck) > 0) {
         // Update existing
-        $type = $shipment['ShipmentType'] ?? $shipment['type'] ?? '';
-        $origin = $shipment['origin'] ?? '';
-        $destination = $shipment['destination'] ?? '';
-        $description = $shipment['description'] ?? '';
-        $grossRevenue = $shipment['grossRevenue'] ?? 0;
-        $totalPackages = $shipment['totalPackages'] ?? 0;
-        $totalWeight = $shipment['totalWeight'] ?? 0;
-        $volume = $shipment['volume'] ?? 0;
-        $departureDate = $shipment['departureDate'] ?? null;
-        $arrivalDate = $shipment['arrivalDate'] ?? null;
-        $status = $shipment['status'] ?? 'Preparing';
+        $type             = $shipment['ShipmentType'] ?? $shipment['type'] ?? '';
+        $origin           = $shipment['origin'] ?? '';
+        $destination      = $shipment['destination'] ?? '';
+        $description      = $shipment['description'] ?? '';
+        $grossRevenue     = $shipment['grossRevenue'] ?? 0;
+        $totalPackages    = $shipment['totalPackages'] ?? 0;
+        $totalWeight      = $shipment['totalWeight'] ?? 0;
+        $volume           = $shipment['volume'] ?? 0;
+        $departureDate    = $shipment['departureDate'] ?? null;
+        $arrivalDate      = $shipment['arrivalDate'] ?? null;
+        $status           = $shipment['status'] ?? 'Preparing';
         $shipmentSimpleId = $shipment['simpleId'] ?? $shipment['shipmentSimpleId'] ?? null;
-        $shipmentStatus = $shipment['ShipmentType'] ?? $shipment['shipmentStatus'] ?? null;
+        $shipmentStatus   = $shipment['ShipmentType'] ?? $shipment['shipmentStatus'] ?? null;
 
         $sqlUpdate = "UPDATE shipments SET
             type = '" . mysqli_real_escape_string($conn, $type) . "',
@@ -739,9 +760,9 @@ function process_shipment_updated($shipment, $conn) {
             status = '" . mysqli_real_escape_string($conn, $status) . "',
             shipmentSimpleId = " . ($shipmentSimpleId !== null ? "'" . mysqli_real_escape_string($conn, $shipmentSimpleId) . "'" : "NULL") . ",
             shipmentStatus = " . ($shipmentStatus !== null ? "'" . mysqli_real_escape_string($conn, $shipmentStatus) . "'" : "NULL") . "
-            WHERE id = '" . mysqli_real_escape_string($conn, $shipmentId) . "'";
+            WHERE shipmentSimpleId = '" . mysqli_real_escape_string($conn, $shipmentId) . "'";
         $updateResult = mysqli_query($conn, $sqlUpdate);
-        if (!$updateResult) {
+        if (! $updateResult) {
             error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for shipment: $shipmentId");
             return false;
         } else {
@@ -754,16 +775,17 @@ function process_shipment_updated($shipment, $conn) {
     }
 }
 
-function process_shipment_deleted($shipment, $conn) {
+function process_shipment_deleted($shipment, $conn)
+{
     $shipmentId = $shipment['id'] ?? '';
     if (empty($shipmentId)) {
         error_log("Warehouse API webhook: Missing id for shipment.deleted");
         return false;
     }
 
-    $sqlUpdate = "UPDATE shipments SET status = 'Deleted' WHERE id = '" . mysqli_real_escape_string($conn, $shipmentId) . "'";
+    $sqlUpdate    = "UPDATE shipments SET status = 'Deleted' WHERE shipmentSimpleId = '" . mysqli_real_escape_string($conn, $shipmentId) . "'";
     $updateResult = mysqli_query($conn, $sqlUpdate);
-    if (!$updateResult) {
+    if (! $updateResult) {
         error_log("Warehouse API webhook DB update error: " . mysqli_error($conn) . " for shipment: $shipmentId");
         return false;
     } else {
@@ -791,11 +813,11 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
         $input = $_POST['payload'];
     }
 
-    // Log the request to file
+                                        // Log the request to file
     $timestamp = date('Y-m-d\TH:i:sP'); // ISO 8601 format
-    $method = $_SERVER['REQUEST_METHOD'];
-    $headers = getallheaders(); // Get all headers
-    $body = $input;
+    $method    = $_SERVER['REQUEST_METHOD'];
+    $headers   = getallheaders(); // Get all headers
+    $body      = $input;
 
     $log_entry = $timestamp . " - METHOD: " . $method . "\n";
     $log_entry .= "HEADERS: " . print_r($headers, true) . "\n";
@@ -805,35 +827,39 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
 
     // Process all events in the log file
     global $conn;
-    if (!isset($conn) || !$conn) {
+    if (! isset($conn) || ! $conn) {
         error_log("Webhook: Database connection not available");
         http_response_code(500);
         echo json_encode(['error' => 'Database connection failed']);
         exit;
     }
 
-    $log_content = file_get_contents('webhook_log.txt');
-    $entries = explode("\n\n", trim($log_content));
+    $log_content     = file_get_contents('webhook_log.txt');
+    $entries         = explode("\n\n", trim($log_content));
     $processed_count = 0;
-    $errors = [];
+    $errors          = [];
 
     foreach ($entries as $entry) {
-        if (empty(trim($entry))) continue;
+        if (empty(trim($entry))) {
+            continue;
+        }
 
         // Extract BODY from entry
-        $lines = explode("\n", $entry);
+        $lines     = explode("\n", $entry);
         $body_line = '';
-        $in_body = false;
+        $in_body   = false;
         foreach ($lines as $line) {
             if (strpos($line, 'BODY: ') === 0) {
                 $body_line = substr($line, 6);
-                $in_body = true;
+                $in_body   = true;
             } elseif ($in_body) {
                 $body_line .= "\n" . $line;
             }
         }
 
-        if (empty($body_line)) continue;
+        if (empty($body_line)) {
+            continue;
+        }
 
         $data = json_decode($body_line, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -841,53 +867,53 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
             continue;
         }
 
-        $event = $data['event'] ?? '';
+        $event     = $data['event'] ?? '';
         $processed = false;
 
         if ($event === 'package.created') {
             $package = $data['package'] ?? [];
-            if (!empty($package)) {
+            if (! empty($package)) {
                 $processed = process_package_created($package, $conn);
             }
         } elseif ($event === 'package.updated') {
             $package = $data['package'] ?? [];
-            if (!empty($package)) {
+            if (! empty($package)) {
                 $processed = process_package_updated($package, $conn);
             }
         } elseif ($event === 'package.deleted') {
             $package = $data['package'] ?? [];
-            if (!empty($package)) {
+            if (! empty($package)) {
                 $processed = process_package_deleted($package, $conn);
             }
         } elseif ($event === 'package.added.to.shipment') {
-            $package = $data['package'] ?? [];
+            $package  = $data['package'] ?? [];
             $shipment = $data['shipment'] ?? [];
-            if (!empty($package) && !empty($shipment)) {
+            if (! empty($package) && ! empty($shipment)) {
                 $processed = process_package_added_to_shipment($package, $shipment, $conn);
             }
         } elseif ($event === 'package.removed.from.shipment') {
             $package = $data['package'] ?? [];
-            if (!empty($package)) {
+            if (! empty($package)) {
                 $processed = process_package_removed_from_shipment($package, $conn);
             }
         } elseif ($event === 'package.change.ownership') {
             $package = $data['package'] ?? [];
-            if (!empty($package)) {
+            if (! empty($package)) {
                 $processed = process_package_change_ownership($package, $conn);
             }
         } elseif ($event === 'shipment.created') {
             $shipment = $data['shipment'] ?? [];
-            if (!empty($shipment)) {
+            if (! empty($shipment)) {
                 $processed = process_shipment_created($shipment, $conn);
             }
         } elseif ($event === 'shipment.updated') {
             $shipment = $data['shipment'] ?? [];
-            if (!empty($shipment)) {
+            if (! empty($shipment)) {
                 $processed = process_shipment_updated($shipment, $conn);
             }
         } elseif ($event === 'shipment.deleted') {
             $shipment = $data['shipment'] ?? [];
-            if (!empty($shipment)) {
+            if (! empty($shipment)) {
                 $processed = process_shipment_deleted($shipment, $conn);
             }
         }
@@ -901,14 +927,15 @@ if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
 
     // Clear the log file after processing
     if (file_exists('webhook_log.txt')) {
-        unlink('webhook_log.txt');
+        file_put_contents('webhook_log.txt', '');
+        // unlink('webhook_log.txt');
     }
 
     http_response_code(200);
     echo json_encode([
-        'status' => 'success',
+        'status'           => 'success',
         'processed_events' => $processed_count,
-        'errors' => $errors
+        'errors'           => $errors,
     ]);
     exit;
 }
