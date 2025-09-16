@@ -773,35 +773,35 @@ function process_shipment_deleted($shipment, $conn) {
 }
 
 if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
-    // Log request details for debugging
-    error_log("Webhook request method: " . $_SERVER['REQUEST_METHOD']);
-    error_log("Webhook content-type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
-    error_log("Webhook query string: " . ($_SERVER['QUERY_STRING'] ?? 'none'));
-    error_log("Webhook GET data: " . json_encode($_GET));
-    error_log("Webhook POST data: " . json_encode($_POST));
-
     // Read the raw input data
     $input = file_get_contents('php://input');
-    error_log("Webhook raw input length: " . strlen($input));
-    error_log("Webhook raw input (first 500 chars): " . substr($input, 0, 500));
 
     // Fallback to GET data if input is empty and method is GET
     if (empty($input) && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['data'])) {
         $input = $_GET['data'];
-        error_log("Using GET data as input");
     }
 
     // Support for payload in GET parameter
     if (empty($input) && isset($_GET['payload'])) {
         $input = $_GET['payload'];
-        error_log("Using GET payload as input");
     }
 
     // Support for form-encoded payload
     if (empty($input) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payload'])) {
         $input = $_POST['payload'];
-        error_log("Using POST payload as input");
     }
+
+    // Log the request to file
+    $timestamp = date('Y-m-d\TH:i:sP'); // ISO 8601 format
+    $method = $_SERVER['REQUEST_METHOD'];
+    $headers = getallheaders(); // Get all headers
+    $body = $input;
+
+    $log_entry = $timestamp . " - METHOD: " . $method . "\n";
+    $log_entry .= "HEADERS: " . print_r($headers, true) . "\n";
+    $log_entry .= "BODY: " . $body . "\n\n";
+
+    file_put_contents('webhook_log.txt', $log_entry, FILE_APPEND);
 
     if (empty($input)) {
         http_response_code(400);
