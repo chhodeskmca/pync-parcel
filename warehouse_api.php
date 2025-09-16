@@ -571,15 +571,15 @@ function process_package_added_to_shipment($package, $shipment, $conn) {
 }
 
 if (isset($_GET['webhook']) && $_GET['webhook'] === 'package_update') {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['error' => 'Method not allowed']);
-        exit;
-    }
-
-    // Read the raw POST data
+    // Read the raw input data
     $input = file_get_contents('php://input');
     error_log("Webhook input: $input");
+
+    if (empty($input)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Empty payload']);
+        exit;
+    }
 
     $data = json_decode($input, true);
 
