@@ -107,6 +107,16 @@ function pull_packages_from_warehouse($limit = 10) {
             $branch = $package['branch'] ?? null;
             $tag = $package['tag'] ?? null;
 
+            // New warehouse API fields
+            $firstName = $package['firstName'] ?? null;
+            $lastName = $package['lastName'] ?? null;
+            $shipmentId = $package['shipmentId'] ?? null;
+            $warehousePackageId = $package['id'] ?? null;
+            $courierId = $package['courierId'] ?? null;
+            $courierCustomerId = $package['courierCustomerId'] ?? null;
+            $addedToShipmentAt = $package['addedToShipmentAt'] ?? null;
+            $shipmentSimpleId = $package['shipmentSimpleId'] ?? null;
+
             $mysqlDate = '';
             if (!empty($dateCreated)) {
                 try {
@@ -133,11 +143,33 @@ function pull_packages_from_warehouse($limit = 10) {
                 continue; // Skip packages without a matching user
             }
 
+            // Check if shipmentId exists in shipments table
+            $shipment_id_value = "NULL";
+            if ($shipmentId !== null) {
+                $check_sql = "SELECT id FROM shipments WHERE id = " . intval($shipmentId);
+                $check_result = mysqli_query($conn, $check_sql);
+                if ($check_result && mysqli_num_rows($check_result) > 0) {
+                    $shipment_id_value = intval($shipmentId);
+                }
+            }
+
+            // Convert addedToShipmentAt to MySQL format
+            $added_to_shipment_at_value = "NULL";
+            if ($addedToShipmentAt !== null) {
+                try {
+                    $dt = new DateTime($addedToShipmentAt);
+                    $added_to_shipment_at_value = "'" . $dt->format('Y-m-d H:i:s') . "'";
+                } catch (Exception $e) {
+                    $added_to_shipment_at_value = "NULL";
+                }
+            }
+
             $sqlCheck = "SELECT id FROM packages WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
                 $row = mysqli_fetch_assoc($resCheck);
                 $sqlUpdate = "UPDATE packages SET
+                    tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     courier_company = '" . mysqli_real_escape_string($conn, $courierCompany) . "',
                     describe_package = '" . mysqli_real_escape_string($conn, $description) . "',
                     weight = " . floatval($weight) . ",
@@ -149,8 +181,14 @@ function pull_packages_from_warehouse($limit = 10) {
                     shipment_type = '" . mysqli_real_escape_string($conn, $shipmentType) . "',
                     branch = '" . mysqli_real_escape_string($conn, $branch) . "',
                     tag = '" . mysqli_real_escape_string($conn, $tag) . "',
+                    courier_id = " . ($courierId !== null ? "'" . mysqli_real_escape_string($conn, $courierId) . "'" : "NULL") . ",
+                    courier_customer_id = " . ($courierCustomerId !== null ? "'" . mysqli_real_escape_string($conn, $courierCustomerId) . "'" : "NULL") . ",
+                    added_to_shipment_at = " . $added_to_shipment_at_value . ",
+                    shipment_simple_id = " . ($shipmentSimpleId !== null ? "'" . mysqli_real_escape_string($conn, $shipmentSimpleId) . "'" : "NULL") . ",
+                    warehouse_package_id = " . ($warehousePackageId !== null ? "'" . mysqli_real_escape_string($conn, $warehousePackageId) . "'" : "NULL") . ",
                     created_at = '" . mysqli_real_escape_string($conn, $mysqlDate) . "',
-                    user_id = " . intval($user_id) . "
+                    user_id = " . intval($user_id) . ",
+                    shipment_id = " . $shipment_id_value . "
                     WHERE id = " . intval($row['id']);
                 $updateResult = mysqli_query($conn, $sqlUpdate);
                 if (!$updateResult) {
@@ -160,7 +198,7 @@ function pull_packages_from_warehouse($limit = 10) {
                 }
             } else {
                 $sqlInsert = "INSERT INTO packages
-                    (user_id, tracking_number, courier_company, describe_package, weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, created_at) VALUES (
+                    (user_id, tracking_number, courier_company, describe_package, weight, tracking_name, dim_length, dim_width, dim_height, shipment_status, shipment_type, branch, tag, courier_id, courier_customer_id, added_to_shipment_at, shipment_simple_id, warehouse_package_id, created_at, shipment_id) VALUES (
                     " . intval($user_id) . ",
                     '" . mysqli_real_escape_string($conn, $trackingNumber) . "',
                     '" . mysqli_real_escape_string($conn, $courierCompany) . "',
@@ -174,7 +212,13 @@ function pull_packages_from_warehouse($limit = 10) {
                     '" . mysqli_real_escape_string($conn, $shipmentType) . "',
                     '" . mysqli_real_escape_string($conn, $branch) . "',
                     '" . mysqli_real_escape_string($conn, $tag) . "',
-                    '" . mysqli_real_escape_string($conn, $mysqlDate) . "'
+                    " . ($courierId !== null ? "'" . mysqli_real_escape_string($conn, $courierId) . "'" : "NULL") . ",
+                    " . ($courierCustomerId !== null ? "'" . mysqli_real_escape_string($conn, $courierCustomerId) . "'" : "NULL") . ",
+                    " . $added_to_shipment_at_value . ",
+                    " . ($shipmentSimpleId !== null ? "'" . mysqli_real_escape_string($conn, $shipmentSimpleId) . "'" : "NULL") . ",
+                    " . ($warehousePackageId !== null ? "'" . mysqli_real_escape_string($conn, $warehousePackageId) . "'" : "NULL") . ",
+                    '" . mysqli_real_escape_string($conn, $mysqlDate) . "',
+                    " . $shipment_id_value . "
                     )";
                 $insertResult = mysqli_query($conn, $sqlInsert);
                 if (!$insertResult) {

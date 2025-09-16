@@ -406,7 +406,7 @@
                         ?>
             <tr>
                 <td><?php echo $rows['tracking_number']; ?></td>
-                <td><?php echo ucfirst($rows['tracking_name']) ?? 'N/A'; ?></td>
+                <td><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
                 <!-- <td><?php echo $rows['courier_company']; ?></td> -->
                 <td><?php echo $rows['describe_package']; ?></td>
                 <td> <span class="customer_name">                                                                                                                                                                                                                                                                                      <?php echo $customer_name; ?></span> </td>

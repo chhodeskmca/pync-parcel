@@ -16,19 +16,40 @@
     $shipment_number = 'N/A';
     $total_packages = 0;
     $active_packages = 0;
+    $customer_email = 'N/A';
+    $customer_phone = 'N/A';
+    $customer_dob = 'N/A';
+    $customer_gender = 'N/A';
+    $customer_photo_id = null;
+    $customer_other_file = 'N/A';
+    $delivery_address_type = 'N/A';
+    $delivery_parish = 'N/A';
+    $delivery_region = 'N/A';
+    $authorized_users = [];
 
     if (!empty($tracking_number)) {
-        // Query package details
-        $sql = "SELECT p.*, u.first_name, u.last_name, s.shipment_number
+        // Query package details with user and shipment info
+        $sql = "SELECT p.*, u.first_name, u.last_name, u.email_address as email, u.phone_number as phone, u.date_of_birth, u.gender, s.shipment_number,
+                d.address_type, d.parish, d.region
                 FROM packages p
                 LEFT JOIN users u ON p.user_id = u.id
                 LEFT JOIN shipments s ON p.shipment_id = s.id
+                LEFT JOIN delivery_preference d ON u.id = d.user_id
                 WHERE p.tracking_number = '$tracking_number'";
         $result = mysqli_query($conn, $sql);
         if ($result && mysqli_num_rows($result) > 0) {
             $package = mysqli_fetch_assoc($result);
             $customer_name = $package['first_name'] . ' ' . $package['last_name'];
-            $shipment_number = $package['shipmentId'] ?? 'N/A';
+            $customer_email = $package['email'] ?? 'N/A';
+            $customer_phone = $package['phone'] ?? 'N/A';
+            $customer_dob = $package['date_of_birth'] ?? 'N/A';
+            $customer_gender = $package['gender'] ?? 'N/A';
+            $customer_photo_id = $package['photo_id'] ?? null;
+            $customer_other_file = $package['other_file'] ?? 'N/A';
+            $shipment_number = $package['shipment_number'] ?? 'N/A';
+            $delivery_address_type = $package['address_type'] ?? 'N/A';
+            $delivery_parish = $package['parish'] ?? 'N/A';
+            $delivery_region = $package['region'] ?? 'N/A';
 
             // Get total packages in shipment
             if ($package['shipment_id']) {
@@ -40,6 +61,91 @@
                 $sql_active = "SELECT COUNT(*) as active FROM packages WHERE shipment_id = " . $package['shipment_id'] . " AND status != 'Delivered'";
                 $result_active = mysqli_query($conn, $sql_active);
                 $active_packages = mysqli_fetch_assoc($result_active)['active'];
+
+                // Get authorized users for shipment
+                $sql_auth_users = "SELECT first_name, last_name, identification_type, id_number FROM authorized_users WHERE shipment_id = " . $package['shipment_id'];
+                $result_auth_users = mysqli_query($conn, $sql_auth_users);
+                if ($result_auth_users && mysqli_num_rows($result_auth_users) > 0) {
+                    while ($row = mysqli_fetch_assoc($result_auth_users)) {
+                        $authorized_users[] = $row;
+                    }
+                }
+            }
+        }
+    }
+
+    // Handle package update
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_package'])) {
+        $courier_charge = mysqli_real_escape_string($conn, $_POST['courier_charge'] ?? '');
+        $tracking_progress = mysqli_real_escape_string($conn, $_POST['tracking_progress'] ?? '');
+        $tracking_date = mysqli_real_escape_string($conn, $_POST['tracking_date'] ?? '');
+
+        // Handle invoice file upload
+        $invoice_file_path = null;
+        if (isset($_FILES['invoice_file']) && $_FILES['invoice_file']['error'] === UPLOAD_ERR_OK) {
+            $allowed_extensions = ['pdf', 'png', 'jpg', 'jpeg'];
+            $file_tmp_path = $_FILES['invoice_file']['tmp_name'];
+            $file_name = basename($_FILES['invoice_file']['name']);
+            $file_size = $_FILES['invoice_file']['size'];
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+            if (!in_array($file_ext, $allowed_extensions)) {
+                echo "<div class='alert alert-danger'>Invalid file type. Only PDF, PNG, JPG files are allowed.</div>";
+            } elseif ($file_size > 10 * 1024 * 1024) {
+                echo "<div class='alert alert-danger'>File size exceeds 10MB limit.</div>";
+            } else {
+                $upload_dir = __DIR__ . '/uploads/invoices/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+                $new_file_name = uniqid('invoice_') . '.' . $file_ext;
+                $destination = $upload_dir . $new_file_name;
+                if (move_uploaded_file($file_tmp_path, $destination)) {
+                    $invoice_file_path = 'uploads/invoices/' . $new_file_name;
+                } else {
+                    echo "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
+                }
+            }
+        }
+
+        // Convert tracking_date to MySQL format if provided
+        $tracking_date_mysql = '';
+        if (!empty($tracking_date)) {
+            $dt = DateTime::createFromFormat('Y-m-d', $tracking_date);
+            if ($dt) {
+                $tracking_date_mysql = $dt->format('Y-m-d H:i:s');
+            }
+        }
+
+        // Update package
+        $update_sql = "UPDATE packages SET ";
+        $updates = [];
+        if (!empty($courier_charge)) {
+            $updates[] = "invoice_total = '" . floatval($courier_charge) . "'";
+        }
+        if (!empty($tracking_progress)) {
+            // Sanitize and limit tracking_progress length to avoid data truncation error
+            $safe_tracking_progress = substr(mysqli_real_escape_string($conn, $tracking_progress), 0, 255);
+            $updates[] = "tracking_progress = '" . $safe_tracking_progress . "'";
+        }
+        if (!empty($tracking_date_mysql)) {
+            $updates[] = "created_at = '" . $tracking_date_mysql . "'";
+        }
+        if (!empty($invoice_file_path)) {
+            $updates[] = "invoice_file = '" . mysqli_real_escape_string($conn, $invoice_file_path) . "'";
+        }
+
+        if (!empty($updates)) {
+            $update_sql .= implode(', ', $updates) . " WHERE tracking_number = '$tracking_number'";
+            if (mysqli_query($conn, $update_sql)) {
+                echo "<div class='alert alert-success'>Package updated successfully.</div>";
+                // Refresh package data
+                $result = mysqli_query($conn, $sql);
+                if ($result && mysqli_num_rows($result) > 0) {
+                    $package = mysqli_fetch_assoc($result);
+                }
+            } else {
+                echo "<div class='alert alert-danger'>Error updating package: " . mysqli_error($conn) . "</div>";
             }
         }
     }
@@ -382,20 +488,27 @@
 						</div>
 					     <!--Invoice-->
 						<div class="invoice"> 
+						<?php if (!empty($package['invoice_file'])): ?>
+						   <h2 style="color:#222; font-family:avenir-light !important;text-align: center;margin-top: 30px;margin-bottom: 16px;">
+							Invoice Attached: <a href="<?php echo htmlspecialchars($package['invoice_file']); ?>" target="_blank">View Invoice</a>
+						   </h2>
+						<?php else: ?>
 						   <h2 style="color:#222; font-family:avenir-light !important;text-align: center;margin-top: 30px;margin-bottom: 16px;"> No invoice attached </h2>
+						<?php endif; ?>
 							<div>
-								<div class="d-flex  justify-content-center">
+								<div class="d-flex  justify-content-center" style="cursor:pointer;" onclick="document.getElementById('invoice_file').click();">
 								   <h3>Click here to upload invoice</h3>
 								   <p>Please upload an invoice to avoid any delays in processing at customs</p>
 									<img id="selectedImage" src="assets/img/cloud-computing.png"
 									alt="example placeholder" />
 								</div>
-								<div class="d-none justify-content-center">
-									<div data-mdb-ripple-init class="btn btn-primary btn-rounded">
-										<label class="form-label text-white m-1" for="customFile1">Choose file</label>
-										<input type="file" class="form-control d-none" id="customFile1" onchange="displaySelectedImage(event, 'selectedImage')" />
-									</div>
-								</div>
+								<form action="" method="POST" enctype="multipart/form-data" id="invoiceUploadForm" style="display:none;">
+									<input type="file" name="invoice_file" id="invoice_file" accept=".pdf,.png,.jpg,.jpeg" onchange="document.getElementById('invoiceUploadForm').submit();" />
+									<input type="hidden" name="update_package" value="1" />
+									<input type="hidden" name="courier_charge" value="<?php echo htmlspecialchars($package['invoice_total'] ?? ''); ?>" />
+									<input type="hidden" name="tracking_progress" value="<?php echo htmlspecialchars($package['tracking_progress'] ?? ''); ?>" />
+									<input type="hidden" name="tracking_date" value="<?php echo date('Y-m-d', strtotime($package['created_at'])); ?>" />
+								</form>
 								<p class="file_Supported"><span>Supported: </span> PDF, PNG or JPG (MAX. 10MB)</p>
 							    <div style="display:none" class="alert alert-warning alert-dismissible fade     show" role="alert">
 								  <strong style="color: red;"></strong>
@@ -403,9 +516,8 @@
 							    </div> 
 							</div>
 						</div>
-				 <!--
-					<div class="package-details"> 
-			         <div class="account_information"> 
+					<!-- <div class="package-details">
+			         <div class="account_information">
 				       	 <h3> Account Info </h3>
 						<div class="accordion accordion-flush" id="accordionFlushExample">
 						  <div class="accordion-item">
@@ -416,39 +528,39 @@
 							</h2>
 							<div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
 							  <div class="accordion-body">
-								<div class="Tracking-value"> 
+								<div class="Tracking-value">
 									 <span class="heading">First Name</span>
-									 <span class="value">Abdul</span>
-								</div> 
-								 <div class="Tracking-value"> 
+									 <span class="value"><?php echo htmlspecialchars($package['first_name'] ?? 'N/A'); ?></span>
+								</div>
+								 <div class="Tracking-value">
 									 <span class="heading">Last Name</span>
-									 <span class="value">quadri</span>
+									 <span class="value"><?php echo htmlspecialchars($package['last_name'] ?? 'N/A'); ?></span>
 								</div>
 
-								<div class="Tracking-value"> 
+								<div class="Tracking-value">
 									 <span class="heading">Phone</span>
-									 <span class="value">183-475-4758</span>
+									 <span class="value"><?php echo htmlspecialchars($customer_phone); ?></span>
 								</div>
-								<div class="Tracking-value"> 
+								<div class="Tracking-value">
 									 <span class="heading">Email Address</span>
-									 <span class="value">example@gmail.com</span>
-								</div> 
-								<div class="Tracking-value"> 
+									 <span class="value"><?php echo htmlspecialchars($customer_email); ?></span>
+								</div>
+								<div class="Tracking-value">
 									 <span class="heading">Date of Birth</span>
-									 <span class="value">No set</span>
-								</div>  
-								<div class="Tracking-value"> 
+									 <span class="value"><?php echo htmlspecialchars($customer_dob); ?></span>
+								</div>
+								<div class="Tracking-value">
 									 <span class="heading"> Gender</span>
-									 <span class="value">Male</span>
-								</div> 
-								<div class="Tracking-value"> 
+									 <span class="value"><?php echo htmlspecialchars($customer_gender); ?></span>
+								</div>
+								<div class="Tracking-value">
 									 <span class="heading">Copy of Photo Identification</span>
-									 <span class="value"><img width="70px" src="https://dmv.nebraska.gov/sites/default/files/img/NE%20D100%20PR_ADULT_ID_300dpi.jpg" alt="" /></span>
-								</div> 
-								 <div class="Tracking-value"> 
+									 <span class="value"><?php if ($customer_photo_id): ?><img width="70px" src="<?php echo htmlspecialchars($customer_photo_id); ?>" alt="Photo ID" /><?php else: ?>No set<?php endif; ?></span>
+								</div>
+								 <div class="Tracking-value">
 									 <span class="heading"> Other File </span>
-									 <span class="value">No set</span>
-								</div> 	
+									 <span class="value"><?php echo htmlspecialchars($customer_other_file); ?></span>
+								</div>
 							  </div>
 							</div>
 						  </div>
@@ -459,18 +571,18 @@
 							  </button>
 							</h2>
 							<div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-							  <div class="accordion-body"> 
-								<div class="Tracking-value"> 
+							  <div class="accordion-body">
+								<div class="Tracking-value">
 									 <span class="heading">Address Type</span>
-									 <span class="value">Home</span>
-								</div> 
-								 <div class="Tracking-value"> 
-									 <span class="heading">Parish</span>
-									 <span class="value">Kingston</span>
+									 <span class="value"><?php echo htmlspecialchars($delivery_address_type); ?></span>
 								</div>
-								<div class="Tracking-value"> 
+								 <div class="Tracking-value">
+									 <span class="heading">Parish</span>
+									 <span class="value"><?php echo htmlspecialchars($delivery_parish); ?></span>
+								</div>
+								<div class="Tracking-value">
 									 <span class="heading">Region</span>
-									 <span class="value">Half-Way Tree</span>
+									 <span class="value"><?php echo htmlspecialchars($delivery_region); ?></span>
 								</div>
 							  </div>
 							</div>
@@ -483,43 +595,61 @@
 							</h2>
 							<div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
 							 <div class="accordion-body">
-								<div class="Tracking-value"> 
-									 <span class="heading">First Name</span>
-									 <span class="value">Y</span>
-								</div> 
-								 <div class="Tracking-value"> 
-									 <span class="heading">Last</span>
-									 <span class="value">Z</span>
-								</div>
-								<div class="Tracking-value"> 
-									 <span class="heading">Identification Type</span>
-									 <span class="value">passport</span>
-								</div>
-								 <div class="Tracking-value"> 
-									 <span class="heading">ID Number</span>
-									 <span class="value">E12345678</span>
-								</div>	
+								<?php if (!empty($authorized_users)): ?>
+									<?php foreach ($authorized_users as $user): ?>
+										<div class="Tracking-value">
+											 <span class="heading">First Name</span>
+											 <span class="value"><?php echo htmlspecialchars($user['first_name']); ?></span>
+										</div>
+										 <div class="Tracking-value">
+											 <span class="heading">Last Name</span>
+											 <span class="value"><?php echo htmlspecialchars($user['last_name']); ?></span>
+										</div>
+										<div class="Tracking-value">
+											 <span class="heading">Identification Type</span>
+											 <span class="value"><?php echo htmlspecialchars($user['identification_type']); ?></span>
+										</div>
+										 <div class="Tracking-value">
+											 <span class="heading">ID Number</span>
+											 <span class="value"><?php echo htmlspecialchars($user['id_number']); ?></span>
+										</div>
+									<?php endforeach; ?>
+								<?php else: ?>
+									<div class="Tracking-value">
+										No authorized users set
+									</div>
+								<?php endif; ?>
 							  </div>
 							</div>
 						  </div>
 						  <div class="accordion-item">
 							<h2 class="accordion-header">
-							  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapsefour" aria-expanded="false" aria-controls="flush-collapseThree">
+							  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapsefour" aria-expanded="false" aria-controls="flush-collapsefour">
 								 Miami Address
 							  </button>
 							</h2>
 							<div id="flush-collapsefour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
 							 <div class="accordion-body">
-									<div class="Tracking-value"> 
-										No Set
-									</div> 		
+									<div class="Tracking-value">
+										<?php
+										// Query for Miami address if exists
+										$miami_address = 'No Set';
+										if ($package['user_id']) {
+											$sql_miami = "SELECT address FROM miami_addresses WHERE user_id = " . $package['user_id'];
+											$result_miami = mysqli_query($conn, $sql_miami);
+											if ($result_miami && mysqli_num_rows($result_miami) > 0) {
+												$miami_address = mysqli_fetch_assoc($result_miami)['address'];
+											}
+										}
+										echo htmlspecialchars($miami_address);
+										?>
+									</div>
 							  </div>
 							</div>
 						  </div>
 						</div>
 				  </div>
-			    </div>
-			      -->
+			    </div> -->
 				</div>
 				</div>
 			  </div>
@@ -538,33 +668,36 @@
 				</button>
 			  </div>
 			  <div class="modal-body">
-			    <form action="#">
+			    <form action="" method="POST">
+					    <input type="hidden" name="update_package" value="1">
 					    <div class="form-group change-value">
-							  <label for="Firstname">Courier charge<span class="mandatory_field">*</span> </label>
-							  <input placeholder="e.g. $20"  type="number" class="form-control" id="Firstname"
+							  <label for="courier_charge">Courier charge<span class="mandatory_field">*</span> </label>
+							  <input placeholder="e.g. $20"  type="number" class="form-control" id="courier_charge" name="courier_charge" value="<?php echo htmlspecialchars($package['invoice_total'] ?? ''); ?>"
 							  />
 						</div>
                         <div class="form-group">
-						  <label for="AddressType">Tracking progress<span class="mandatory_field">*</span></label>
-						  <select   class="form-select AddressType" id="AddressType">
-							  <option value="0">Choose...</option>
-							  <option value="1">In Transit to Jamaica</option>
-							  <option value="1">Received at Warehouse</option>
-							  <option value="2">Undergoing Customs Clearance </option>
-							  <option value="3">Ready for Delivery Instructions </option>
-							  <option value="3">Delivered</option>
+						  <label for="tracking_progress">Tracking progress<span class="mandatory_field">*</span></label>
+							  <select   class="form-select AddressType" id="tracking_progress" name="tracking_progress">
+							  <option value="">Choose...</option>
+						 <option value="In Transit to Jamaica" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'In Transit to Jamaica') ? 'selected' : ''; ?>>In Transit to Jamaica</option>
+							  <option value="Received at Warehouse" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Received at Warehouse') ? 'selected' : ''; ?>>Received at Warehouse</option>
+							  <option value="Undergoing Customs Clearance" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Undergoing Customs Clearance') ? 'selected' : ''; ?>>Undergoing Customs Clearance</option>
+							  <option value="Ready for Delivery Instructions" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Ready for Delivery Instructions') ? 'selected' : ''; ?>>Ready for Delivery Instructions</option>
+							  <option value="Delivered" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Delivered') ? 'selected' : ''; ?>>Delivered</option>
 							</select>
-					   </div> 
+					   </div>
 					    <div class="form-group">
-						  <label for="date">Tracking Date<span class="">*</span></label> 
-						   <input type="date"  class="form-control" id="date"
+						  <label for="tracking_date">Tracking Date<span class="">*</span></label>
+						 <input type="date"  class="form-control" id="tracking_date" name="tracking_date" value="<?php echo date('Y-m-d', strtotime($package['created_at'])); ?>"
+						   max="<?php echo date('Y-m-d'); ?>"
+						   min="<?php echo date('Y-m-d', strtotime('-2 days')); ?>"
 							  />
-					   </div> 
+					   </div>
                      	<div class="card-action d-flex ">
 							   <button type="submit" class="btn my-4 updatePreAltBtn">
-								 Update 
+								 Update
 							   </button>
-						</div>					   
+						</div>
 				</form>
 			  </div>
 			</div>
