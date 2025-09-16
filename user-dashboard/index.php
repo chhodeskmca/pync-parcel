@@ -296,14 +296,14 @@
         </div>
       <div class="container">
           <div class="page-inner">
-            <div class="d-flex prealt_btn pt-2 pb-4">
+            <div class="pt-2 pb-4 d-flex prealt_btn">
               <div class="prealt_btn">
-                <h1 style="color:#fff;" class="fw-bold mb-3">Tracking Summary:</h1>
+                <h1 style="color:#fff;" class="mb-3 fw-bold">Tracking Summary:</h1>
 				<p>View current status, location, and delivery updates</p>
               </div>
-              <div class="ms-md-auto py-2 py-md-0 pre-alert-btn ">
+              <div class="py-2 ms-md-auto py-md-0 pre-alert-btn ">
                 <a href="createprealert.php" class="btn btn-round">Create Pre-alert</a>
-                <a href="pull_packages.php" class="btn btn-round ms-2">Pull Packages</a>
+                <!-- <a href="pull_packages.php" class="btn btn-round ms-2">Pull Packages</a> -->
               </div>
             </div>
             <div class="row">
@@ -313,7 +313,7 @@
                     <div class="row align-items-center">
                       <div class="col-icon">
                         <div
-                          class="icon-big text-center icon-info bubble-shadow-small"
+                          class="text-center icon-big icon-info bubble-shadow-small"
                         >
                           <img style="width:35px" class="shipped" src="assets/img/received-at -warehouse.png" alt="Received at Warehouse" />
                         </div>
@@ -334,7 +334,7 @@
                     <div class="row align-items-center">
                       <div class="col-icon">
                         <div
-                          class="icon-big text-center icon-success bubble-shadow-small"
+                          class="text-center icon-big icon-success bubble-shadow-small"
                         >
                           <img style="width:35px" class="shipped" src="assets/img/in-transit-to -jamaica.png" alt="In transit to Jamaica" />
                         </div>
@@ -355,7 +355,7 @@
                     <div class="row align-items-center">
                       <div class="col-icon">
                         <div
-                          class="icon-big text-center icon-success bubble-shadow-small"
+                          class="text-center icon-big icon-success bubble-shadow-small"
                         >
                            <img style="width:35px" class="shipped" src="assets/img/undergoing- customs- clearance.png" alt="Undergoing Customs Clearance" />
                         </div>
@@ -376,7 +376,7 @@
                     <div class="row align-items-center">
                       <div class="col-icon">
                         <div
-                          class="icon-big text-center icon-primary bubble-shadow-small"
+                          class="text-center icon-big icon-primary bubble-shadow-small"
                         >
                           <img style="width:35px" class="shipped" src="assets/img/ready-for-delivery -instructions.png" alt="Ready for delivery instructions" />
                         </div>
@@ -397,7 +397,7 @@
                     <div class="row align-items-center">
                       <div class="col-icon">
                         <div
-                          class="icon-big text-center icon-secondary bubble-shadow-small"
+                          class="text-center icon-big icon-secondary bubble-shadow-small"
                         >
                           <img style="width:35px" class="shipped" src="assets/img/delivered.png" alt="Delivered" />
                         </div>
