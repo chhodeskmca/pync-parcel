@@ -283,17 +283,13 @@
                             $rows = mysqli_fetch_array(mysqli_query($conn, $sql));
 
                             // Check if editing is locked after 24 hours
-                            if (! isset($rows['created_at']) || empty($rows['created_at'])) {
-                                // Old records without created_at are considered old, lock them
+                            $created_at = strtotime($rows['created_at']);
+                            $now        = time();
+
+                            // Only lock if it is strictly more than 24 hours older
+                            if (($now - $created_at) > 86400) {
                                 echo "<h2 style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'>This pre-alert cannot be edited as it was created more than 24 hours ago.</h2>";
                                 exit;
-                            } else {
-                                $created_at = strtotime($rows['created_at']);
-                                $now        = time();
-                                if (($now - $created_at) > 86400 || $created_at > $now) { // lock if more than 24 hours old or future date
-                                    echo "<h2 style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'>This pre-alert cannot be edited as it was created more than 24 hours ago.</h2>";
-                                    exit;
-                                }
                             }
 
                         ?>
@@ -330,12 +326,12 @@
 					   <div class="form-group">
                           <label for="exampleFormControlSelect1">Courier Company</label>
                           <select name="courier_company" class="form-select" id="exampleFormControlSelect1">
-                            <option                                    <?php echo $rows['courier_company'] == 'Amazon' ? 'selected' : ''; ?> >Amazon</option>
-                            <option                                    <?php echo $rows['courier_company'] == 'DHL' ? 'selected' : ''; ?> >DHL</option>
-                            <option                                    <?php echo $rows['courier_company'] == 'FedEx' ? 'selected' : ''; ?> >FedEx</option>
-                            <option                                    <?php echo $rows['courier_company'] == 'UPS' ? 'selected' : ''; ?>>UPS</option>
-                            <option                                    <?php echo $rows['courier_company'] == 'USPS' ? 'selected' : ''; ?>>USPS</option>
-                            <option                                    <?php echo $rows['courier_company'] == 'Other' ? 'selected' : ''; ?> >Other</option>
+                            <option                                                                       <?php echo $rows['courier_company'] == 'Amazon' ? 'selected' : ''; ?> >Amazon</option>
+                            <option                                                                       <?php echo $rows['courier_company'] == 'DHL' ? 'selected' : ''; ?> >DHL</option>
+                            <option                                                                       <?php echo $rows['courier_company'] == 'FedEx' ? 'selected' : ''; ?> >FedEx</option>
+                            <option                                                                       <?php echo $rows['courier_company'] == 'UPS' ? 'selected' : ''; ?>>UPS</option>
+                            <option                                                                       <?php echo $rows['courier_company'] == 'USPS' ? 'selected' : ''; ?>>USPS</option>
+                            <option                                                                       <?php echo $rows['courier_company'] == 'Other' ? 'selected' : ''; ?> >Other</option>
                           </select>
                         </div>
 						 <div class="form-group">
