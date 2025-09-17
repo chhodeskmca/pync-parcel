@@ -1,12 +1,14 @@
 
    // package redirects to tracking information page
     $('#mypackages tbody tr').click(function() {
+		console.log("clicked");
 		
-         window.location = 'tacking.html';
+		
+         window.location = 'tracking.php';
     });  
 	$('.notifi-area a').click(function() {
 		
-         window.location = 'tacking.html';
+         window.location = 'tracking.php';
     });  
 	
     $('.prealert-edit-btn').click(function() {

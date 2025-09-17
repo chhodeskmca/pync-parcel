@@ -8,7 +8,7 @@ function push_customer_to_warehouse($customer)
     $data = [
         'firstName' => $customer['first_name'],
         'lastName'  => $customer['last_name'],
-        'accountId' => $customer['account_number'],
+        'accountId' => strtoupper($customer['account_number']),
         'branch'    => $customer['region'],
     ];
 
@@ -168,7 +168,7 @@ function pull_packages_from_warehouse($limit = 10)
 
             // Convert addedToShipmentAt to MySQL format
             $added_to_shipment_at_value = "NULL";
-            if ($addedToShipmentAt !== null) {
+            if ($addedToShipmentAt !== null && $addedToShipmentAt !== '0001-01-01T00:00:00Z' && $addedToShipmentAt !== '0001-01-01 00:00:00') {
                 try {
                     $dt                         = new DateTime($addedToShipmentAt);
                     $added_to_shipment_at_value = "'" . $dt->format('Y-m-d H:i:s') . "'";

@@ -330,7 +330,7 @@
                                      // print_r($rows);die;
                                  ?>
                           <tr>
-                            <td><?php echo $rows['tracking_number']; ?></td>
+                            <td><a href="tracking.php?tracking=<?php echo $rows['tracking_number']; ?>"><?php echo $rows['tracking_number']; ?></a></td>
                             <td class="text-end"><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
                             <td class="text-end"><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : 'N/A'; ?></td>
                             <td class="text-end"><?php echo $rows['weight'] ? $rows['weight'] . ' lbs' : 'N/A'; ?></td>

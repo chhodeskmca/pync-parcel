@@ -1,10 +1,10 @@
 <?php 
     session_start();  
-    $tracking_number = $_REQUEST['tracking_number'] ;
+    $tracking_number = $_REQUEST['tracking_number'] ?? null;
 	include('config.php'); // database connection
 	include('function.php'); // function connection
-	 error_reporting(E_ALL);
-     ini_set('display_errors', 1);
+	error_reporting(E_ALL);
+    ini_set('display_errors', 1);
 	//==================================================User basic account info updating start===============================
     if( isset($_REQUEST['user_basic_account_info_btn'] ) ){ 
 	     // User  form input values
@@ -18,7 +18,7 @@
 		$AddressLine1 =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['AddressLine1'])) );
 		$AddressLine2 =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['AddressLine2'])) );
 		$Region       =  ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['Region'])) ); 
-		$oldImage     =   $_REQUEST['old_image'] ;
+		$oldImage     =   $_REQUEST['old_image'] ?? '';
 		$File         =   ''; 
 		if( $first_name == '' ) 
 		{    
@@ -35,13 +35,13 @@
 	        header('location: user-dashboard/user-account.php?no-update-basic-data='); 
             die();
 		};
-		if( $phone == '') 
-		{   
+		if( empty($phone) )
+		{
 			$_SESSION['message-3'] =  'Please Enter Phone number';
 			$_SESSION['message']   =  'Please Enter Phone number';
-	        header('location: user-dashboard/user-account.php?no-update-basic-data='); 
+	        header('location: user-dashboard/user-account.php?no-update-basic-data=');
             die();
-		}; 
+		};
 		if( $BDate == '' ) 
 		{ 
 			$_SESSION['message-4'] =  'Please Enter Date of Birth';
@@ -127,9 +127,9 @@
 		};
 		
 		// Updating user basic information
-		$sql = "UPDATE users SET first_name = '$first_name', last_name = '$last_name', PhoneNumber = '$phone', DateOfBirth = '$BDate', Gender = '$Gender', 
-	            file = '$File', AddressType = '$AddressType', Parish = '$Parish', Region = '$Region', 
-				AddressLine1 = '$AddressLine1', AddressLine2 = '$AddressLine2' WHERE id = $user_id";
+		$sql = "UPDATE users SET first_name = '$first_name', last_name = '$last_name', phone_number = '$phone', date_of_birth = '$BDate', gender = '$Gender',
+	            file = '$File', address_type = '$AddressType', parish = '$Parish', region = '$Region',
+				address_line1 = '$AddressLine1', address_line2 = '$AddressLine2' WHERE id = $user_id";
 		if( mysqli_query($conn, $sql)){
 				    
 			    if(  $_FILES['file']['name'] != ''){ 
@@ -145,40 +145,40 @@
 						die();
 					
 										
+
 					}else{ 
-					
+
 					    $_SESSION['message']  = "Something went wrong, Please try later";
 						header('location: user-dashboard/user-account.php');
 						die();	
 					}; 
-					
+
 				};	
-					 
+
 			     $sql = "SELECT * FROM delivery_preference WHERE user_id = $user_id AND address_type = '$AddressType' " ; //checking if address not saved
 			     if( mysqli_num_rows(mysqli_query($conn, $sql)) == 0){ 
-			         
-			            
+
 			          $sql =  "INSERT INTO delivery_preference (user_id, address_type, parish, region, address_line1, address_line2) 
 			          VALUES ($user_id, '$AddressType', '$Parish', '$Region', '$AddressLine1', '$AddressLine2')" ;   
 			          mysqli_query($conn, $sql) ;
-			         
+
 			     }else if( 1 ){ 
-			         
+
 			      $sql = "UPDATE delivery_preference SET address_type = '$AddressType', parish ='$Parish', region ='$Region', 
 			             address_line1='$AddressLine1', address_line2 ='$AddressLine2'  WHERE user_id = $user_id AND address_type = '$AddressType' ";  
 			             mysqli_query($conn, $sql);
-			         
+
 			     }	 
 				$_SESSION['message']   =  "Account information has been updated";
 				header('location: user-dashboard/user-account.php'); 
 				die();
-				
+
 		 }else{ 
-		  
+
 			$_SESSION['message']   =  'Something went wrong, Please try later.1';
 	        header('location: user-dashboard/user-account.php'); 
             die(); 
-		 
+
 		 }; 
 		 
 		 //unlink("uploaded-file/IMG_20230110_165249.jpg");

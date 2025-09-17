@@ -1,3 +1,58 @@
+<?php
+    session_start();
+    include '../config.php';
+    include '../function.php';
+    include '../user-area/authorized-user.php';
+
+    global $user_id;
+    if (! $user_id) {
+        header('Location: ../sign-in.php');
+        exit;
+    }
+
+    $tracking_number = isset($_GET['tracking']) ? mysqli_real_escape_string($conn, $_GET['tracking']) : '';
+    $package         = null;
+    if ($tracking_number) {
+        $sql    = "SELECT p.*, pr.merchant FROM packages p LEFT JOIN `pre_alert` pr ON p.tracking_number = pr.tracking_number AND p.user_id = pr.user_id WHERE p.tracking_number = '$tracking_number' AND p.user_id = $user_id";
+        $result = mysqli_query($conn, $sql);
+        if ($result && mysqli_num_rows($result) > 0) {
+            $package = mysqli_fetch_assoc($result);
+        }
+    }
+
+    if (! $package) {
+        echo "<div class='mt-5 text-center alert alert-danger'>Package not found or access denied.</div>";
+        exit;
+    }
+
+    // Define tracking steps
+    $steps = [
+        'Received at Warehouse',
+        'In Transit to Jamaica',
+        'Undergoing Customs Clearance',
+        'Ready for Delivery Instructions',
+        'Delivered',
+    ];
+
+    // Determine completed steps based on tracking_progress or status
+    $current_status  = $package['tracking_progress'] ?? $package['status'];
+    $completed_up_to = 0;
+    if (stripos($current_status, 'Received at Warehouse') !== false) {
+        $completed_up_to = 1;
+    } elseif (stripos($current_status, 'In Transit to Jamaica') !== false) {
+        $completed_up_to = 2;
+    } elseif (stripos($current_status, 'Undergoing Customs Clearance') !== false) {
+        $completed_up_to = 3;
+    } elseif (stripos($current_status, 'Ready for Delivery Instructions') !== false) {
+        $completed_up_to = 4;
+    } elseif (stripos($current_status, 'Delivered') !== false) {
+        $completed_up_to = 5;
+    } else {
+        $completed_up_to = 0;
+    }
+    // none completed
+
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +61,7 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no"  name="viewport" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
@@ -45,9 +100,9 @@
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item active">
-                <a href="index.html">
+                <a href="index.php">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Dashboard</p> 
+                  <p>Dashboard</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -57,7 +112,7 @@
                 </a>
 			  </li>
               <li class="nav-item">
-                <a  href="createprealert.html">
+                <a  href="createprealert.php">
                   <img class="ctePrealt-icon" src="assets/img/create-prealert.png" alt="Prealert" />
                   <p>Create Pre-alert</p>
                 </a>
@@ -67,31 +122,31 @@
                 <img class="calculator-icon" src="assets/img/calculator.png" alt="Calculator" />
                   <p>Cost Calculator</p>
                 </a>
-              </li> 
+              </li>
 			   <li class="nav-item">
-                <a href="makepayment.html">
+                <a href="makepayment.php">
                   <img class="payment-icon" src="assets/img/payment-protection.png" alt="payment" />
                   <p>Make Payment</p>
                 </a>
               </li>
 			  <li class="nav-item">
-                <a  href="mymiamiaddress.html">
+                <a  href="mymiamiaddress.php">
                 <img class="user-icon" src="assets/img/location.png" alt="location" />
                   <p>My Miami Address</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a  href="accountsetting.html">
+                <a  href="user-account.php">
                 <img class="user-icon" src="assets/img/user.png" alt="User" />
                   <p>My account</p>
                 </a>
               </li>
 			   <li class="nav-item log-out">
-                <a  href="#">
+                <a  href="../user-area/log-out.php">
                 <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
                   <p>Log out</p>
                 </a>
-              </li>
+				</li>
 			</ul>
           </div>
         </div>
@@ -156,7 +211,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -170,7 +225,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -186,7 +241,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -205,7 +260,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -222,7 +277,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -246,7 +301,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold">Hanif</span> 
+                      <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
                 </li>
               </ul>
             </div>
@@ -255,121 +310,68 @@
         </div>
         <div class="container">
         <div class="page-inner">
-	    <section class="bsb-timeline-5 py-5 py-xl-8">
+	    <section class="py-5 bsb-timeline-5 py-xl-8">
 	   <div class="row justify-content-center">
 	      <div class="Tracking-close">
 		     <a href="package.php"><img src="assets/img/close.png" alt="close"></a>
 		  </div>
-	   <div class="col-md-5 Package-details"> 
+	   <div class="col-md-5 Package-details">
 		 <div class="box"><img src="assets/img/box.png" alt="box" /></div>
-		  <div class="Package-info"> 
+		  <div class="Package-info">
 			<h2>Package Details</h2>
-			<div class="Tracking-value"> 
+			<div class="Tracking-value">
 				 <span class="heading"> Tracking Number</span>
-				 <span class="value">76rt3276i45786324 </span>
-			</div> 
-			 <div class="Tracking-value"> 
+				 <span class="value"><?php echo htmlspecialchars($package['tracking_number']); ?></span>
+			</div>
+			 <div class="Tracking-value">
 				 <span class="heading"> Courier Company</span>
-				 <span class="value"> Amazon</span>
+				 <span class="value"><?php echo htmlspecialchars($package['courier_company'] ?? 'N/A'); ?></span>
 			</div>
 
-			<div class="Tracking-value"> 
+			<div class="Tracking-value">
 				 <span class="heading">Value of Package</span>
-				 <span class="value">$10.21</span>
+				 <span class="value">$<?php echo number_format($package['value_of_package'] ?? 0, 2); ?></span>
 			</div>
-			<div class="Tracking-value"> 
+			<div class="Tracking-value">
 				 <span class="heading"> Package Content</span>
-				 <span class="value">shoes</span>
-			</div>  
-			 <div class="Tracking-value"> 
+				 <span class="value"><?php echo htmlspecialchars($package['describe_package'] ?? 'N/A'); ?></span>
+			</div>
+			 <div class="Tracking-value">
 				 <span class="heading">merchant</span>
-				 <span class="value">Alibaba</span>
-			</div>  
+				 <span class="value"><?php echo htmlspecialchars($package['merchant'] ?? 'N/A'); ?></span>
+			</div>
 	  </div>
   </div>
   <div class="col-md-7 Tracking-area">
 	<h1 class="trackingHeading">Tracking Information</h1>
 	<ul class="timeline">
+	<?php
+        $created_date = strtotime($package['created_at']);
+        foreach ($steps as $index => $step) {
+            $step_date = date('m/d/Y', strtotime('+' . ($index * 5) . ' days', $created_date)); // Add 5 days per step
+            $opacity   = ($index < $completed_up_to) ? '1' : '0.2';
+        ?>
 	  <li class="timeline-item">
-		<span class="timeline-icon">
+		<span style="opacity:		                      <?php echo $opacity; ?>;" class="timeline-icon">
 		  <i class="bi-check-lg text-primary"></i>
 		</span>
 		<div class="timeline-body">
 		  <div class="timeline-content">
 			<div class="card text-bg-primary">
-			  <div class="card-header">10/7/2025</div>
+			  <div class="card-header"><?php echo $step_date; ?></div>
 			  <div class="card-body">
-				<p>Received at Warehouse</p>
+				<p><?php echo $step; ?></p>
 			  </div>
 			</div>
 		  </div>
 		</div>
 	  </li>
-	   <li class="timeline-item">
-		<span style="opacity: 0.2;" class="timeline-icon">
-		  <i class="bi-check-lg text-primary"></i>
-		</span>
-		<div class="timeline-body">
-		  <div class="timeline-content">
-			<div class="card text-bg-primary">
-			  <div class="card-header">20/07/205</div>
-			  <div class="card-body">
-				<p>In Transit to Jamaica</p>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	  </li> 
-	  <li class="timeline-item">
-		<span style="opacity: 0.2;" class="timeline-icon">
-		  <i class="bi-check-lg text-primary"></i>
-		</span>
-		<div class="timeline-body">
-		  <div class="timeline-content">
-			<div class="card text-bg-primary">
-			  <div class="card-header">25/07/205</div>
-			  <div class="card-body">
-				<p>Undergoing Customs Clearance</p>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	  </li> 
-	  <li class="timeline-item">
-		<span style="opacity: 0.2;" class="timeline-icon">
-		  <i class="bi-check-lg text-primary"></i>
-		</span>
-		<div class="timeline-body">
-		  <div class="timeline-content">
-			<div class="card text-bg-primary">
-			  <div class="card-header">30/07/205</div>
-			  <div class="card-body">
-				<p>Ready for Delivery Instructions</p>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	  </li>
-	   <li class="timeline-item">
-		<span style="opacity: 0.2;" class="timeline-icon">
-		  <i class="bi-check-lg text-primary"></i>
-		</span>
-		<div class="timeline-body">
-		  <div class="timeline-content">
-			<div class="card text-bg-primary">
-			  <div class="card-header">3/08/205</div>
-			  <div class="card-body">
-				<p>Delivered</p>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	  </li>
+	<?php }?>
 	</ul>
   </div>
 </div>
-      
-	  </section> 
+
+	  </section>
 	</div>
         <footer class="footer">
           <div>
@@ -378,7 +380,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>
@@ -389,7 +391,7 @@
     <!-- Kaiadmin JS -->
       <script src="assets/js/kaiadmin.min.js"></script>
 	 <!-- custom JS -->
-	 <script src="assets/js/custom.js" > </script> 
+	 <script src="assets/js/custom.js" > </script>
   </body>
 </html>
 </script>
