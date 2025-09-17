@@ -6,7 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no"  name="viewport" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
@@ -47,7 +47,7 @@
               <li class="nav-item active">
                 <a href="index.html">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Dashboard</p> 
+                  <p>Dashboard</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -67,7 +67,7 @@
                 <img class="calculator-icon" src="assets/img/calculator.png" alt="Calculator" />
                   <p>Cost Calculator</p>
                 </a>
-              </li> 
+              </li>
 			  <li class="nav-item">
                 <a  href="makepayment.html">
                   <img class="payment-icon" src="assets/img/payment-protection.png" alt="payment" />
@@ -156,7 +156,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -170,7 +170,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -186,7 +186,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -205,7 +205,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -222,7 +222,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -246,7 +246,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold">Hanif</span> 
+                      <span class="fw-bold">Hanif</span>
                 </li>
               </ul>
             </div>
@@ -255,7 +255,7 @@
         </div>
         <div class="container">
           <div class="page-inner">
-		    <!-- create prealert start--> 
+		    <!-- create prealert start-->
 		     <div class="row">
               <div class="col-md-12">
                 <div class="card">
@@ -280,10 +280,10 @@
                           <input autocomplete="off" id="priceField" step=".01" min="0" onkeypress="return priceCheck(this, event);"
                             type="number"
                             class="form-control floatNumberField"
-                          
+
                             placeholder="0.00"
                           />
-                        </div>					
+                        </div>
                       </div>
                       <div class="col-md-6 col-lg-4">
 					   <div class="form-group">
@@ -354,28 +354,28 @@
                         <tbody>
                           <tr>
                             <td class="text-end edit-prealt">
-							   <span class="prealert-edit-btn"> 
-							   <img src="assets\img\edit.png" alt="edit" /></span> 
-							   76rt3276i45786324 
+							   <span class="prealert-edit-btn">
+							   <img src="assets\img\edit.png" alt="edit" /></span>
+							   76rt3276i45786324
 							</td>
                             <td>Amazon</td>
                             <td>Alibaba</td>
                             <td>10.21</td>
                             <td>shoes</td>
                             <td>7/4/2025</td>
-                          </tr> 
+                          </tr>
 						  <tr>
                             <td class="text-end edit-prealt">
-							   <span class="prealert-edit-btn"> 
-							   <img src="assets\img\edit.png" alt="edit" /></span> 
-							   76rt3276i45786324 
+							   <span class="prealert-edit-btn">
+							   <img src="assets\img\edit.png" alt="edit" /></span>
+							   76rt3276i45786324
 							</td>
                             <td>Amazon</td>
                             <td>Alibaba</td>
                             <td>10.21</td>
                             <td>shoes</td>
                             <td>7/4/2025</td>
-                          </tr> 
+                          </tr>
 						</tbody>
                       </table>
                     </div>
@@ -383,7 +383,7 @@
                 </div>
               </div>
             </div>
-		   <!--My package end--> 
+		   <!--My package end-->
         </div>
         <footer class="footer">
           <div>
@@ -392,7 +392,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>
@@ -403,8 +403,8 @@
     <!-- Kaiadmin JS -->
       <script src="assets/js/kaiadmin.min.js"></script>
 	  	  <!-- custom JS -->
-	 <script src="assets/js/custom.js" > </script> 
-	 <script type="text/javascript"> 
+	 <script src="assets/js/custom.js" > </script>
+	 <script type="text/javascript">
 			 function priceCheck(element, event) {
 			result = (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46;
 			if (result) {

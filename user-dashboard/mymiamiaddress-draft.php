@@ -6,7 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no"  name="viewport" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
@@ -47,7 +47,7 @@
               <li class="nav-item active">
                 <a href="index.html">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Dashboard</p> 
+                  <p>Dashboard</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -67,7 +67,7 @@
                 <img class="calculator-icon" src="assets/img/calculator.png" alt="Calculator" />
                   <p>Cost Calculator</p>
                 </a>
-              </li> 
+              </li>
 			   <li class="nav-item">
                 <a  href="makepayment.html">
                   <img class="payment-icon" src="assets/img/payment-protection.png" alt="payment" />
@@ -156,7 +156,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -170,7 +170,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -186,7 +186,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -205,7 +205,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -222,7 +222,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -246,7 +246,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold">Hanif</span> 
+                      <span class="fw-bold">Hanif</span>
                 </li>
               </ul>
             </div>
@@ -279,7 +279,7 @@
                             id="phone"
                             placeholder="Enter phone"
                           />
-                        </div> 
+                        </div>
 						<div class="form-group">
                           <label for="Miami">Miami Address</label>
                           <input
@@ -287,6 +287,7 @@
                             class="form-control"
                             id="phone"
                             placeholder="Enter Miami Address"
+                            style="text-transform: uppercase;"
                           />
                         </div>
 			            <div class="form-group">
@@ -303,7 +304,7 @@
                             <option>Nevada</option>
                             <option>North Carolina</option>
                           </select>
-                        </div> 
+                        </div>
                       </div>
                       <div class="col-md-6">
 					    <div class="form-group">
@@ -312,9 +313,9 @@
                             type="date"
                             class="form-control"
                             id="phone"
-                            
+
                           />
-                        </div> 
+                        </div>
 						<div class="form-group">
                           <label>Gender</label><br />
                           <div class="d-flex">
@@ -346,7 +347,7 @@
                               >
                                 Female
                               </label>
-                              </div> 
+                              </div>
 							</div>
 							</div>
 							<div class="form-group">
@@ -355,7 +356,7 @@
 							  <input type="file" class="form-control-file"id="id"/>
 							   <br />
 							   <p class="fileAllowed"><b>Allowed formats : </b>PDF, DOC, DOCX, JPEG or PNG</p>
-							</div> 
+							</div>
 						 <div class="card-action d-flex accountUpdateBtn">
                            <button class="btn updatePreAltBtn">Update</button>
                         </div>
@@ -375,7 +376,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>

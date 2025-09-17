@@ -278,11 +278,25 @@
 				  
 				     $Pre_alert_id = $_REQUEST['pre_alert_id'];
 					 
-				     $sql = "SELECT* FROM pre_alert where id = $Pre_alert_id";  
-					 
-				    if( mysqli_num_rows( mysqli_query($conn, $sql)) == 1  ){ 
-					  
-					   $rows =  mysqli_fetch_array(mysqli_query($conn, $sql)); 
+     $sql = "SELECT * FROM pre_alert where id = $Pre_alert_id AND User_id = $user_id";
+
+				    if( mysqli_num_rows( mysqli_query($conn, $sql)) == 1  ){
+
+					   $rows =  mysqli_fetch_array(mysqli_query($conn, $sql));
+
+					   // Check if editing is locked after 24 hours
+					   if (!isset($rows['created_at']) || empty($rows['created_at'])) {
+					       // Old records without created_at are considered old, lock them
+					       echo "<h2 style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'>This pre-alert cannot be edited as it was created more than 24 hours ago.</h2>";
+					       exit;
+					   } else {
+					       $created_at = strtotime($rows['created_at']);
+					       $now = time();
+					       if (($now - $created_at) > 86400 || $created_at > $now) { // lock if more than 24 hours old or future date
+					           echo "<h2 style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'>This pre-alert cannot be edited as it was created more than 24 hours ago.</h2>";
+					           exit;
+					       }
+					   }
 					
 					?>
 				<form class="Pre_alert_updating" action="../codes.php" method="POST" enctype="multipart/form-data">

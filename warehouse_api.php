@@ -41,6 +41,53 @@ function push_customer_to_warehouse($customer)
     return $result;
 }
 
+
+// Function to update customer data in warehouse API
+function update_courier_customer($customer)
+{
+    // Ensure accountId matches our system account_number (case-insensitive)
+    if (strtoupper($customer['account_number']) !== strtoupper($customer['account_number'])) {
+        error_log("Warehouse API update_courier_customer: Account number mismatch for customer: " . $customer['account_number']);
+        return false;
+    }
+
+    $data = [
+        'id'        => $customer['warehouse_customer_id'],
+        'firstName' => $customer['first_name'],
+        'lastName'  => $customer['last_name'],
+        'accountId' => strtoupper($customer['account_number']),
+        'branch'    => $customer['region'],
+    ];
+
+    $payload = json_encode($data);
+
+    $ch = curl_init(WAREHOUSE_API_URL . '/public.v1.PublicService/UpdateCourierCustomer');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
+    ]);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+    $err      = curl_error($ch);
+    curl_close($ch);
+
+    if ($err) {
+        error_log("Warehouse API update_courier_customer error: $err");
+        return false;
+    }
+
+    $result = json_decode($response, true);
+    if (isset($result['error'])) {
+        error_log("Warehouse API update_courier_customer API error: " . $result['error']);
+        return false;
+    }
+
+    return $result;
+}
+
 // Function to pull package data from warehouse API and update local pre_alert table
 function pull_packages_from_warehouse($limit = 10)
 {
@@ -310,12 +357,23 @@ function sync_customers_with_warehouse($local_customers)
     // Push missing local customers to warehouse API
     foreach ($local_customers as $lc) {
         if (! isset($warehouse_map[$lc['account_number']])) {
+            // Get region from delivery_preference (home region)
+            $region = $lc['region']; // default from users
+            global $conn;
+            if (isset($conn) && $conn) {
+                $sql_dp = "SELECT region FROM delivery_preference WHERE user_id = " . intval($lc['id']) . " LIMIT 1";
+                $res_dp = mysqli_query($conn, $sql_dp);
+                if ($res_dp && mysqli_num_rows($res_dp) > 0) {
+                    $row_dp = mysqli_fetch_assoc($res_dp);
+                    $region = $row_dp['region'];
+                }
+            }
             // Push to warehouse API
             $push_result = push_customer_to_warehouse([
                 'first_name'     => $lc['first_name'],
                 'last_name'      => $lc['last_name'],
                 'account_number' => $lc['account_number'],
-                'region'         => $lc['region'],
+                'region'         => $region,
             ]);
             if ($push_result !== false) {
                 // Add pushed customer to merged list
@@ -323,7 +381,7 @@ function sync_customers_with_warehouse($local_customers)
                     'accountId' => $lc['account_number'],
                     'firstName' => $lc['first_name'],
                     'lastName'  => $lc['last_name'],
-                    'branch'    => $lc['region'],
+                    'branch'    => $region,
                 ];
             }
         }
@@ -338,6 +396,46 @@ function sync_customers_with_warehouse($local_customers)
     }
 
     return $merged_customers;
+}
+
+// Function to update all courier customers in warehouse API with latest data
+function update_all_courier_customers()
+{
+    global $conn;
+    if (!isset($conn) || !$conn) {
+        error_log("Warehouse API update_all_courier_customers: Database connection not available");
+        return false;
+    }
+
+    // Fetch all users with warehouse_customer_id
+    $sql = "SELECT u.id, u.first_name, u.last_name, u.account_number, u.warehouse_customer_id, COALESCE(dp.region, u.region) as region
+            FROM users u
+            LEFT JOIN delivery_preference dp ON u.id = dp.user_id
+            WHERE u.warehouse_customer_id IS NOT NULL AND u.warehouse_customer_id != ''";
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        error_log("Warehouse API update_all_courier_customers: Query failed: " . mysqli_error($conn));
+        return false;
+    }
+
+    $updated_count = 0;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $customer = [
+            'first_name'           => $row['first_name'],
+            'last_name'            => $row['last_name'],
+            'account_number'       => $row['account_number'],
+            'region'               => $row['region'],
+            'warehouse_customer_id' => $row['warehouse_customer_id'],
+        ];
+
+        $update_result = update_courier_customer($customer);
+        if ($update_result !== false) {
+            $updated_count++;
+        }
+    }
+
+    error_log("Warehouse API update_all_courier_customers: Updated $updated_count customers");
+    return $updated_count;
 }
 
 // Webhook handler to receive package updates from warehouse system

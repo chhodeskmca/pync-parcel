@@ -219,34 +219,34 @@
 	    $courier_company = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['courier_company'])) );
 	    $describe_package = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['describe_package']))); 
 	    $merchant = ltrim( mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['merchant']))); 
-	    $File = $_FILES['file']['name'] == '' ? '' : $_FILES['file']['name'] ; 
-		    
+	    $File = $_FILES['file']['name'] == '' ? '' : $_FILES['file']['name'] ;
+
 			if(  $File != ''){
-				
+
 		        // File uploading
 		        $fileExtension =   pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);  // getting file extension
-				if(    $fileExtension != 'pdf' && $fileExtension != 'doc' 
-					   && $fileExtension != 'docx' && $fileExtension != 'jpg' &&  
-					   $fileExtension != 'jpeg' && $fileExtension != 'png') 
-				{  
+				if(    $fileExtension != 'pdf' && $fileExtension != 'doc'
+					   && $fileExtension != 'docx' && $fileExtension != 'jpg' &&
+					   $fileExtension != 'jpeg' && $fileExtension != 'png')
+				{
 					$_SESSION['message']   =  'The file is not allowed';
-					header('location: user-dashboard/createprealert.php'); 
+					header('location: user-dashboard/createprealert.php');
 					die();
-					
-				} 
+
+				}
 			    if( $_FILES['file']['size'] / 1024 / 1024 >= 10 ) // MAX size 10MB allowed
-				{ 
+				{
 					$_SESSION['message']   =  'The file is too large';
-					header('location: user-dashboard/createprealert.php'); 
-					die(); 
-					
-				}; 
-				
-				$File  = $_FILES['file']['name'] ; //file name
-		        $fileTmp   =   $_FILES['file']['tmp_name'];  
+					header('location: user-dashboard/createprealert.php');
+					die();
+
+				};
+
+				$File  = uniqid('', true) . '.' . $fileExtension ; //unique file name
+		        $fileTmp   =   $_FILES['file']['tmp_name'];
 			};
 				
-		 $sql = "INSERT INTO pre_alert ( User_id , tracking_number, value_of_package, courier_company, merchant, describe_package, invoice) VALUES ( $user_id, '$tracking_number', $ValueofPackage, '$courier_company', '$merchant', '$describe_package',  '$File')";
+		 $sql = "INSERT INTO pre_alert ( User_id , tracking_number, value_of_package, courier_company, merchant, describe_package, invoice, created_at) VALUES ( $user_id, '$tracking_number', $ValueofPackage, '$courier_company', '$merchant', '$describe_package',  '$File', NOW())";
 		 
 		 if( mysqli_query( $conn,  $sql )){ 
 		 
@@ -286,51 +286,76 @@
  
   //================================================== Pre alert updating start===============================
  
-  if( isset($_REQUEST['updatePreAltBtn']) ){ 
-  
+  if( isset($_REQUEST['updatePreAltBtn']) ){
+
     $tracking_number = $_REQUEST['tracking_number'] ;
     $value_of_package = $_REQUEST['value_of_package'] ;
     $courier_company = $_REQUEST['courier_company'] ;
-    $Package_Content = $_REQUEST['Package_Content'] ;
+    $describe_package = $_REQUEST['describe_package'] ;
     $merchant = $_REQUEST['merchant'] ;
     $Pre_alert_id = $_REQUEST['Pre_alert_id'] ;
     $old_image = ltrim($_REQUEST['old_image']) ;
-	
-	 	if( $_FILES['file']['name'] == '' )  
+
+    // Check if editing is locked after 24 hours
+    $sql_check = "SELECT created_at FROM pre_alert WHERE id = $Pre_alert_id AND User_id = $user_id";
+    $result = mysqli_query($conn, $sql_check);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        if (!isset($row['created_at']) || empty($row['created_at'])) {
+            // Old records without created_at are considered old, lock them
+            $_SESSION['message'] = 'Editing is locked after 24 hours of creation.';
+            header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
+            die();
+        } else {
+            $created_at = strtotime($row['created_at']);
+            $now = time();
+            if (($now - $created_at) > 0) { // lock all past records
+                $_SESSION['message'] = 'Editing is locked after 24 hours of creation.';
+                header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
+                die();
+            }
+        }
+    } else {
+        $_SESSION['message'] = 'Pre-alert not found.';
+        header("location: user-dashboard/createprealert.php");
+        die();
+    }
+
+	 	if( $_FILES['file']['name'] == '' )
 		{
-		   $File  = $old_image; 
-			
-		}else{ 
+		   $File  = $old_image;
+
+		}else{
 				$fileExtension =   pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);  // getting file extension
-				if( $fileExtension != 'pdf' && $fileExtension != 'doc' 
-					&& $fileExtension != 'docx' && $fileExtension != 'jpg' &&  
-					$fileExtension != 'jpeg' && $fileExtension != 'png') 
-				{  
+				if( $fileExtension != 'pdf' && $fileExtension != 'doc'
+					&& $fileExtension != 'docx' && $fileExtension != 'jpg' &&
+					$fileExtension != 'jpeg' && $fileExtension != 'png')
+				{
 					$_SESSION['message']   =  'The file is not allowed';
-					header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id"); 
+					header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
 					die();
-				} 
+				}
 			    if( $_FILES['file']['size'] / 1024 / 1024 >= 10 ) // MAX size 10MB allowed
-				{ 
+				{
 					$_SESSION['message']   =  'The file is too large';
-					header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id"); 
-					die(); 
-					
-				}; 
-				$File  = $_FILES['file']['name'] ;
-		
+					header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
+					die();
+
+				};
+				$File  = uniqid('', true) . '.' . $fileExtension ;
+
 		};
-	
-		$sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$Package_Content', invoice = '$File' WHERE id = $Pre_alert_id";
+
+		$sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$describe_package', invoice = '$File' WHERE id = $Pre_alert_id";
 		if( mysqli_query($conn, $sql)){ 
 		 
-		      	    if(  $_FILES['file']['name'] != ''){ 
-				   
+		      	    if(  $_FILES['file']['name'] != ''){
+
 					unlink("uploaded-file/$old_image");
-					$fileTmp   =   $_FILES['file']['tmp_name'];  
-					$File_name =   $_FILES['file']['name'];  
-					
-					if( move_uploaded_file($fileTmp, "uploaded-file/$File_name") ){ 
+					$fileTmp   =   $_FILES['file']['tmp_name'];
+					$File_name =   $File;
+
+					if( move_uploaded_file($fileTmp, "uploaded-file/$File_name") ){
 					  
 						$_SESSION['message']   =  'Pre-alert has been updated';
 						header('location: user-dashboard/createprealert.php'); 
