@@ -231,6 +231,7 @@ ALTER TABLE shipment_packages
 -- Add token_hash and token_expired_at to users table if not exists
 ALTER TABLE users ADD COLUMN IF NOT EXISTS token_hash VARCHAR(255) DEFAULT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS token_expired_at DATETIME DEFAULT NULL;
+ALTER TABLE users ADD COLUMN warehouse_customer_id VARCHAR(255) DEFAULT NULL
 
 -- Add new columns to packages table if not exists
 ALTER TABLE packages ADD COLUMN IF NOT EXISTS courier_id VARCHAR(255) DEFAULT NULL;

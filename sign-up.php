@@ -31,7 +31,7 @@
     <body id="page-top">
 	 <!-- Navigation-->
 	 <header class="home-header fixed-top">
-        <nav class="navbar navbar-expand-lg shadow-sm" id="mainNav">
+        <nav class="shadow-sm navbar navbar-expand-lg" id="mainNav">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="index.php">
 				  <img class="logo" src="assets/img/logo.png" alt="" />
@@ -39,7 +39,7 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"> Menu<i class="bi-list"></i>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
-                    <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
+                    <ul class="my-3 navbar-nav ms-auto me-4 my-lg-0">
                         <li class="nav-item"><a class="nav-link me-lg-3" href="index.php">Home</a></li>
                         <li class="nav-item"><a class="nav-link me-lg-3" href="rates.php">Rates</a></li>
                          <li class="nav-item" ><a class="nav-link me-lg-3" href="costcalculator.php">Cost Calculator</a></li>
@@ -59,8 +59,8 @@
  <!--Sign up form start-->	
 <section class="overflow-hidden signUp-form">
   <div class="confm-area">
-		<div class="bg-gradient-primary-to-secondary p-4"> 
-			<h5 class="Register-title font-alt text-white">Register</h5>
+		<div class="p-4 bg-gradient-primary-to-secondary"> 
+			<h5 class="text-white Register-title font-alt">Register</h5>
 			<?php
 			 if( isset($_SESSION['message']) ){ ?>
 			 
@@ -74,26 +74,26 @@
 				
 			<?php } ?> 
 		</div>
-		 <div class="border-0 p-4">
+		 <div class="p-4 border-0">
 			<form id="myForm" class="row" action="user-area/process-signup.php" method='POST'>
 				   <!-- Email address input-->
-				<div class="col-md-6 mb-3">
+				<div class="mb-3 col-md-6">
 				    <label for="firstName">First name<small class="star">*</small></label>
 					<input autocomplete value="<?php echo isset($_REQUEST['first_name']) ? $_REQUEST['first_name']: '';  ?>"   name="first_name" class="form-control" id="firstName" type="text" placeholder="First name"/>
 				</div>
-				<div class="col-md-6 mb-3">
+				<div class="mb-3 col-md-6">
 				    <label for="last_name">Last name <small class="star">*</small></label>
 					<input value="<?php echo isset($_REQUEST['last_name']) ? $_REQUEST['last_name']: '';  ?>" autocomplete name="last_name" class="form-control" id="last_name" type="text" placeholder="Last name" />
 				</div> 
-				 <div class="col-md-6  mb-3">
+				 <div class="mb-3 col-md-6">
 				    <label id="phone" for="txtPhoneNo">Phone number <small class="star">*</small></label>
 					<input value="<?php echo isset($_REQUEST['Number']) ? $_REQUEST['Number']: '';  ?>"  id="txtPhoneNo"  name="phone"  class="form-control" maxlength="12"  type="tel" placeholder="xxx-xxx-xxxx" />
 				</div>
-				 <div class="col-md-6 mb-3">
+				 <div class="mb-3 col-md-6">
 				    <label for="email">Email address<small class="star">*</small></label>
 					<input value="<?php echo isset($_REQUEST['Emailaddress']) ? $_REQUEST['Emailaddress']: '';  ?>" autocomplete name="emailaddress" class="form-control" id="email" type="email" placeholder="Email address" />
 				</div>
-				<div class="col-md-6 mb-3">
+				<div class="mb-3 col-md-6">
 				    <label for="pass">Password<small class="star">*</small></label>
 					<div id="signup_pwd"> 
 					 <input autocomplete name='pwd'  class="form-control" id="pass" type="password" placeholder="Password">
@@ -101,7 +101,7 @@
 					</div>
 	
 				</div>
-				<div class="col-md-6 mb-3">
+				<div class="mb-3 col-md-6">
 				    <label autocomplete for="verifypwd">Verify password<small class="star">*</small></label>
 					<div id="signup_pwd"> 
 					   <input name="verifypwd" class="form-control" id="verifypwd" type="password" placeholder="Verify password" />
@@ -120,9 +120,9 @@
 					<p>I accept the <a href="terms-and-conditions.php">terms and conditions</a> of Pync Parcel Chateau</p>
 				</div>
 				<!-- recaptcha-->
-				<div class="Google-recaptcha"> 
+				<!-- <div class="Google-recaptcha"> 
 				   <div class="g-recaptcha" data-sitekey="6LdJX2orAAAAADNLtaBt1_hthT7n2xq1xcVwSR9q"></div>
-				</div>
+				</div> -->
 				<!-- Submit Button-->
 				<div class="d-grid">
 				 <input hidden type="text" name="signup" />
@@ -143,7 +143,7 @@
 	<!--Sign up form end-->
       <!-- Footer-->
 	   <footer class="text-center footer"> 
-		  <div class="row mx-4"> 
+		  <div class="mx-4 row"> 
 		    <div class="col-6 col-md-5">
 			  <ul>
 			  	 <li><a href="rates.php">Rates</a></li>

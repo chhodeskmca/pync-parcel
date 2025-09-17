@@ -38,6 +38,17 @@ function push_customer_to_warehouse($customer)
         return false;
     }
 
+    // Save warehouse_customer_id if successful
+    if (isset($result['customer']) && isset($result['customer']['id'])) {
+        $warehouse_customer_id = $result['customer']['id'];
+        $update_sql = "UPDATE users SET warehouse_customer_id = '$warehouse_customer_id' WHERE id = " . intval($customer['id']);
+        if (mysqli_query($conn, $update_sql)) {
+            error_log("Saved warehouse_customer_id $warehouse_customer_id for user " . $customer['id']);
+        } else {
+            error_log("Failed to save warehouse_customer_id for user " . $customer['id'] . ": " . mysqli_error($conn));
+        }
+    }
+
     return $result;
 }
 
@@ -85,10 +96,21 @@ function update_courier_customer($customer)
         return false;
     }
 
+    // Save warehouse_customer_id if returned
+    if (isset($result['success']) && $result['success'] && isset($result['customer_id'])) {
+        $warehouse_customer_id = $result['customer_id'];
+        $update_sql = "UPDATE users SET warehouse_customer_id = '$warehouse_customer_id' WHERE id = " . intval($customer['id']);
+        if (mysqli_query($conn, $update_sql)) {
+            error_log("Updated warehouse_customer_id $warehouse_customer_id for user " . $customer['id']);
+        } else {
+            error_log("Failed to update warehouse_customer_id for user " . $customer['id'] . ": " . mysqli_error($conn));
+        }
+    }
+
     return $result;
 }
 
-// Function to pull package data from warehouse API and update local pre_alert table
+// Function to pull package data from warehouse API and update local pre_alert table    
 function pull_packages_from_warehouse($limit = 10)
 {
     global $conn;
