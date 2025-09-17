@@ -5,7 +5,7 @@
     include '../user-area/authorized-user.php';
 
     global $user_id;
-    if (! $user_id) {
+    if (!$user_id) {
         header('Location: ../sign-in.php');
         exit;
     }

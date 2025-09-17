@@ -247,8 +247,20 @@
 			};
 				
 		 $sql = "INSERT INTO pre_alert ( User_id , tracking_number, value_of_package, courier_company, merchant, describe_package, invoice, created_at) VALUES ( $user_id, '$tracking_number', $ValueofPackage, '$courier_company', '$merchant', '$describe_package',  '$File', NOW())";
-		 
-		 if( mysqli_query( $conn,  $sql )){ 
+
+		 if( mysqli_query( $conn,  $sql )){
+
+		     // Insert into packages table
+		 $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$describe_package', '-', $ValueofPackage, '$merchant', NOW())";
+		     mysqli_query($conn, $sql_package);
+
+             // Insert old pre-alerts not in packages
+             $sql_old_prealerts = "INSERT INTO packages (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, created_at)
+                 SELECT User_id, tracking_number, courier_company, describe_package, '-', value_of_package, merchant, created_at
+                 FROM pre_alert
+                 WHERE User_id = $user_id
+                 AND tracking_number NOT IN (SELECT tracking_number FROM packages WHERE user_id = $user_id)";
+             mysqli_query($conn, $sql_old_prealerts);
 		 
 		       if(  $File != '' ){
 				    
@@ -295,6 +307,15 @@
     $merchant = $_REQUEST['merchant'] ;
     $Pre_alert_id = $_REQUEST['Pre_alert_id'] ;
     $old_image = ltrim($_REQUEST['old_image']) ;
+
+    // Get old tracking_number for packages update
+    $sql_old = "SELECT tracking_number FROM pre_alert WHERE id = $Pre_alert_id AND User_id = $user_id";
+    $result_old = mysqli_query($conn, $sql_old);
+    $old_tracking_number = '';
+    if ($result_old && mysqli_num_rows($result_old) > 0) {
+        $row_old = mysqli_fetch_assoc($result_old);
+        $old_tracking_number = $row_old['tracking_number'];
+    }
 
     // Check if editing is locked after 24 hours
     $sql_check = "SELECT created_at FROM pre_alert WHERE id = $Pre_alert_id AND User_id = $user_id";
