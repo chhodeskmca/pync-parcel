@@ -95,24 +95,24 @@ if (! isset($_REQUEST['signup'])) {
 } else if (! isset($_POST['g-recaptcha-response']) || empty($_POST['g-recaptcha-response'])) {
 
     // if response variable not found or empty, Redirect to signup page
-    //  $_SESSION['message'] = "Error in recaptcha verification";
-    //   header("location: ../sign-up.php?first_name=$first_name&last_name=$last_name&Number=$Number&Emailaddress=$Emailaddress");
-    //   die();
+     $_SESSION['message'] = "Error in recaptcha verification";
+      header("location: ../sign-up.php?first_name=$first_name&last_name=$last_name&Number=$Number&Emailaddress=$Emailaddress");
+      die();
 }
 
-// $response = $_POST['g-recaptcha-response'];
-// $secret = '6LdJX2orAAAAAFGf0vxYIvKGxET4GNkBiQjtPpsR'; // recaptcha secret key
-// $VerifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response");
-// $api_response = json_decode($VerifyResponse) ; // API response
+$response = $_POST['g-recaptcha-response'];
+$secret = '6LdJX2orAAAAAFGf0vxYIvKGxET4GNkBiQjtPpsR'; // recaptcha secret key
+$VerifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response");
+$api_response = json_decode($VerifyResponse) ; // API response
 
-// if( !$api_response->success ){
+if( !$api_response->success ){
 
-//     // Password  not  matched, Redirect to signup page
-//      $_SESSION['message'] = "Recaptcha verification api : something went wrong";
-//      header("location: ../sign-up.php?first_name=$first_name&last_name=$last_name&Number=$Number&Emailaddress=$Emailaddress");
-//      die();
+    // Password  not  matched, Redirect to signup page
+     $_SESSION['message'] = "Recaptcha verification api : something went wrong";
+     header("location: ../sign-up.php?first_name=$first_name&last_name=$last_name&Number=$Number&Emailaddress=$Emailaddress");
+     die();
 
-// };
+};
 // ================== sign up validation checking end================
 
 // inserting  sign up data of users
