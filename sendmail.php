@@ -18,11 +18,11 @@
 
     //Create an instance; passing `true` enables exceptions
     $mail = new PHPMailer(true);
-                                                                                                                            //Server settings
-                                                                                                                            //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();                                                                                                        //Send using SMTP
+                                                                                                                           //Server settings
+                                                                                                                           //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+    $mail->isSMTP();                                                                                                       //Send using SMTP
     $mail->Host       = $_ENV['MAIL_HOST'];                                                                                //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                                                                               //Enable SMTP authentication
+    $mail->SMTPAuth   = true;                                                                                              //Enable SMTP authentication
     $mail->Username   = $_ENV['MAIL_USERNAME'];                                                                            //SMTP username
     $mail->Password   = $_ENV['MAIL_PASSWORD'];                                                                            //SMTP password
     $mail->SMTPSecure = $_ENV['MAIL_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
@@ -73,12 +73,12 @@
 
             die();
 
-		} catch (Exception $e) {
-			error_log("Password reset email error: " . $e->getMessage());
-			$_SESSION['message'] = "Something went wrong, please try again";
-			 header('location: ' . $base_url . 'forgotpwd.php');
-			 die();
-		}
+        } catch (Exception $e) {
+            error_log("Password reset email error: " . $e->getMessage());
+            $_SESSION['message'] = "Something went wrong, please try again";
+            header('location: ' . $base_url . 'forgotpwd.php');
+            die();
+        }
     }
 ?>
 <!-- when user has signed up , I will get a email-->
@@ -88,7 +88,7 @@
 
         try {
             $signUp_email   = $_REQUEST['signUp_email'];
-            $Account_Number = isset($_REQUEST['Account_Number']) ? $_REQUEST['Account_Number'] : 'a/n';
+            $Account_Number = isset($_REQUEST['Account_Number']) ? strtoupper($_REQUEST['Account_Number']) : 'a/n';
             $first_name     = isset($_REQUEST['first_name']) ? $_REQUEST['first_name'] : 'a/n';
 
             $body = "<div style='padding:10px; max-width: 700px; margin: auto; color:#222 !important'>
@@ -107,6 +107,7 @@
 				<p>Country: United States</p>
 				<p>Zip Code:33351</p>
 				<p>For now, we’re delivering all parcels directly to you. Until your customer dashboard is updated to allow delivery scheduling, please head straight to “My Account” and set up your preferred delivery address. This ensures your parcels get to you without delay.</p>
+                <hr />
 				<p>Security Tip: <br />
 				Always update your address inside your account. Avoid sending personal delivery details through WhatsApp or text — this helps us protect your privacy.
 				</p>

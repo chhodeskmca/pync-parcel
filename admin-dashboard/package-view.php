@@ -1,33 +1,33 @@
 <?php
     // initialize session
     session_start();
-	include('../config.php'); // database connection
-   	include('../function.php'); // function comes from user dashboard
-   	include('function.php'); // function comes from admin dashboard
-    include('authorized-admin.php');
-	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name
+    include '../config.php';   // database connection
+    include '../function.php'; // function comes from user dashboard
+    include 'function.php';    // function comes from admin dashboard
+    include 'authorized-admin.php';
+    $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
 
     // Get tracking number from URL
     $tracking_number = isset($_GET['tracking']) ? mysqli_real_escape_string($conn, $_GET['tracking']) : '';
 
     // Initialize variables
-    $package = null;
-    $customer_name = 'Unknown';
-    $shipment_number = 'N/A';
-    $total_packages = 0;
-    $active_packages = 0;
-    $customer_email = 'N/A';
-    $customer_phone = 'N/A';
-    $customer_dob = 'N/A';
-    $customer_gender = 'N/A';
-    $customer_photo_id = null;
-    $customer_other_file = 'N/A';
+    $package               = null;
+    $customer_name         = 'Unknown';
+    $shipment_number       = 'N/A';
+    $total_packages        = 0;
+    $active_packages       = 0;
+    $customer_email        = 'N/A';
+    $customer_phone        = 'N/A';
+    $customer_dob          = 'N/A';
+    $customer_gender       = 'N/A';
+    $customer_photo_id     = null;
+    $customer_other_file   = 'N/A';
     $delivery_address_type = 'N/A';
-    $delivery_parish = 'N/A';
-    $delivery_region = 'N/A';
-    $authorized_users = [];
+    $delivery_parish       = 'N/A';
+    $delivery_region       = 'N/A';
+    $authorized_users      = [];
 
-    if (!empty($tracking_number)) {
+    if (! empty($tracking_number)) {
         // Query package details with user and shipment info
         $sql = "SELECT p.*, u.first_name, u.last_name, u.email_address as email, u.phone_number as phone, u.date_of_birth, u.gender, s.shipment_number,
                 d.address_type, d.parish, d.region
@@ -38,32 +38,32 @@
                 WHERE p.tracking_number = '$tracking_number'";
         $result = mysqli_query($conn, $sql);
         if ($result && mysqli_num_rows($result) > 0) {
-            $package = mysqli_fetch_assoc($result);
-            $customer_name = $package['first_name'] . ' ' . $package['last_name'];
-            $customer_email = $package['email'] ?? 'N/A';
-            $customer_phone = $package['phone'] ?? 'N/A';
-            $customer_dob = $package['date_of_birth'] ?? 'N/A';
-            $customer_gender = $package['gender'] ?? 'N/A';
-            $customer_photo_id = $package['photo_id'] ?? null;
-            $customer_other_file = $package['other_file'] ?? 'N/A';
-            $shipment_number = $package['shipment_number'] ?? 'N/A';
+            $package               = mysqli_fetch_assoc($result);
+            $customer_name         = $package['first_name'] . ' ' . $package['last_name'];
+            $customer_email        = $package['email'] ?? 'N/A';
+            $customer_phone        = $package['phone'] ?? 'N/A';
+            $customer_dob          = $package['date_of_birth'] ?? 'N/A';
+            $customer_gender       = $package['gender'] ?? 'N/A';
+            $customer_photo_id     = $package['photo_id'] ?? null;
+            $customer_other_file   = $package['other_file'] ?? 'N/A';
+            $shipment_number       = $package['shipment_number'] ?? 'N/A';
             $delivery_address_type = $package['address_type'] ?? 'N/A';
-            $delivery_parish = $package['parish'] ?? 'N/A';
-            $delivery_region = $package['region'] ?? 'N/A';
+            $delivery_parish       = $package['parish'] ?? 'N/A';
+            $delivery_region       = $package['region'] ?? 'N/A';
 
             // Get total packages in shipment
             if ($package['shipment_id']) {
-                $sql_total = "SELECT COUNT(*) as total FROM packages WHERE shipment_id = " . $package['shipment_id'];
-                $result_total = mysqli_query($conn, $sql_total);
+                $sql_total      = "SELECT COUNT(*) as total FROM packages WHERE shipment_id = " . $package['shipment_id'];
+                $result_total   = mysqli_query($conn, $sql_total);
                 $total_packages = mysqli_fetch_assoc($result_total)['total'];
 
                 // Active packages (not delivered)
-                $sql_active = "SELECT COUNT(*) as active FROM packages WHERE shipment_id = " . $package['shipment_id'] . " AND status != 'Delivered'";
-                $result_active = mysqli_query($conn, $sql_active);
+                $sql_active      = "SELECT COUNT(*) as active FROM packages WHERE shipment_id = " . $package['shipment_id'] . " AND status != 'Delivered'";
+                $result_active   = mysqli_query($conn, $sql_active);
                 $active_packages = mysqli_fetch_assoc($result_active)['active'];
 
                 // Get authorized users for shipment
-                $sql_auth_users = "SELECT first_name, last_name, identification_type, id_number FROM authorized_users WHERE shipment_id = " . $package['shipment_id'];
+                $sql_auth_users    = "SELECT first_name, last_name, identification_type, id_number FROM authorized_users WHERE shipment_id = " . $package['shipment_id'];
                 $result_auth_users = mysqli_query($conn, $sql_auth_users);
                 if ($result_auth_users && mysqli_num_rows($result_auth_users) > 0) {
                     while ($row = mysqli_fetch_assoc($result_auth_users)) {
@@ -76,30 +76,30 @@
 
     // Handle package update
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_package'])) {
-        $courier_charge = mysqli_real_escape_string($conn, $_POST['courier_charge'] ?? '');
+        $courier_charge    = mysqli_real_escape_string($conn, $_POST['courier_charge'] ?? '');
         $tracking_progress = mysqli_real_escape_string($conn, $_POST['tracking_progress'] ?? '');
-        $tracking_date = mysqli_real_escape_string($conn, $_POST['tracking_date'] ?? '');
+        $tracking_date     = mysqli_real_escape_string($conn, $_POST['tracking_date'] ?? '');
 
         // Handle invoice file upload
         $invoice_file_path = null;
         if (isset($_FILES['invoice_file']) && $_FILES['invoice_file']['error'] === UPLOAD_ERR_OK) {
             $allowed_extensions = ['pdf', 'png', 'jpg', 'jpeg'];
-            $file_tmp_path = $_FILES['invoice_file']['tmp_name'];
-            $file_name = basename($_FILES['invoice_file']['name']);
-            $file_size = $_FILES['invoice_file']['size'];
-            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            $file_tmp_path      = $_FILES['invoice_file']['tmp_name'];
+            $file_name          = basename($_FILES['invoice_file']['name']);
+            $file_size          = $_FILES['invoice_file']['size'];
+            $file_ext           = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-            if (!in_array($file_ext, $allowed_extensions)) {
+            if (! in_array($file_ext, $allowed_extensions)) {
                 echo "<div class='alert alert-danger'>Invalid file type. Only PDF, PNG, JPG files are allowed.</div>";
             } elseif ($file_size > 10 * 1024 * 1024) {
                 echo "<div class='alert alert-danger'>File size exceeds 10MB limit.</div>";
             } else {
                 $upload_dir = __DIR__ . '/uploads/invoices/';
-                if (!is_dir($upload_dir)) {
+                if (! is_dir($upload_dir)) {
                     mkdir($upload_dir, 0755, true);
                 }
                 $new_file_name = uniqid('invoice_') . '.' . $file_ext;
-                $destination = $upload_dir . $new_file_name;
+                $destination   = $upload_dir . $new_file_name;
                 if (move_uploaded_file($file_tmp_path, $destination)) {
                     $invoice_file_path = 'uploads/invoices/' . $new_file_name;
                 } else {
@@ -110,7 +110,7 @@
 
         // Convert tracking_date to MySQL format if provided
         $tracking_date_mysql = '';
-        if (!empty($tracking_date)) {
+        if (! empty($tracking_date)) {
             $dt = DateTime::createFromFormat('Y-m-d', $tracking_date);
             if ($dt) {
                 $tracking_date_mysql = $dt->format('Y-m-d H:i:s');
@@ -119,23 +119,23 @@
 
         // Update package
         $update_sql = "UPDATE packages SET ";
-        $updates = [];
-        if (!empty($courier_charge)) {
+        $updates    = [];
+        if (! empty($courier_charge)) {
             $updates[] = "invoice_total = '" . floatval($courier_charge) . "'";
         }
-        if (!empty($tracking_progress)) {
+        if (! empty($tracking_progress)) {
             // Sanitize and limit tracking_progress length to avoid data truncation error
             $safe_tracking_progress = substr(mysqli_real_escape_string($conn, $tracking_progress), 0, 255);
-            $updates[] = "tracking_progress = '" . $safe_tracking_progress . "'";
+            $updates[]              = "tracking_progress = '" . $safe_tracking_progress . "'";
         }
-        if (!empty($tracking_date_mysql)) {
+        if (! empty($tracking_date_mysql)) {
             $updates[] = "created_at = '" . $tracking_date_mysql . "'";
         }
-        if (!empty($invoice_file_path)) {
+        if (! empty($invoice_file_path)) {
             $updates[] = "invoice_file = '" . mysqli_real_escape_string($conn, $invoice_file_path) . "'";
         }
 
-        if (!empty($updates)) {
+        if (! empty($updates)) {
             $update_sql .= implode(', ', $updates) . " WHERE tracking_number = '$tracking_number'";
             if (mysqli_query($conn, $update_sql)) {
                 echo "<div class='alert alert-success'>Package updated successfully.</div>";
@@ -151,7 +151,7 @@
     }
 
     // If no package found, show error
-    if (!$package) {
+    if (! $package) {
         echo "<div class='alert alert-danger'>Package not found.</div>";
         exit;
     }
@@ -164,7 +164,7 @@
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no"  name="viewport" />
 	  <!-- CSS for Tracking icons -->
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css"> 
+     <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
     <link rel="stylesheet" href="../user-dashboard/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../user-dashboard/assets/css/kaiadmin.min.css" />
@@ -208,7 +208,7 @@
               <li class="nav-item active">
                 <a href="index.php">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
-                  <p>Home</p> 
+                  <p>Home</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -234,7 +234,7 @@
                 <img class="user-icon" src="assets/img/boxes.png" alt="User" />
                   <p>Shipments</p>
                 </a>
-              </li> 
+              </li>
 			    <li class="nav-item log-out">
                 <a  href="../user-area/log-out.php">
                 <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
@@ -304,7 +304,7 @@
                     <li>
                       <div class="notif-scroll scrollbar-outer">
                         <div class="notif-center">
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#E87946" class="notif-icon">
                                <img width="30px" height="30px" src="assets/img/delivery.png" alt="delivery" />
@@ -318,7 +318,7 @@
 						    <img src="assets/img/close.png" alt="close" />
 						  </span>
                           </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 						  <a href="#">
                             <div style="background:#000" class="notif-icon">
                                  <img width="30px" height="30px" src="assets/img/shipped.png" alt="shipped" />
@@ -334,7 +334,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						  </span>
 						  </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
                           <a href="#">
                             <div style="background:#226424" class="notif-img">
                               <img  style="width: 30px !important; height: 30px !important"
@@ -353,7 +353,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						   <div class="notifi-area"> 
+						   <div class="notifi-area">
                           <a href="#">
                             <div class="notif-icon notif-danger">
                                <img  style="width: 30px !important; height: 30px !important"
@@ -370,7 +370,7 @@
 						     <img src="assets/img/close.png" alt="close" />
 						   </span>
 						   </div>
-						  <div class="notifi-area"> 
+						  <div class="notifi-area">
 							  <a href="#">
 								<div class="notif-icon notif-danger">
 									<img  style="width: 30px !important; height: 30px !important"
@@ -394,7 +394,7 @@
                 </li>
                 <li class="nav-item">
                       <span class="op-7">Welcome</span>
-                      <span class="fw-bold"> <?php echo user_account_information()['first_name'] ; ?> </span> 
+                      <span class="fw-bold">                                             <?php echo user_account_information()['first_name']; ?> </span>
                 </li>
               </ul>
             </div>
@@ -403,10 +403,10 @@
         </div>
       <div class="container">
           <div class="page-inner py-5">
-			 <!--Tracking details end-->  
+			 <!--Tracking details end-->
 			  <div class="row">
-			    <div class="row Tracking-details-are"> 
-				      <div class="col-6 Packages_top_info"> 
+			    <div class="row Tracking-details-are">
+				      <div class="col-6 Packages_top_info">
 					    <a href="packages.php">
 					     <i class="fa-solid fa-angle-left"></i>
 						 </a>
@@ -414,33 +414,33 @@
 						 <h2>Computer</h2>-->
 						 <p class="Created_at">Created on <b><?php echo date('M j, Y, g:i A', strtotime($package['created_at'])); ?></b></p>
 					  </div>
-				      <div class="col-6 setting_icon_area"> 
+				      <div class="col-6 setting_icon_area">
 					      <i data-bs-toggle="dropdown" aria-expanded="false" class="fa-solid fa-ellipsis"></i>
 							<div class="dropdown">
 							  <ul class="dropdown-menu">
-								<li> 
-								 <a data-toggle="modal" data-target="#ShipmenUpdating" 
-								 class="dropdown-item" href="#"> 
+								<li>
+								 <a data-toggle="modal" data-target="#ShipmenUpdating"
+								 class="dropdown-item" href="#">
 								    <i class="fa fa-edit"></i>
-								    Update Shipment 
-								   </a> 
+								    Update Shipment
+								   </a>
 								</li>
 								<li>
 									<a class="dropdown-item delete_Package" href="#">
 									 <i class="fa fa-trash"></i>
-									 Delete Package 
-									</a> 
+									 Delete Package
+									</a>
 								</li>
 							  </ul>
 							</div>
 					  </div>
 				</div>
-			  	<div class="col-md-3 Package-details"> 
+			  	<div class="col-md-3 Package-details">
 					  <h2>Package Details</h2>
 					  <div class="box Parcel-box">
-					     <img src="assets/img/Packages.png" alt="box" /> 
+					     <img src="assets/img/Packages.png" alt="box" />
 					   </div>
-					  <div class="Package-info"> 
+					  <div class="Package-info">
 						 <div class="Tracking-value">
 							 <span class="heading"> Courier Company</span>
 							 <span class="value"><?php echo htmlspecialchars($package['courier_company'] ?? 'N/A'); ?></span>
@@ -468,8 +468,8 @@
 						</div>
 				  </div>
 				</div>
-				<div class="col-md-9"> 
-				    <div class="row"> 
+				<div class="col-md-9">
+				    <div class="row">
 						<div id="Tracking_number" class="col-md-5 ">
 							<h3>Tracking Number</h3>
 							<p><?php echo htmlspecialchars($package['tracking_number']); ?></p>
@@ -487,8 +487,8 @@
 							<p><?php echo $active_packages; ?></p>
 						</div>
 					     <!--Invoice-->
-						<div class="invoice"> 
-						<?php if (!empty($package['invoice_file'])): ?>
+						<div class="invoice">
+						<?php if (! empty($package['invoice_file'])): ?>
 						   <h2 style="color:#222; font-family:avenir-light !important;text-align: center;margin-top: 30px;margin-bottom: 16px;">
 							Invoice Attached: <a href="<?php echo htmlspecialchars($package['invoice_file']); ?>" target="_blank">View Invoice</a>
 						   </h2>
@@ -513,7 +513,7 @@
 							    <div style="display:none" class="alert alert-warning alert-dismissible fade     show" role="alert">
 								  <strong style="color: red;"></strong>
 								  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-							    </div> 
+							    </div>
 							</div>
 						</div>
 					<!-- <div class="package-details">
@@ -595,7 +595,7 @@
 							</h2>
 							<div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
 							 <div class="accordion-body">
-								<?php if (!empty($authorized_users)): ?>
+								<?php if (! empty($authorized_users)): ?>
 									<?php foreach ($authorized_users as $user): ?>
 										<div class="Tracking-value">
 											 <span class="heading">First Name</span>
@@ -632,17 +632,17 @@
 							 <div class="accordion-body">
 									<div class="Tracking-value">
 										<?php
-										// Query for Miami address if exists
-										$miami_address = 'No Set';
-										if ($package['user_id']) {
-											$sql_miami = "SELECT address FROM miami_addresses WHERE user_id = " . $package['user_id'];
-											$result_miami = mysqli_query($conn, $sql_miami);
-											if ($result_miami && mysqli_num_rows($result_miami) > 0) {
-												$miami_address = mysqli_fetch_assoc($result_miami)['address'];
-											}
-										}
-										echo htmlspecialchars($miami_address);
-										?>
+                                            // Query for Miami address if exists
+                                            $miami_address = 'No Set';
+                                            if ($package['user_id']) {
+                                                $sql_miami    = "SELECT address FROM miami_addresses WHERE user_id = " . $package['user_id'];
+                                                $result_miami = mysqli_query($conn, $sql_miami);
+                                                if ($result_miami && mysqli_num_rows($result_miami) > 0) {
+                                                    $miami_address = mysqli_fetch_assoc($result_miami)['address'];
+                                                }
+                                            }
+                                            echo htmlspecialchars($miami_address);
+                                        ?>
 									</div>
 							  </div>
 							</div>
@@ -658,8 +658,8 @@
 		<div class="modal fade" id="ShipmenUpdating" tabindex="-1" aria-labelledby="ShipmenUpdating" aria-hidden="true">
 		  <div class="modal-dialog modal-lg">
 			<div class="modal-content">
-			  <div class="modal-header"> 
-				 <div> 
+			  <div class="modal-header">
+				 <div>
 					<h2>Update Shipment</h2>
 				    <p>Modify package information</p>
 			    </div>
@@ -679,11 +679,11 @@
 						  <label for="tracking_progress">Tracking progress<span class="mandatory_field">*</span></label>
 							  <select   class="form-select AddressType" id="tracking_progress" name="tracking_progress">
 							  <option value="">Choose...</option>
-						 <option value="In Transit to Jamaica" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'In Transit to Jamaica') ? 'selected' : ''; ?>>In Transit to Jamaica</option>
-							  <option value="Received at Warehouse" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Received at Warehouse') ? 'selected' : ''; ?>>Received at Warehouse</option>
-							  <option value="Undergoing Customs Clearance" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Undergoing Customs Clearance') ? 'selected' : ''; ?>>Undergoing Customs Clearance</option>
-							  <option value="Ready for Delivery Instructions" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Ready for Delivery Instructions') ? 'selected' : ''; ?>>Ready for Delivery Instructions</option>
-							  <option value="Delivered" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == 'Delivered') ? 'selected' : ''; ?>>Delivered</option>
+						 <option value="In Transit to Jamaica"						                                       <?php echo(isset($package['tracking_progress']) && $package['tracking_progress'] == 'In Transit to Jamaica') ? 'selected' : ''; ?>>In Transit to Jamaica</option>
+							  <option value="Received at Warehouse"							                                        <?php echo(isset($package['tracking_progress']) && $package['tracking_progress'] == 'Received at Warehouse') ? 'selected' : ''; ?>>Received at Warehouse</option>
+							  <option value="Undergoing Customs Clearance"							                                               <?php echo(isset($package['tracking_progress']) && $package['tracking_progress'] == 'Undergoing Customs Clearance') ? 'selected' : ''; ?>>Undergoing Customs Clearance</option>
+							  <option value="Ready for Delivery Instructions"							                                                  <?php echo(isset($package['tracking_progress']) && $package['tracking_progress'] == 'Ready for Delivery Instructions') ? 'selected' : ''; ?>>Ready for Delivery Instructions</option>
+							  <option value="Delivered"							                            <?php echo(isset($package['tracking_progress']) && $package['tracking_progress'] == 'Delivered') ? 'selected' : ''; ?>>Delivered</option>
 							</select>
 					   </div>
 					    <div class="form-group">
@@ -710,7 +710,7 @@
           </div>
         </footer>
       </div>
-    </div> 
+    </div>
     <!--   boostrap   -->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
@@ -722,14 +722,14 @@
     <!-- Kaiadmin JS -->
       <script src="assets/js/kaiadmin.min.js"></script>
 	      <!-- sweetalert JS -->
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.2/dist/sweetalert2.all.min.js"> 
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.2/dist/sweetalert2.all.min.js">
 	</script>
 	  <!-- custom js -->
-      <script src="assets/js/custom.js"></script> 
-	  <script type="text/javascript"> 
-	   //Swal.fire("SweetAlert2 is working!"); 
+      <script src="assets/js/custom.js"></script>
+	  <script type="text/javascript">
+	   //Swal.fire("SweetAlert2 is working!");
 			$('.delete_Package').click( function(){
-				
+
 			  Swal.fire({
 				  title: "Are you sure?",
 				  text: "You won't be able to revert this!",
@@ -746,50 +746,50 @@
 					  icon: "success"
 					});
 				  }
-				}); 
-			});  
+				});
+			});
         // ===== Invoice upload ===
-	    
-        // if invoice are clecked, file input will open.		
+
+        // if invoice are clecked, file input will open.
 		$('.invoice .d-flex:first-child').click(function() {
-		     $('#customFile1').click(); 
+		     $('#customFile1').click();
         });
-		 
+
 		function displaySelectedImage(event, elementId) {
 			const selectedImage = document.getElementById(elementId);
-			const fileInput = event.target; 
-			
+			const fileInput = event.target;
+
             const fileName  = fileInput.files[0].name;  // getting file name
             const filesize  = fileInput.files[0].size; // getting file size
-			const fileSizeMB = (filesize / (1024 * 1024)).toFixed(2); // bytes to MB  
+			const fileSizeMB = (filesize / (1024 * 1024)).toFixed(2); // bytes to MB
             const fileExtension = (fileName.split('.').pop()).toLowerCase();// Getting the file extension
-			 
+
 			if(fileExtension == "png" || fileExtension == "pdf" || fileExtension == "jpg"
-			
-			){ 
-			  if( fileSizeMB < 10  ){ 
+
+			){
+			  if( fileSizeMB < 10  ){
 			     	if (fileInput.files && fileInput.files[0]) {
 				    const reader = new FileReader();
 
 				   reader.onload = function(e) {
-					selectedImage.src = e.target.result; 
+					selectedImage.src = e.target.result;
 				};
 				reader.readAsDataURL(fileInput.files[0]);
 			}
-			    }else{ 
-				
+			    }else{
+
 				   $('.invoice .alert-warning').show();
 			       $('.invoice .alert-warning strong').text('Please upload a file Which is less than 10MB');
-			    } 
-			 }else{ 
-			 
+			    }
+			 }else{
+
 			     $('.invoice .alert-warning').show();
 			     $('.invoice .alert-warning strong').text('The file not Supported');
-				 
+
 			 }
 		}
 </script>
-   
+
   </body>
 </html>
 
@@ -798,7 +798,6 @@
 
 
 
-<!-- 
  	  <div class="col-md-6 Tracking-area">
 			      <h1 class="trackingHeading">Tracking Information</h1>
 				   <ul class="timeline">
@@ -831,7 +830,7 @@
 						</div>
 					  </div>
 					</div>
-				  </li> 
+				  </li>
 				  <li class="timeline-item">
 					<span style="opacity: 0.5;" class="timeline-icon">
 					  <i class="bi-check-lg text-primary"></i>
@@ -846,7 +845,7 @@
 						</div>
 					  </div>
 					</div>
-				  </li> 
+				  </li>
 				  <li class="timeline-item">
 					<span style="opacity: 0.5;" class="timeline-icon">
 					  <i class="bi-check-lg text-primary"></i>
@@ -879,4 +878,3 @@
 				  </li>
 				</ul>
 			  </div>
--->

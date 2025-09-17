@@ -601,7 +601,7 @@
 									</div>
                                     <div class="Tracking-value"> 
 									     <span    class="heading">Line 2 : </span>
-									     <span  class="value">STE113 - <span title='Account Number'><?php echo $_REQUEST['account_number'] ; ?></span></span>
+									     <span  class="value">STE113 - <span title='Account Number' style="text-transform: uppercase;"><?php echo $_REQUEST['account_number'] ; ?></span></span>
 									</div>
                                      <div class="Tracking-value"> 
 									     <span    class="heading">City : </span>
