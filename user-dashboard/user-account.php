@@ -285,7 +285,7 @@
         <div class="container">
         <div class="page-inner">
 		<!-- account Setting start--> 
-	     <div class="row  justify-content-center">
+	     <div class="row justify-content-center">
 		     <div class="col-md-11"> 
 				 <div class="card Account-area">
 						<div class="card-body">
@@ -336,7 +336,7 @@
 									    Miami Address 
 									    <p class="supportText">Your Personalized Miami Address</p>
 									  </a>
-									  <div class="mobile_tab  MiamiAddress_tab_btn">
+									  <div class="mobile_tab MiamiAddress_tab_btn">
 									    <img  class="user-icon" src="assets/img/location.png" alt="padlock"> 
 									       Miami Address 
 									       <p class="supportText">Your Personalized Miami Address</p>
@@ -344,14 +344,14 @@
 									  </div>
 								</li>
 							</ul>
-							<div class="tab-content mt-2 mb-3" id="pills-without-border-tabContent">
+							<div class="mt-2 mb-3 tab-content" id="pills-without-border-tabContent">
 							<div class="tab-pane fade account_content" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd">
 								     <!-- my account -->
 										<form enctype="multipart/form-data"  id="account-setting" method="POST" action='../codes.php'>
 										  <div class="card-header">
 										  <div class="card-title"> 
 										      <h1 class="acntSetHeading">Account Number: 
-											   <span class="account_number"><?php echo user_account_information()['account_number']  ;?></span></h1>
+											   <span class="account_number"><?php echo strtoupper(user_account_information()['account_number'])  ;?></span></h1>
 										  </div>
 										  </div>
 										  <div class="card-body">
@@ -731,7 +731,7 @@
 												  />
 												</div> 
 											   </div>  
-											    <div class="card-action d-flex justify-content-center text-center accountUpdateBtn">
+											    <div class="text-center card-action d-flex justify-content-center accountUpdateBtn">
 												    <input type="text" hidden name='user_basic_account_info_btn' /> 
 													<?php 											  
 														echo isset($_REQUEST['no-update-basic-data'])? '': 
@@ -819,7 +819,7 @@
 										  <div class="col-md-6">
 											<div class="form-group">
 											  <label for="firstName">First Name</label>
-											  <input disabled type="text" placeholder="<?php echo Authorized_User()['first_name']; ?>" class="form-control AuthorizedUser  " id="firstName" name='first_name'
+											  <input disabled type="text" placeholder="<?php echo Authorized_User()['first_name']; ?>" class="form-control AuthorizedUser " id="firstName" name='first_name'
 											  />
 											</div>
 										     <div class="form-group">
@@ -845,7 +845,7 @@
 												       Enable Edit 
 												   </span>
 												   <input type="text" hidden name='delivery-updatingBtn' />
-												<button style="display:none" type="submit"  class="btn  AurizedUsr-update-btn updatePreAltBtn">
+												<button style="display:none" type="submit"  class="btn AurizedUsr-update-btn updatePreAltBtn">
 												         <img style='display:none' class='spinner'  width="20px" src="../assets/img/spinner.gif" alt="" />
 													     Update 
 												</button>
@@ -859,7 +859,7 @@
 							 <div class="Miami_Address"> 
 								     <h2 class="text-center" style="font-family: avenir-light !important;">Miami Address </h2>
 									 <ul class="list-group">
-									  <li class="list-group-item d-flex justify-between"> 
+									  <li class="justify-between list-group-item d-flex"> 
 									     <div class='d-flex'> 
 										       <div> 
 											     Line 1: 
@@ -872,20 +872,20 @@
 									         <i class="bi bi-copy"></i>
 										 </div>
 									  </li>
-									  	<li class="list-group-item d-flex justify-between"> 
+									  	<li class="justify-between list-group-item d-flex"> 
 									     <div class='d-flex'> 
 										       <div> 
 											     Line 2: 
 											   </div>
 											    <div id="Line2textToCopy"> 
-											     STE113 - <span title="Account Number"><?php echo user_account_information()['account_number']; ?> </span>
+											     STE113 - <span title="Account Number"><?php echo strtoupper(user_account_information()['account_number']); ?> </span>
 											   </div>
 										 </div>
 										 <div onclick="Line2()" class='MiamiAddressTextCpy'> 
 									         <i class="bi bi-copy"></i>
 										 </div>
 									  </li>
-									  <li class="list-group-item d-flex justify-between"> 
+									  <li class="justify-between list-group-item d-flex"> 
 									     <div class='d-flex'> 
 										       <div> 
 											     City: 
@@ -898,7 +898,7 @@
 									         <i class="bi bi-copy"></i>
 										 </div>
 									  </li>
-									  <li class="list-group-item d-flex justify-between"> 
+									  <li class="justify-between list-group-item d-flex"> 
 									     <div class='d-flex'> 
 										       <div> 
 											     State: 
@@ -912,7 +912,7 @@
 										 </div>
 									      
 									  </li>
-									  	 <li class="list-group-item d-flex justify-between"> 
+									  	 <li class="justify-between list-group-item d-flex"> 
 									     <div class='d-flex'> 
 										       <div> 
 											     Country: 
@@ -925,7 +925,7 @@
 									         <i class="bi bi-copy"></i>
 										 </div>
 									  </li>
-									  	<li class="list-group-item d-flex justify-between"> 
+									  	<li class="justify-between list-group-item d-flex"> 
 									     <div class='d-flex'> 
 										       <div> 
 											     Zip Code: 
