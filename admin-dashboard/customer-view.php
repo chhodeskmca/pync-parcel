@@ -56,7 +56,7 @@
 	</style> 
   </head>
   <body>
-    <div class="wrapper  admin trackingdetails">
+    <div class="wrapper admin trackingdetails">
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-logo">
@@ -283,7 +283,7 @@
           <!-- End Navbar -->
         </div>
       <div class="container">
-          <div class="page-inner py-5">
+          <div class="py-5 page-inner">
 			 <!--Tracking details end-->  
 			  <div class="row">
 				<div class=" col-md-12">
@@ -328,7 +328,7 @@
 							<h4><?php echo $_REQUEST['account_number'] ; ?></h4>
                             <div class="text-center"><span><?php echo $user_row['status'] ?? 'unverified'; ?></span></div>
 						</div>
-						<div  class="col-md-3  col-lg-2">
+						<div  class="col-md-3 col-lg-2">
 							<p class="d-flex justify-content-between"> <span>Credit Balance </span>
 							  <span data-toggle="modal" data-target="#credit_Increase_area"
 								 class="plus-sign">
@@ -349,7 +349,7 @@
 							  Amount owed by customer
 							</div>
 						</div>
-						<div class="col-md-3  col-lg-2 ">
+						<div class="col-md-3 col-lg-2 ">
 
 						    <p>Packages Ready</p>
 							<h3><?php echo $packages_count; ?></h3>
@@ -376,11 +376,11 @@
 									<a class="nav-link" id="pills-contact-tab-nobd" data-bs-toggle="pill" href="#pills-contact-nobd" role="tab" aria-controls="pills-contact-nobd" aria-selected="false" tabindex="-1">Account</a>
 								</li>
 							</ul>
-						    <div class="tab-content mt-2 mb-3" id="pills-without-border-tabContent">
+						    <div class="mt-2 mb-3 tab-content" id="pills-without-border-tabContent">
 							  <div class="tab-pane fade active show" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd">
 									<div class="panel packages ">
 									<div class="panel-heading">
-									 <p style="font-size: 30px;   font-weight: 900; font-weight: 700;color: #E87946;" class="title text-center">Packages</p>
+									 <p style="font-size: 30px;   font-weight: 900; font-weight: 700;color: #E87946;" class="text-center title">Packages</p>
 									</div>   
 											<?php
 											    $user_id =  $_REQUEST['user_id'] ;
@@ -448,7 +448,7 @@
 						 <div class="tab-pane fade pending_payment" id="pills-profile-nobd" role="tabpanel" aria-labelledby="pills-profile-tab-nobd">
 							<div class="row justify-content-center Credit-History"> 
 							    <div class="col-md-6"> 
-								   <p style="font-size:30px; font-weight: 900; color: #E87946; font-weight: 700;" class="title text-center">Credit History</p> 
+								   <p style="font-size:30px; font-weight: 900; color: #E87946; font-weight: 700;" class="text-center title">Credit History</p> 
 								   <?php
 										$user_id =  $_REQUEST['user_id'] ;
 										$sql = "SELECT* FROM balance where user_id = $user_id ORDER BY created_at DESC ";
@@ -601,7 +601,7 @@
 									</div>
                                     <div class="Tracking-value"> 
 									     <span    class="heading">Line 2 : </span>
-									     <span  class="value">STE113 - <span title='Account Number' style="text-transform: uppercase;"><?php echo $_REQUEST['account_number'] ; ?></span></span>
+									     <span  class="value">STE113 - <span title='Account Number' style="text-transform: uppercase;"><?php echo strtoupper($_REQUEST['account_number']); ?></span></span>
 									</div>
                                      <div class="Tracking-value"> 
 									     <span    class="heading">City : </span>
@@ -687,7 +687,7 @@
 						      <input hidden type="text" name="user_name" value="<?php echo $_REQUEST['user_name']; ?>" />
 						      <input hidden type="text" name="account_number" value="<?php echo $_REQUEST['account_number']; ?>" />
 						      <input hidden type="text" name="new_credit_btn" />
-							  <button name="new_credit_btn" type="submit" class=" my-4 submit">
+							  <button name="new_credit_btn" type="submit" class="my-4 submit">
 							    <img class="spinner" style="display:none;" width="20px" src="assets/img/spinner.gif" alt="" />
 								 Submit 
 							   </button>
@@ -848,7 +848,7 @@
 							</div>
 						</div>	
                      	<div class="card-action d-flex justify-content-center">
-							   <button type="submit" class=" my-4 userProfileUpdate">
+							   <button type="submit" class="my-4 userProfileUpdate">
 							    <img class="spinner" style="display:none;" width="20px" src="assets/img/spinner.gif" alt="" />
 								 Update 
 							   </button>
