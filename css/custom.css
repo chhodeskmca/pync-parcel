@@ -55,7 +55,7 @@ header .con-icon {
 }
 .home-header nav li a {
 	display: flex;
-	text-decoration: none !imporant;
+	text-decoration: none !important;
 	border-bottom: 2px solid #fff0
 }
 .home-header nav li a:hover {
