@@ -317,16 +317,16 @@
 							  $result = mysqli_query($conn, $sql) ;
 							  while( $rows = mysqli_fetch_array($result) ){
 
-$user_id = $rows['user_id'];
-$sql = "SELECT * FROM users WHERE id = $user_id";
-$row = mysqli_fetch_array(mysqli_query($conn, $sql));
-if ($row) {
-    $customer_name = $row['first_name'];
-    $account_number = $row['account_number'];
-} else {
-    $customer_name = 'Unknown';
-    $account_number = 'N/A';
-}
+                  $user_id = $rows['user_id'];
+                  $sql = "SELECT * FROM users WHERE id = $user_id";
+                  $row = mysqli_fetch_array(mysqli_query($conn, $sql));
+                  if ($row) {
+                      $customer_name = $row['first_name'];
+                      $account_number = $row['account_number'];
+                  } else {
+                      $customer_name = 'Unknown';
+                      $account_number = 'N/A';
+                  }
 
 
 

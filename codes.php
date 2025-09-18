@@ -368,7 +368,10 @@
 		};
 
 		$sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$describe_package', invoice = '$File' WHERE id = $Pre_alert_id";
-		if( mysqli_query($conn, $sql)){ 
+		if( mysqli_query($conn, $sql)){
+		    // Update corresponding package record
+		    $sql_update_package = "UPDATE packages SET tracking_number = '$tracking_number', courier_company = '$courier_company', describe_package = '$describe_package', value_of_package = $value_of_package, store = '$merchant' WHERE user_id = $user_id AND tracking_number = '$old_tracking_number'";
+		    mysqli_query($conn, $sql_update_package);
 		 
 		      	    if(  $_FILES['file']['name'] != ''){
 

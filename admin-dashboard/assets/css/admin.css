@@ -83,12 +83,12 @@
 }
 
 .panel .panel-heading .btn:hover {
-	color: #fff;
+    color: #fff !important;
 	text-shadow: 3px 3px rgba(255, 255, 255, 0.2);
 }
 
 .panel .panel-heading .form-control {
-	color: #fff;
+    color: #fff !important;
 	background-color: transparent;
 	width: 35%;
 	height: 40px;
@@ -147,7 +147,7 @@
 }
 
 .panel .panel-body .table-area tbody .action-list li a {
-	color: #fff;
+    color: #fff !important;
 	font-size: 15px;
 	position: relative;
 	z-index: 1;
@@ -161,7 +161,7 @@
 .panel .panel-body .table-area tbody .action-list li a:before,
 .panel .panel-body .table-area tbody .action-list li a:after {
 	content: attr(data-tip);
-	color: #fff;
+    color: #fff !important;
 	background-color: #111;
 	font-size: 12px;
 	padding: 5px 7px;
@@ -193,7 +193,7 @@
 
 .panel .panel-footer {
 	color: black;
-	background-color: transparent;
+	/* background-color: transparent; */
 	padding: 15px;
 	border: none;
 }
@@ -207,9 +207,9 @@
 }
 
 .pagination li a {
-	color: black;
-	background-color: transparent;
-	border: 2px solid transparent;
+    color: black !important;
+	/* background-color: #e87947; */
+	/* border: 2px solid transparent; */
 	font-size: 18px;
 	font-weight: 500;
 	text-align: center;
@@ -223,17 +223,25 @@
 }
 
 .pagination li a:hover {
-	color: black;
-	background-color: transparent;
-	border-color: rgba(255, 255, 255, 0.2);
+    color: #fff !important;
+	background-color: #e87947;
+	border-color: #e87947;
 }
 
+.pagination li a:active {
+    color: #fff !important;
+	background-color: #e87947;
+	border-color: #e87947;
+}
+
+
+
 .pagination li a:focus,
-.pagination li.active a,
+/* .pagination li.active a, */
 .pagination li.active a:hover {
-	color: black;
-	background-color: transparent;
-	border-color: black;
+    color: #fff !important;
+	background-color: #e87947 !important;
+	border-color: #e87947 !important;
 }
 
 .pagination li:first-child a,
@@ -313,7 +321,7 @@
 
 .trackingHeading {
 	text-align: left;
-	color: #fff;
+    color: #fff !important;
 	font-family: avenir-light !important;
 }
 
@@ -405,7 +413,7 @@
 }
 
 .admin .timeline p {
-	color: #fff;
+    color: #fff !important;
 	font-size: 17px;
 	font-weight: 400;
 }
@@ -420,12 +428,12 @@
 
 .admin .timeline-item .card-header {
 	padding: 3px;
-	color: #fff;
+    color: #fff !important;
 	font-size: 14px;
 }
 
 .Profile_info_title {
-	color: #fff;
+    color: #fff !important;
 	text-align: center;
 	margin-top: 30px;
 	font-family: avenir-light !important;
@@ -624,7 +632,7 @@
 #Customer_info .col-md-3 span:last-child {
 	background: #dc2626;
 	padding: 4px;
-	color: #fff;
+    color: #fff !important;
 	border-radius: 8px;
 	height: 26px;
 }
@@ -824,7 +832,7 @@
 
 .sort-form label {
 	background: #E87946;
-	color: #fff;
+    color: #fff !important;
 	padding: 10px 15px;
 	margin: 0;
 	font-weight: 500;
@@ -968,7 +976,7 @@
 	height: 32px;
 	padding: 4px 23px;
 	font-size: 17px;
-	color: #fff;
+    color: #fff !important;
 	font-weight: 900;
 	border-radius: 5px;
 	cursor: pointer;
@@ -1002,7 +1010,7 @@
 .modal-header button {
 	border-radius: 50%;
 	background: #E87946;
-	color: #fff;
+    color: #fff !important;
 	padding: 4px 9px;
 	box-shadow: 1px 3px 10px #b7abab;
 	transition: 0.3s;
@@ -1015,7 +1023,7 @@
 .update_shipments button {
 	background: #E87946;
 	border-color: 0px;
-	color: #fff;
+    color: #fff !important;
 	opacity: 1;
 	transition: 0.5s;
 	margin: auto;
@@ -1023,7 +1031,7 @@
 
 .update_shipments button:hover {
 	background: #E87946FA !important;
-	color: #fff;
+    color: #fff !important;
 }
 
 .Shipment_tracking {
@@ -1312,4 +1320,19 @@ ul.action-list {
 
 table.table-area {
 	width: -webkit-fill-available;
+}
+
+
+ 
+.panel-footer {
+    padding: 10px !important;
+}
+.panel-footer .active>.page-link, .page-link.active {
+    color: #fff !important;
+    background-color: #e87947 !important;
+    border-color: #e87947 !important;
+}
+a {
+    color: #e87947 !important;
+    text-decoration: underline;
 }

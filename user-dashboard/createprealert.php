@@ -287,7 +287,6 @@
                           <input name="ValueofPackage" required autocomplete="off" id="priceField" step=".01" min="0" onkeypress="return priceCheck(this, event);"
                             type="number"
                             class="form-control floatNumberField"
-
                             placeholder="0.00"
                           />
                         </div>
@@ -368,7 +367,6 @@
 				<?php
                     $sql = "SELECT* FROM pre_alert where User_id = $user_id ORDER BY id DESC";
                     if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
-
                     ?>
                   <div class="card-header">
                     <div class="card-head-row card-tools-still-right justify-content-center">
@@ -391,8 +389,7 @@
                         </thead>
                         <tbody style="text-align-last: center;">
 						<?php
-
-                                if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
+                            if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
                                     $result = mysqli_query($conn, $sql);
                                     while ($rows = mysqli_fetch_array($result)) {
                                     ?>
@@ -421,12 +418,11 @@
                   </div>
 				<?php
                     } else {
-
                         echo "
-					    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
-					     You have no Pre-alert. Please create Pre-alerts.
-					    </h2>
-					 ";
+\t\t\t\t\t    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
+\t\t\t\t\t     You have no Pre-alert. Please create Pre-alerts.
+\t\t\t\t\t    </h2>
+\t\t\t\t\t ";
                     }
                 ?>
                 </div>
@@ -479,53 +475,42 @@
 				return false;
 			}
 		};
-
 		   // if invoice are clecked, file input will open.
 		$('.invoice .d-flex:first-child').click(function() {
 		     $('#customFile1').click();
         });
-
 		function displaySelectedImage(event, elementId) {
 			const selectedImage = document.getElementById(elementId);
 			const fileInput = event.target;
-
             const fileName  = fileInput.files[0].name;  // getting file name
             const filesize  = fileInput.files[0].size; // getting file size
 			const fileSizeMB = (filesize / (1024 * 1024)).toFixed(2); // bytes to MB
             const fileExtension = (fileName.split('.').pop()).toLowerCase();// Getting the file extension
-
 			if(fileExtension == "png" || fileExtension == "pdf" || fileExtension == "jpg"
-
 			){
 			  if( fileSizeMB < 10  ){
 			     	if (fileInput.files && fileInput.files[0]) {
 				    const reader = new FileReader();
-
 				   reader.onload = function(e) {
 					selectedImage.src = e.target.result;
 				};
 				reader.readAsDataURL(fileInput.files[0]);
 			}
 			    }else{
-
 				   $('.invoice .alert-warning').show();
 			       $('.invoice .alert-warning strong').text('Please upload a file Which is less than 10MB');
 			    }
 			 }else{
-
 			     $('.invoice .alert-warning').show();
 			     $('.invoice .alert-warning strong').text('The file not Supported');
-
 			 }
 		};
-
 	   // Submission form will start after 1 second
 	    $(document).ready(function() {
 		  $('.create_PreAlert').on('submit', function(e) {
 			 $('.spinner').css('display', 'inline');
 			e.preventDefault(); // Stop form from submitting immediately
 			let form = this; // Store reference to the form element
-
 			setTimeout(function() {
 			  form.submit(); // Native submit after delay
 			}, 1000); // 5000ms = 5 seconds

@@ -27,40 +27,28 @@
       <!-- Sidebar -->
       <div class="sidebar">
         <div class="sidebar-logo">
-          <!-- Logo Header -->
           <div class="logo-header">
             <a href="../index.php" class="logo">
-              <img
-                src="assets/img/logo.png"
-                alt="navbar brand"
-                class="navbar-brand"
-              />
+              <img src="assets/img/logo.png" alt="navbar brand" class="navbar-brand" />
             </a>
             <div class="nav-toggle">
-              <button class="btn btn-toggle toggle-sidebar">
-                <i class="gg-menu-right"></i>
-              </button>
-              <button class="btn btn-toggle sidenav-toggler">
-                <i class="gg-menu-left"></i>
-              </button>
+              <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
+              <button class="btn btn-toggle sidenav-toggler"><i class="gg-menu-left"></i></button>
             </div>
-            <button class="topbar-toggler more">
-              <i class="gg-more-vertical-alt"></i>
-            </button>
+            <button class="topbar-toggler more"><i class="gg-more-vertical-alt"></i></button>
           </div>
-          <!-- End Logo Header -->
         </div>
         <div class="sidebar-wrapper scrollbar scrollbar-inner">
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item active">
-                <a  href="index.php">
-                   <img class="home-icon" src="assets/img/home.png" alt="home" />
+                <a href="index.php">
+                  <img class="home-icon" src="assets/img/home.png" alt="home" />
                   <p>Dashboard</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a  href="package.php">
+                <a href="package.php">
                   <img class="package-icon" src="assets/img/package.png" alt="package" />
                   <p style="<?php echo $current_file_name == 'package.php' ? 'color: #E87946 !important' : ''; ?>">Packages</p>
                 </a>
@@ -84,28 +72,29 @@
                 </a>
               </li>
 			  <li class="nav-item">
-                <a  href="mymiamiaddress.php">
-                <img class="user-icon" src="assets/img/location.png" alt="location" />
+                <a href="mymiamiaddress.php">
+                  <img class="user-icon" src="assets/img/location.png" alt="location" />
                   <p>My Miami Address</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a  href="user-account.php">
-                <img class="user-icon" src="assets/img/user.png" alt="User" />
+                <a href="user-account.php">
+                  <img class="user-icon" src="assets/img/user.png" alt="User" />
                   <p>My account</p>
                 </a>
               </li>
 			   <li class="nav-item log-out">
-                <a  href="../user-area/log-out.php">
-                <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
+                <a href="../user-area/log-out.php">
+                  <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
                   <p>Log out</p>
                 </a>
-				</li>
+			   </li>
 			</ul>
           </div>
         </div>
       </div>
       <!-- End Sidebar -->
+
       <div class="main-panel">
         <div class="main-header">
           <div class="main-header-logo">
@@ -134,11 +123,8 @@
             <!-- End Logo Header -->
           </div>
           <!-- Navbar Header -->
-          <nav
-            class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom"
-          >
+          <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
             <div class="container-fluid">
-
               <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
                 <li class="nav-item topbar-icon dropdown hidden-caret">
                   <a
@@ -254,16 +240,15 @@
                   </ul>
                 </li>
                 <li class="nav-item">
-                      <span class="op-7">Welcome</span>
-                      <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
+                  <span class="op-7">Welcome</span>
+                  <span class="fw-bold"><?php echo user_account_information()['first_name']; ?></span>
                 </li>
               </ul>
             </div>
           </nav>
-          <!-- End Navbar -->
         </div>
 
-      <div class="container">
+        <div class="container">
           <div class="page-inner">
 			<?php
                 if (isset($_SESSION['message'])) {
@@ -279,7 +264,32 @@
 			  <div class="col-md-12">
                 <div class="card card-round">
 				  	<?php
-                          $sql    = "SELECT * FROM packages WHERE user_id = $user_id ORDER BY created_at DESC";
+                          // Pagination parameters
+                          $limit  = 10;
+                          $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+                          $offset = ($page - 1) * $limit;
+
+                          // Count only from packages
+                          $sql_count      = "SELECT COUNT(*) as total FROM packages WHERE user_id = $user_id";
+                          $result_count   = mysqli_query($conn, $sql_count);
+                          $total_packages = mysqli_fetch_assoc($result_count)['total'];
+                          $total_pages    = ceil($total_packages / $limit);
+
+                          // Select only packages
+                          $sql = "
+                              SELECT
+                                  id,
+                                  tracking_number,
+                                  tracking_name AS courier_company,
+                                  weight,
+                                  value_of_package,
+                                  describe_package,
+                                  created_at
+                              FROM packages
+                              WHERE user_id = $user_id
+                              ORDER BY created_at DESC
+                              LIMIT $limit OFFSET $offset
+                          ";
                           $result = mysqli_query($conn, $sql);
                           if (mysqli_num_rows($result) > 0) {
                           ?>
@@ -290,67 +300,60 @@
                   </div>
                   <div class="p-0 card-body">
                     <div class="table-responsive">
-                      <!-- Projects table -->
                       <table id="mypackages" class="table mb-0 ">
                         <thead class="thead-light">
-                          <!-- <tr>
-                            <th scope="col">Tracking</th>
-                            <th scope="col" class="text-end">Tracking Name</th>
-                            <th scope="col" class="text-end">Description</th>
-                            <th scope="col" class="text-end">Weight</th>
-                            <th scope="col" class="text-end">Value of Package (USD)</th>
-                            <th scope="col" class="text-end">Created At</th>
-                          </tr> -->
                            <tr>
                             <th>Tracking</th>
                             <th>Courier Company</th>
-                            <th>Store</th>
-                            <!-- <th>Name</th> -->
                             <th>Weight</th>
-                            <!-- <th>Dimensions (L x W x H)</th> -->
-                            <!-- <th>Shipment Status</th> -->
-                            <!-- <th>Shipment Type</th> -->
-                            <!-- <th>Branch</th> -->
-                            <!-- <th>Tag</th> -->
                             <th>Value of Package (USD)</th>
                             <th>Package Description</th>
-                            <!-- <th>Status</th> -->
-                            <!-- <th>Inv Status</th> -->
-                            <!-- <th>Invoice</th> -->
-                            <!-- <th>Inv Total</th> -->
                             <th>Date</th>
                         </tr>
                         </thead>
                         <tbody style="text-align-last: center;">
-
-						 <?php
-
-                                 while ($rows = mysqli_fetch_array($result)) {
-                                     // echo "<pre>";
-                                     // print_r($rows);die;
-                                 ?>
+						 <?php while ($rows = mysqli_fetch_array($result)) {?>
                           <tr>
                             <td><a href="tracking.php?tracking=<?php echo $rows['tracking_number']; ?>"><?php echo $rows['tracking_number']; ?></a></td>
-                            <td class="text-end"><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
                             <td class="text-end"><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : 'N/A'; ?></td>
-                            <td class="text-end"><?php echo $rows['weight'] ? $rows['weight'] . ' lbs' : 'N/A'; ?></td>
-                            <td class="text-end"><?php echo $rows['value_of_package'] ? '$' . $rows['value_of_package'] . ' ' : '$0'; ?></td>
+                            <td class="text-end"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
+                            <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . $rows['value_of_package'] : '—'; ?></span></td>
                             <td class="text-end"><?php echo $rows['describe_package']; ?></td>
                             <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at'])); ?></td>
                           </tr>
 					    <?php }?>
-
 						 </tbody>
                       </table>
                     </div>
                   </div>
+                  <!-- Pagination -->
+                  <div class="mt-3 panel-footer">
+                      <div class="row">
+                          <div class="col col-sm-6 col-xs-6">
+                            Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_packages; ?></b> entries
+                          </div>
+                          <div class="col-sm-6 col-xs-6">
+                              <ul class="pagination justify-content-end" style="color:black;">
+                                  <?php if ($page > 1) {?>
+                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
+                                  <?php } else {?>
+                                      <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                                  <?php }?>
+                                  <?php for ($i = 1; $i <= $total_pages; $i++) {?>
+                                      <li class="page-item<?php echo $i == $page ? ' active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                  <?php }?>
+                                  <?php if ($page < $total_pages) {?>
+                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
+                                  <?php } else {?>
+                                      <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                                  <?php }?>
+                              </ul>
+                          </div>
+                      </div>
+                  </div>
 				<?php
                     } else {
-                        echo "
-\t\t\t\t\t    <h2 style='text-align: center; padding: 50px;  font-size: 20px;line-height: 21px;'>
-\t\t\t\t\t        No Package available.
-\t\t\t\t\t    </h2>
-\t\t\t\t\t ";
+                        echo "<h2 style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'>No Package available.</h2>";
                     }
                 ?>
                 </div>
@@ -370,11 +373,8 @@
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>
     <script src="assets/js/core/bootstrap.min.js"></script>
-    <!-- jQuery Scrollbar -->
     <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
-    <!-- Kaiadmin JS -->
-     <script src="assets/js/kaiadmin.min.js"></script>
-	  <!-- custom JS -->
-	 <script src="assets/js/custom.js" > </script>
+    <script src="assets/js/kaiadmin.min.js"></script>
+	<script src="assets/js/custom.js"></script>
   </body>
 </html>

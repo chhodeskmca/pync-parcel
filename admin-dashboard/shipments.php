@@ -8,7 +8,7 @@ include 'authorized-admin.php';
 $current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file name
 
 // Pagination parameters
-$limit = 50;  // Number of shipments per page
+$limit = 10;  // Number of shipments per page
 $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
@@ -327,7 +327,7 @@ if (mysqli_num_rows($result) > 0) {
                                     <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
                                 <?php } ?>
                                 <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-                                    <li class="page-item<?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
                                 <?php } ?>
                                 <?php if ($page < $total_pages) { ?>
                                     <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>

@@ -10,7 +10,7 @@
 	$current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file name
 
 	// Pagination parameters
-	$limit = 50; // Number of customers per page
+	$limit = 10; // Number of customers per page
 	$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 	$offset = ($page - 1) * $limit;
 
@@ -335,7 +335,6 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Status</th>
-                                <th>Store Location</th>
                                 <th>Phone Number</th>
                                 <th>Registered</th>
                                 <th>View</th>
@@ -348,7 +347,6 @@
                                 <td><?php echo $rows['first_name'] ?></td>
                                 <td><?php echo $rows['email_address'] ?></td>
                                 <td><span class="badge bg-danger">unverified</span></td>
-                                <td>Montego Bay Fairview Branch</td>
                                 <td><?php echo $rows['phone_number'] ?> </td>
                                 <td> <?php echo timeAgo($rows['created_at']); ?> </td>
                                 <td>
