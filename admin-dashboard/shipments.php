@@ -129,7 +129,7 @@
                         <td><?php echo htmlspecialchars($shipment['type'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars($shipment['origin'] ?? '—'); ?></td>
                         <td><?php echo htmlspecialchars($shipment['desitination'] ?? '—'); ?></td>
-                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> →<?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
+                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> → <?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
                         <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status'] ?? ''); ?></span></td>
                         <td><?php echo htmlspecialchars($shipment['description'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars(timeAgo($shipment['created_at'] ?? '')); ?></td>
@@ -535,7 +535,7 @@
                         <td><?php echo htmlspecialchars($shipment['type'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars($shipment['origin'] ?? '—'); ?></td>
                         <td><?php echo htmlspecialchars($shipment['desitination'] ?? '—'); ?></td>
-                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> →<?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
+                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> → <?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
                         <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status'] ?? ''); ?></span></td>
                         <td><?php echo htmlspecialchars($shipment['description'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars(timeAgo($shipment['created_at'] ?? '')); ?></td>
