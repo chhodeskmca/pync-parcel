@@ -408,7 +408,7 @@
             <tr>
                 <td><?php echo $rows['tracking_number']; ?></td>
                 <td><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : '-'; ?></td>
-                <td class="text-end"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
+                <td class="text-center"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
                 <td><?php echo $rows['store'] ?? '—'; ?></td>
                 <!-- <td> <span class="customer_name"><?php echo $customer_name ?>  </span></td><?php echo $customer_name; ?></span> </td> -->
                 <!-- <td><?php echo $rows['weight'] ?? 'N/A'; ?></td> -->
