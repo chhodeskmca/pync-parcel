@@ -447,7 +447,7 @@
                 <!-- <td><?php echo $package['courierName']; ?></td> -->
                 <td><?php echo $package['description']; ?></td>
                 <td> <span class="customer_name">                                                                                                                                                                                                                                                                                                                                       <?php echo $customer_name; ?></span> </td>
-                <td><?php echo $package['weight']; ?></td>
+                <td class="text-end"><?php echo($package['weight'] && $package['weight'] != 0) ? $package['weight'] . " lbs" : '—'; ?></td>
                 <!-- <td><?php echo $package['dimLength'] . ' x ' . $package['dimWidth'] . ' x ' . $package['dimHeight']; ?></td> -->
                 <td><?php echo $package['shipmentStatus']; ?></td>
                 <td><?php echo $package['shipmentType']; ?></td>
