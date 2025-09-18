@@ -372,6 +372,7 @@
                 <th>Tracking</th>
                 <th>Courier Company</th>
                 <th>Weight</th>
+                <th>Store</th>
                 <!-- <th>Name</th> -->
                 <!-- <th>Dimensions (L x W x H)</th> -->
                 <!-- <th>Shipment Status</th> -->
@@ -407,7 +408,8 @@
             <tr>
                 <td><?php echo $rows['tracking_number']; ?></td>
                 <td><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : '-'; ?></td>
-                <td><?php echo $rows['weight'] ?? '0.00'; ?></td>
+                <td><?php echo $rows['weight'] ?? '—'; ?></td>
+                <td><?php echo $rows['store'] ?? '—'; ?></td>
                 <!-- <td> <span class="customer_name">                                                       <?php echo $customer_name ?>  </span></td><?php echo $customer_name; ?></span> </td> -->
                 <!-- <td><?php echo $rows['weight'] ?? 'N/A'; ?></td> -->
                 <!-- <td><?php echo($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td> -->

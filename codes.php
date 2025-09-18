@@ -251,12 +251,12 @@
 		 if( mysqli_query( $conn,  $sql )){
 
 		     // Insert into packages table
-		 $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$describe_package', '-', $ValueofPackage, '$merchant', NOW())";
+		 $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$describe_package', '—', $ValueofPackage, '$merchant', NOW())";
 		     mysqli_query($conn, $sql_package);
 
              // Insert old pre-alerts not in packages
              $sql_old_prealerts = "INSERT INTO packages (user_id, tracking_number, courier_company, describe_package, weight, value_of_package, store, created_at)
-                 SELECT User_id, tracking_number, courier_company, describe_package, '-', value_of_package, merchant, created_at
+                 SELECT User_id, tracking_number, courier_company, describe_package, '—', value_of_package, merchant, created_at
                  FROM pre_alert
                  WHERE User_id = $user_id
                  AND tracking_number NOT IN (SELECT tracking_number FROM packages WHERE user_id = $user_id)";

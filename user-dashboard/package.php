@@ -284,6 +284,7 @@
                                   weight,
                                   value_of_package,
                                   describe_package,
+                                  store,
                                   created_at
                               FROM packages
                               WHERE user_id = $user_id
@@ -306,6 +307,7 @@
                             <th>Tracking</th>
                             <th>Courier Company</th>
                             <th>Weight</th>
+                            <th>Store</th>
                             <th>Value of Package (USD)</th>
                             <th>Package Description</th>
                             <th>Date</th>
@@ -317,6 +319,7 @@
                             <td><a href="tracking.php?tracking=<?php echo $rows['tracking_number']; ?>"><?php echo $rows['tracking_number']; ?></a></td>
                             <td class="text-end"><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : 'N/A'; ?></td>
                             <td class="text-end"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
+                            <td class="text-end"><?php echo(isset($rows['store']) && $rows['store'] != 0) ? $rows['store'] : '—'; ?></td>
                             <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . $rows['value_of_package'] : '—'; ?></span></td>
                             <td class="text-end"><?php echo $rows['describe_package']; ?></td>
                             <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at'])); ?></td>
