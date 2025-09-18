@@ -1,131 +1,137 @@
 <?php
-// Initialize session
-session_start();
-include '../config.php';  // database connection
-include '../function.php';  // function comes from user dashboard
-include 'function.php';  // function comes from admin dashboard
-include '../warehouse_api.php';  // warehouse API functions
-include 'authorized-admin.php';
-include 'ShipmentController.php';  // shipment controller
-$current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file name
+    // Initialize session
+    session_start();
+    include '../config.php';        // database connection
+    include '../function.php';      // function comes from user dashboard
+    include 'function.php';         // function comes from admin dashboard
+    include '../warehouse_api.php'; // warehouse API functions
+    include 'authorized-admin.php';
+    include 'ShipmentController.php';                    // shipment controller
+    $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file name
 
-// Initialize controller
-$shipmentController = new ShipmentController($conn);
+    // Initialize controller
+    $shipmentController = new ShipmentController($conn);
 
-// Handle sync request
-$sync_message = '';
-if (isset($_GET['sync']) && $_GET['sync'] === '1') {
-    $sync_result = $shipmentController->syncShipmentsFromWarehouse();
-    if ($sync_result['success']) {
-        $sync_message = '<div class="alert alert-success">Shipments synced successfully!</div>';
-    } else {
-        $sync_message = '<div class="alert alert-danger">Failed to sync shipments: ' . htmlspecialchars($sync_result['error']) . '</div>';
+    // Handle sync request
+    $sync_message = '';
+    if (isset($_GET['sync']) && $_GET['sync'] === '1') {
+        $sync_result = $shipmentController->syncShipmentsFromWarehouse();
+        if ($sync_result['success']) {
+            $sync_message = '<div class="alert alert-success">Shipments synced successfully!</div>';
+        } else {
+            $sync_message = '<div class="alert alert-danger">Failed to sync shipments: ' . htmlspecialchars($sync_result['error']) . '</div>';
+        }
     }
-}
 
-// Handle AJAX requests
-if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
-    handleAjaxRequest($shipmentController);
-    exit;
-}
+    // Handle AJAX requests
+    if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+        handleAjaxRequest($shipmentController);
+        exit;
+    }
 
-// Handle update check requests
-if (isset($_GET['check_updates']) && $_GET['check_updates'] == '1') {
-    handleUpdateCheck($shipmentController);
-    exit;
-}
+    // Handle update check requests
+    if (isset($_GET['check_updates']) && $_GET['check_updates'] == '1') {
+        handleUpdateCheck($shipmentController);
+        exit;
+    }
 
-// Pagination and filter parameters
-$limit = 10;  // Number of packages per page
-$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$status = isset($_GET['status']) ? trim($_GET['status']) : '';
-$sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'created_at DESC';
-
-// Validate sort parameter for security
-$allowed_sorts = [
-    'created_at DESC', 'created_at ASC',
-    'tracking_number ASC', 'tracking_number DESC',
-    'value_of_package DESC', 'value_of_package ASC'
-];
-if (!in_array($sort, $allowed_sorts)) {
-    $sort = 'created_at DESC';
-}
-
-// Validate pagination parameters
-$validation_errors = $shipmentController->validatePaginationParams($page, $limit);
-if (!empty($validation_errors)) {
-    $page = 1; // Reset to first page on validation error
-    $error_message = '<div class="alert alert-warning">Invalid pagination parameters. Showing first page.</div>';
-}
-
-$data = $shipmentController->getShipments($page, $limit, $search, $status, $sort);
-$shipments = $data['shipments'];
-$total_shipments = $data['total'];
-$total_pages = ceil($total_shipments / $limit);
-
-// Handle errors
-$error_message = '';
-if (empty($shipments)) {
-    $shipments = [];
-    $total_shipments = 0;
-    $total_pages = 0;
-}
-
-/**
- * Handle AJAX requests for search/filter/pagination
- */
-function handleAjaxRequest($controller) {
-    $limit = 10;
-    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    // Pagination and filter parameters
+    $limit  = 10; // Number of packages per page
+    $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     $status = isset($_GET['status']) ? trim($_GET['status']) : '';
-    $sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'created_at DESC';
+    $sort   = isset($_GET['sort']) ? trim($_GET['sort']) : 'created_at DESC';
 
-    // Validate sort parameter
+    // Validate sort parameter for security
     $allowed_sorts = [
         'created_at DESC', 'created_at ASC',
         'tracking_number ASC', 'tracking_number DESC',
-        'value_of_package DESC', 'value_of_package ASC'
+        'value_of_package DESC', 'value_of_package ASC',
     ];
-    if (!in_array($sort, $allowed_sorts)) {
+    if (! in_array($sort, $allowed_sorts)) {
         $sort = 'created_at DESC';
     }
 
-    $data = $controller->getShipments($page, $limit, $search, $status, $sort);
-    $shipments = $data['shipments'];
-    $total_shipments = $data['total'];
-    $total_pages = ceil($total_shipments / $limit);
+    // Validate pagination parameters
+    $validation_errors = $shipmentController->validatePaginationParams($page, $limit);
+    if (! empty($validation_errors)) {
+        $page          = 1; // Reset to first page on validation error
+        $error_message = '<div class="alert alert-warning">Invalid pagination parameters. Showing first page.</div>';
+    }
 
-    // Generate table HTML
-    ob_start();
+    $data            = $shipmentController->getShipments($page, $limit, $search, $status, $sort);
+    $shipments       = $data['shipments'];
+    $total_shipments = $data['total'];
+    $total_pages     = ceil($total_shipments / $limit);
+
+    // Handle errors
+    $error_message = '';
+    if (empty($shipments)) {
+        $shipments       = [];
+        $total_shipments = 0;
+        $total_pages     = 0;
+    }
+
+    /**
+     * Handle AJAX requests for search/filter/pagination
+     */
+    function handleAjaxRequest($controller)
+    {
+        $limit  = 10;
+        $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+        $status = isset($_GET['status']) ? trim($_GET['status']) : '';
+        $sort   = isset($_GET['sort']) ? trim($_GET['sort']) : 'created_at DESC';
+
+        // Validate sort parameter
+        $allowed_sorts = [
+            'created_at DESC', 'created_at ASC',
+            'tracking_number ASC', 'tracking_number DESC',
+            'value_of_package DESC', 'value_of_package ASC',
+        ];
+        if (! in_array($sort, $allowed_sorts)) {
+            $sort = 'created_at DESC';
+        }
+
+        $data            = $controller->getShipments($page, $limit, $search, $status, $sort);
+        $shipments       = $data['shipments'];
+        $total_shipments = $data['total'];
+        $total_pages     = ceil($total_shipments / $limit);
+
+        // Generate table HTML
+        ob_start();
     ?>
     <div class="panel-body table-responsive">
         <table class="table m-auto shadow table-striped table-hover table-bordered">
         <thead class="table-light">
             <tr>
-                <th>Shipment Number</th>
-                <th>Type</th>
-                <th>Packages</th>
-                <th>Total Weight</th>
-                <th>Gross Revenue</th>
-                <th>Route</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>View</th>
+              <th>Shipment Number</th>
+              <th>Type</th>
+              <th>Origin</th>
+              <th>Destination</th>
+              <th>Status</th>
+              <th>Description</th>
+              <th>Created At</th>
+              <!-- <th>Packages</th>
+              <th>Total Weight</th>
+              <th>Gross Revenue</th>
+              <th>Route</th>
+              <th>Status</th>
+              <th>Date</th> -->
+              <th>View</th>
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($shipments)) { ?>
-                <?php foreach ($shipments as $shipment) { ?>
+            <?php if (! empty($shipments)) {?>
+                <?php foreach ($shipments as $shipment) {?>
                     <tr>
                         <td><?php echo htmlspecialchars($shipment['shipment_number'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars($shipment['type'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($shipment['total_packages'] ?? '0'); ?> packages</td>
-                        <td><?php echo htmlspecialchars($shipment['total_weight'] ?? '0.00'); ?> lbs</td>
-                        <td><span class="item_value">$<?php echo htmlspecialchars($shipment['gross_revenue'] ?? '0.00'); ?></span></td>
-                        <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> → <?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['origin'] ?? '—'); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['desitination'] ?? '—'); ?></td>
+                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> →<?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
                         <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status'] ?? ''); ?></span></td>
+                        <td><?php echo htmlspecialchars($shipment['description'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars(timeAgo($shipment['created_at'] ?? '')); ?></td>
                         <td>
                             <ul class="action-list">
@@ -137,72 +143,73 @@ function handleAjaxRequest($controller) {
                             </ul>
                         </td>
                     </tr>
-                <?php } ?>
-            <?php } else { ?>
+                <?php }?>
+            <?php } else {?>
                 <tr>
                     <td colspan="9" style="text-align: center;">No shipments found matching your criteria</td>
                 </tr>
-            <?php } ?>
+            <?php }?>
           </tbody>
         </table>
     </div>
     <?php
-    $table_html = ob_get_clean();
+        $table_html = ob_get_clean();
 
-    // Generate pagination HTML
-    ob_start();
-    ?>
+            // Generate pagination HTML
+            ob_start();
+        ?>
     <div class="mt-3 panel-footer">
         <div class="row">
             <div class="col col-sm-6 col-xs-6">Showing <b><?php echo count($shipments); ?></b> out of <b><?php echo $total_shipments; ?></b> entries</div>
             <div class="col-sm-6 col-xs-6">
                 <ul class="pagination justify-content-end" style="color:black;">
-                    <?php if ($page > 1) { ?>
+                    <?php if ($page > 1) {?>
                         <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>"><</a></li>
-                    <?php } else { ?>
+                    <?php } else {?>
                         <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
-                    <?php } ?>
-                    <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-                        <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>"><?php echo $i; ?></a></li>
-                    <?php } ?>
-                    <?php if ($page < $total_pages) { ?>
+                    <?php }?>
+                    <?php for ($i = 1; $i <= $total_pages; $i++) {?>
+                        <li class="page-item<?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>"><?php echo $i; ?></a></li>
+                    <?php }?>
+                    <?php if ($page < $total_pages) {?>
                         <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>">></a></li>
-                    <?php } else { ?>
+                    <?php } else {?>
                         <li class="page-item disabled"><a class="page-link" href="#">></a></li>
-                    <?php } ?>
+                    <?php }?>
                 </ul>
             </div>
         </div>
     </div>
     <?php
-    $pagination_html = ob_get_clean();
+        $pagination_html = ob_get_clean();
 
-    // Return JSON response
-    header('Content-Type: application/json');
-    echo json_encode([
-        'table' => $table_html,
-        'pagination' => $pagination_html,
-        'total' => $total_shipments,
-        'page' => $page,
-        'total_pages' => $total_pages
-    ]);
-}
+            // Return JSON response
+            header('Content-Type: application/json');
+            echo json_encode([
+                'table'       => $table_html,
+                'pagination'  => $pagination_html,
+                'total'       => $total_shipments,
+                'page'        => $page,
+                'total_pages' => $total_pages,
+            ]);
+        }
 
-/**
- * Handle update check requests
- */
-function handleUpdateCheck($controller) {
-    // Get basic stats for update checking
-    $stats = $controller->getShipmentStats();
+        /**
+         * Handle update check requests
+         */
+        function handleUpdateCheck($controller)
+        {
+            // Get basic stats for update checking
+            $stats = $controller->getShipmentStats();
 
-    header('Content-Type: application/json');
-    echo json_encode([
-        'has_updates' => false, // You can implement more sophisticated update detection
-        'stats' => $stats,
-        'timestamp' => time()
-    ]);
-}
-?>
+            header('Content-Type: application/json');
+            echo json_encode([
+                'has_updates' => false, // You can implement more sophisticated update detection
+                'stats'       => $stats,
+                'timestamp'   => time(),
+            ]);
+        }
+    ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -273,7 +280,7 @@ function handleUpdateCheck($controller) {
                   <p>Pre-alert</p>
                 </a>
               </li>
-              <li class="nav-item <?php echo $current_file_name == 'shipments.php' ? 'active' : ''; ?>">
+              <li class="nav-item                                  <?php echo $current_file_name == 'shipments.php' ? 'active' : ''; ?>">
                 <a  href="shipments.php">
                 <img class="user-icon" src="assets/img/boxes.png" alt="User" />
                   <p style="<?php echo $current_file_name == 'shipments.php' ? 'color: #E87946 !important' : ''; ?>">Shipments</p>
@@ -434,8 +441,14 @@ function handleUpdateCheck($controller) {
                             </div>
                         </div>
                     </div>
-                    <?php if (!empty($sync_message)) echo $sync_message; ?>
-                    <?php if (!empty($error_message)) echo $error_message; ?>
+                    <?php if (! empty($sync_message)) {
+                            echo $sync_message;
+                        }
+                    ?>
+                    <?php if (! empty($error_message)) {
+                            echo $error_message;
+                        }
+                    ?>
                 </div>
                 <!-- Search and Filter Container -->
                 <div class="search-filter-container" style="display:none;">
@@ -515,14 +528,14 @@ function handleUpdateCheck($controller) {
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($shipments)) { ?>
-                <?php foreach ($shipments as $shipment) { ?>
+            <?php if (! empty($shipments)) {?>
+                <?php foreach ($shipments as $shipment) {?>
                     <tr>
                         <td><?php echo htmlspecialchars($shipment['shipment_number'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars($shipment['type'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($shipment['desitination'] ?? ''); ?></td>
-                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> → <?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
+                        <td><?php echo htmlspecialchars($shipment['origin'] ?? '—'); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['desitination'] ?? '—'); ?></td>
+                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> →<?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
                         <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status'] ?? ''); ?></span></td>
                         <td><?php echo htmlspecialchars($shipment['description'] ?? ''); ?></td>
                         <td><?php echo htmlspecialchars(timeAgo($shipment['created_at'] ?? '')); ?></td>
@@ -536,12 +549,12 @@ function handleUpdateCheck($controller) {
                             </ul>
                         </td>
                     </tr>
-                <?php } ?>
-            <?php } else { ?>
+                <?php }?>
+            <?php } else {?>
                 <tr>
                     <td colspan="9" style="text-align: center;">No shipments found matching your criteria</td>
                 </tr>
-            <?php } ?>
+            <?php }?>
           </tbody>
     </table>
 </div>
@@ -551,31 +564,31 @@ function handleUpdateCheck($controller) {
                         <div class="col col-sm-6 col-xs-6">Showing <b><?php echo count($shipments); ?></b> out of <b><?php echo $total_shipments; ?></b> entries</div>
                         <div class="col-sm-6 col-xs-6">
                             <ul class="pagination justify-content-end" style="color:black;">
-                                <?php if ($page > 1) { ?>
+                                <?php if ($page > 1) {?>
                                     <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
-                                <?php } else { ?>
+                                <?php } else {?>
                                     <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
-                                <?php } ?>
-                                <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-                                    <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                                <?php } ?>
-                                <?php if ($page < $total_pages) { ?>
+                                <?php }?>
+                                <?php for ($i = 1; $i <= $total_pages; $i++) {?>
+                                    <li class="page-item<?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                <?php }?>
+                                <?php if ($page < $total_pages) {?>
                                     <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
-                                <?php } else { ?>
+                                <?php } else {?>
                                     <li class="page-item disabled"><a class="page-link" href="#">></a></li>
-                                <?php } ?>
+                                <?php }?>
                             </ul>
                             <ul class="pagination visible-xs pull-right d-none">
-                                <?php if ($page > 1) { ?>
+                                <?php if ($page > 1) {?>
                                     <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
-                                <?php } else { ?>
+                                <?php } else {?>
                                     <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
-                                <?php } ?>
-                                <?php if ($page < $total_pages) { ?>
+                                <?php }?>
+                                <?php if ($page < $total_pages) {?>
                                     <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
-                                <?php } else { ?>
+                                <?php } else {?>
                                     <li class="page-item disabled"><a class="page-link" href="#">></a></li>
-                                <?php } ?>
+                                <?php }?>
                             </ul>
                         </div>
                     </div>
