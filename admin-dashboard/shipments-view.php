@@ -1,11 +1,28 @@
-<?php 
+<?php
     // initialize session
-    session_start();  
+    session_start();
 	include('../config.php'); // database connection
    	include('../function.php'); // function comes from user dashboard
    	include('function.php'); // function comes from admin dashboard
-    include('authorized-admin.php'); 
-	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name 
+    include('authorized-admin.php');
+	$current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name
+
+	// Get tracking parameter
+	$tracking = $_GET['tracking'] ?? '';
+	if (empty($tracking)) {
+	    header('Location: shipments.php');
+	    exit;
+	}
+
+	// Include and use ShipmentController
+	include_once 'ShipmentController.php';
+	$controller = new ShipmentController($conn);
+	$shipment = $controller->getShipmentByTracking($tracking);
+	if (!$shipment) {
+	    header('Location: shipments.php?error=shipment_not_found');
+	    exit;
+	}
+	$packages = $controller->getPackagesByShipmentId($shipment['id']);
 ?>
 
 <!DOCTYPE html>
@@ -335,42 +352,42 @@
 							</div>
 					  </div>
 				    </div>
-				    <div class="Shipment_title_area"> 
+				    <div class="Shipment_title_area">
 					   <p class="title">Shipments</p>
-					   <h2 class="Shipment_tracking">00VAK6I2113T9VW-2X7W <img src="assets/img/sea.png" alt="sea" /></h2>
-						<span class="Shipment-status">Completed</span>
-						<p class="created_date">Created on Jul 31, 2025, 7:28 PM</p>
-						<p class="Shipment-type">Sea</p>
+					   <h2 class="Shipment_tracking"><?php echo htmlspecialchars($shipment['shipment_number']); ?> <img src="assets/img/<?php echo strtolower($shipment['type']); ?>.png" alt="<?php echo $shipment['type']; ?>" /></h2>
+						<span class="Shipment-status"><?php echo htmlspecialchars($shipment['status']); ?></span>
+						<p class="created_date">Created on <?php echo date('M d, Y, g:i A', strtotime($shipment['departure_date'] ?? 'now')); ?></p>
+						<p class="Shipment-type"><?php echo htmlspecialchars($shipment['type']); ?></p>
 				    </div>
-				    <div class="row Shipments_details" id="Customer_info"> 
+				    <div class="row Shipments_details" id="Customer_info">
 						<div  class="col-md-3">
-                            <div class="d-flex justify-content-between"> 
+                            <div class="d-flex justify-content-between">
 							    <p>Gross revenue</p>
 								<img style="width: 43px;height: 41px;" src="assets/img/profit.png" alt="profit" />
-							</div>						
-							<h3>$260.00 JMD</h3>							
+							</div>
+							<h3>$<?php echo number_format($shipment['gross_revenue'], 2); ?> JMD</h3>
 						</div>
 						<div  class="col-md-3">
-                            <div class="d-flex justify-content-between"> 
+                            <div class="d-flex justify-content-between">
 							    <p>Packages</p>
 								<img style="width: 43px;height: 41px;" src="assets/img/shipment-package.png" alt="profit" />
-							</div>						
-							<h3>5</h3>							
+							</div>
+							<h3><?php echo (int)$shipment['total_packages']; ?></h3>
 						</div>
 						<div  class="col-md-3">
-                            <div class="d-flex justify-content-between"> 
+                            <div class="d-flex justify-content-between">
 							    <p>Weight</p>
 								<img style="width: 43px;height: 41px;" src="assets/img/scale.png" alt="profit" />
-							</div>						
-							<h3>5 lb</h3>							
+							</div>
+							<h3><?php echo number_format($shipment['total_weight'], 2); ?> lb</h3>
 						</div>
 						<div  class="col-md-3">
-                            <div class="d-flex justify-content-between"> 
+                            <div class="d-flex justify-content-between">
 							    <p>Volume</p>
 								<img style="width: 43px;height: 41px;" src="assets/img/box.png" alt="shipment package" />
-							</div>						
-							<h3>45896.00 ft3</h3>							
-						</div> 
+							</div>
+							<h3><?php echo number_format($shipment['volume'], 2); ?> ft3</h3>
+						</div>
 					</div>
 					<div class="shipment_items"><!---->
 					<div class="row"> 
@@ -414,82 +431,34 @@
 										</tr>
 									</thead>
 									<tbody>
+										<?php foreach ($packages as $package): ?>
 										<tr>
-											<td>76rt3276i45786324</td>
-											<td><img src="assets/img/fedex.png" alt="" /></td>
-											<td>Laptop</td> 
-											<td> <span class="customer_name"> Abdul </span> </td>
-											<td>6 lbs</td>
-											<td> <span class="item_value">$10.00</span></td>
-											<td> 
-											  <span style="display: block;   padding: 2px 10px;   border-radius: 7px;background:green; color:#90ee90">Delivered</span>  
+											<td><?php echo htmlspecialchars($package['tracking_number']); ?></td>
+											<td><img src="assets/img/<?php echo strtolower($package['courier_company'] ?? 'default'); ?>.png" alt="" /></td>
+											<td><?php echo htmlspecialchars($package['describe_package']); ?></td>
+											<td> <span class="customer_name"> <?php echo htmlspecialchars($package['first_name'] . ' ' . $package['last_name']); ?> </span> </td>
+											<td><?php echo number_format($package['weight'], 2); ?> lbs</td>
+											<td> <span class="item_value">$<?php echo number_format($package['value_of_package'], 2); ?></span></td>
+											<td>
+											  <span style="display: block; padding: 2px 10px; border-radius: 7px;background:<?php echo $package['shipment_status'] == 'Delivered' ? 'green' : '#E87946'; ?>; color:<?php echo $package['shipment_status'] == 'Delivered' ? '#90ee90' : '#fff'; ?>"><?php echo htmlspecialchars($package['shipment_status']); ?></span>
 											</td>
-											<td> 
+											<td>
 											    <span style="display: block; padding: 2px 10px; border-radius: 7px;background:#86efac; color:#55643d" class="Inv-status">PAID</span>
 											 </td>
 											<td> <span class="invoice">N/A</span></td>
-											<td>$10</td>
-											<td> Apr 29, 2025, 10:43 PM </td>
+											<td>$<?php echo number_format($package['value_of_package'], 2); ?></td>
+											<td> <?php echo date('M d, Y, g:i A', strtotime($package['created_at'])); ?> </td>
 											<td>
 												<ul class="action-list">
-													<li style="list-style:none;"> 
-													  <a href="package-view.php"> 
+													<li style="list-style:none;">
+													  <a href="package-view.php?tracking=<?php echo urlencode($package['tracking_number']); ?>">
 														 <i class="fa-solid fa-eye"></i>
-													  </a> 
+													  </a>
 													</li>
 												</ul>
 											</td>
-										</tr> 
-										<tr>
-											<td>76rt3276i45786324</td>
-											<td><img src="assets/img/amazon.png" alt="" /></td>
-											<td>Laptop</td>
-											<td> <span class="customer_name"> Abdul </span> </td>
-											<td>6 lbs</td>
-											<td> <span class="item_value">$10.00</span></td>
-											<td>
-											   <span style="display: block;   padding: 2px 10px;   border-radius: 7px;background:green; color:#90ee90">Delivered</span> 
-											</td>
-											<td> 
-											  <span style="display: block;   padding: 2px 10px;   border-radius: 7px; background:#86efac; color:#55643d" class="Inv-status">PAID</span>
-											</td>
-											<td> <span class="invoice">N/A</span></td>
-											<td>$10</td>
-											<td> Apr 29, 2025, 10:43 PM </td>
-											<td>
-												<ul class="action-list">
-													<li> 
-													  <a href="package-view.php"> 
-														 <i class="fa-solid fa-eye"></i>
-													  </a> 
-													</li>
-												</ul>
-											</td>
-										</tr> 
-										<tr>
-											<td>76rt3276i45786324</td>
-											<td><img src="assets/img/f.png" alt="" /></td>
-											<td>Laptop</td>
-											<td> <span class="customer_name"> Abdul </span> </td>
-											<td>6 lbs</td>
-											<td> <span class="item_value">$10.00</span></td>
-											<td> 
-											  <span style="display: block;   padding: 2px 10px;   border-radius: 7px;background:green; color:#90ee90">Delivered</span>   
-											</td>
-											<td><span style="display: block;   padding: 2px 10px;   border-radius: 7px;background:#86efac; color:#55643d" class="Inv-status">PAID</span></td>
-											<td> <span class="invoice">N/A</span></td>
-											<td>$10</td>
-											<td> Apr 29, 2025, 10:43 PM </td>
-											<td>
-												<ul class="action-list">
-													<li> 
-													  <a href="package-view.php"> 
-														 <i class="fa-solid fa-eye"></i>
-													  </a> 
-													</li>
-												</ul>
-											</td>
-										</tr> 
+										</tr>
+										<?php endforeach; ?>
 									 </tbody>
 								</table>
 							</div>

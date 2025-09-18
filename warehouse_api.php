@@ -1,116 +1,645 @@
 <?php
 include_once 'config.php';
 include_once __DIR__ . '/function.php'; // for DB connection
+include_once 'CacheManager.php';        // Include cache manager
 
-// Function to push customer data to warehouse API
-function push_customer_to_warehouse($customer)
+// Configuration constants for API handling
+define('API_MAX_RETRIES', 3);
+define('API_RETRY_DELAY', 1);      // seconds
+define('API_TIMEOUT', 30);         // seconds
+define('API_CONNECT_TIMEOUT', 10); // seconds
+define('API_CACHE_TTL', 300);      // 5 minutes cache for API responses
+define('API_RATE_LIMIT_MAX', 50);  // Max requests per minute
+
+/**
+ * Enhanced logging function with structured data
+ */
+function log_api_interaction($function_name, $level, $message, $context = [])
 {
-    $data = [
-        'firstName' => $customer['first_name'],
-        'lastName'  => $customer['last_name'],
-        'accountId' => strtoupper($customer['account_number']),
-        'branch'    => $customer['region'],
-    ];
+    $timestamp = date('Y-m-d H:i:s');
+    $log_entry = "[$timestamp] [$level] $function_name: $message";
 
-    $payload = json_encode($data);
-
-    $ch = curl_init(WAREHOUSE_API_URL . '/public.v1.PublicService/CreateCourierCustomer');
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
-    ]);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    $response = curl_exec($ch);
-    $err      = curl_error($ch);
-    curl_close($ch);
-
-    if ($err) {
-        error_log("Warehouse API push_customer_to_warehouse error: $err");
-        return false;
+    if (! empty($context)) {
+        $log_entry .= " | Context: " . json_encode($context);
     }
 
-    $result = json_decode($response, true);
-    if (isset($result['error'])) {
-        error_log("Warehouse API push_customer_to_warehouse API error: " . $result['error']);
-        return false;
+    error_log($log_entry);
+
+    // Also log to a dedicated API log file
+    $log_file = __DIR__ . '/logs/api_interactions.log';
+    $log_dir  = dirname($log_file);
+    if (! is_dir($log_dir)) {
+        mkdir($log_dir, 0755, true);
+    }
+    file_put_contents($log_file, $log_entry . PHP_EOL, FILE_APPEND);
+}
+
+/**
+ * Validate API response structure
+ */
+function validate_api_response($response, $expected_keys = [])
+{
+    if (! is_array($response)) {
+        return ['valid' => false, 'error' => 'Response is not an array'];
     }
 
-    // Save warehouse_customer_id if successful
-    if (isset($result['customer']) && isset($result['customer']['id'])) {
-        $warehouse_customer_id = $result['customer']['id'];
-        $update_sql = "UPDATE users SET warehouse_customer_id = '$warehouse_customer_id' WHERE id = " . intval($customer['id']);
-        if (mysqli_query($conn, $update_sql)) {
-            error_log("Saved warehouse_customer_id $warehouse_customer_id for user " . $customer['id']);
-        } else {
-            error_log("Failed to save warehouse_customer_id for user " . $customer['id'] . ": " . mysqli_error($conn));
+    if (isset($response['error'])) {
+        return ['valid' => false, 'error' => $response['error']];
+    }
+
+    foreach ($expected_keys as $key) {
+        if (! isset($response[$key])) {
+            return ['valid' => false, 'error' => "Missing required key: $key"];
         }
     }
 
-    return $result;
+    return ['valid' => true];
 }
 
+/**
+ * Batch process multiple API requests to reduce overhead
+ */
+function batch_api_requests($requests, $batch_size = 5)
+{
+    $results = [];
+    $batches = array_chunk($requests, $batch_size);
+
+    foreach ($batches as $batch_index => $batch) {
+        log_api_interaction('batch_api_requests', 'INFO', "Processing batch " . ($batch_index + 1) . " of " . count($batches), [
+            'batch_size'    => count($batch),
+            'total_batches' => count($batches),
+        ]);
+
+        // Process each request in the batch
+        foreach ($batch as $request_index => $request) {
+            $request_id = $request['id'] ?? "batch_{$batch_index}_{$request_index}";
+
+            try {
+                $result = make_api_request(
+                    $request['url'],
+                    $request['method'] ?? 'POST',
+                    $request['payload'] ?? null,
+                    $request['headers'] ?? [],
+                    $request['expected_keys'] ?? [],
+                    $request['use_cache'] ?? true,
+                    $request['cache_ttl'] ?? null
+                );
+
+                $results[$request_id] = $result;
+
+                // Add small delay between requests to avoid overwhelming the API
+                if ($request_index < count($batch) - 1) {
+                    usleep(100000); // 0.1 seconds
+                }
+
+            } catch (Exception $e) {
+                log_api_interaction('batch_api_requests', 'ERROR', 'Exception in batch request', [
+                    'request_id' => $request_id,
+                    'error'      => $e->getMessage(),
+                ]);
+
+                $results[$request_id] = [
+                    'success' => false,
+                    'error'   => 'Exception: ' . $e->getMessage(),
+                ];
+            }
+        }
+
+        // Add delay between batches to respect rate limits
+        if ($batch_index < count($batches) - 1) {
+            sleep(1); // 1 second between batches
+        }
+    }
+
+    return $results;
+}
+
+/**
+ * Batch update customer data to warehouse API
+ */
+function batch_update_customers($customers, $batch_size = 10)
+{
+    if (empty($customers)) {
+        return ['success' => true, 'message' => 'No customers to update'];
+    }
+
+    $requests = [];
+    foreach ($customers as $index => $customer) {
+        if (! isset($customer['warehouse_customer_id']) || ! isset($customer['first_name'])) {
+            continue; // Skip invalid customers
+        }
+
+        $data = [
+            'id'        => $customer['warehouse_customer_id'],
+            'firstName' => $customer['first_name'],
+            'lastName'  => $customer['last_name'] ?? '',
+            'accountId' => strtoupper($customer['account_number']),
+            'branch'    => $customer['region'] ?? 'Unknown',
+        ];
+
+        $payload = json_encode($data);
+        if ($payload === false) {
+            continue; // Skip if JSON encoding fails
+        }
+
+        $requests[] = [
+            'id' => "customer_update_{$index}",
+            'url'           => WAREHOUSE_API_URL . '/public.v1.PublicService/UpdateCourierCustomer',
+            'method'        => 'POST',
+            'payload'       => $payload,
+            'headers'       => [
+                'Content-Type: application/json',
+                'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
+            ],
+            'expected_keys' => [],
+            'use_cache'     => false, // Don't cache updates
+        ];
+    }
+
+    $batch_results = batch_api_requests($requests, $batch_size);
+
+    $success_count = 0;
+    $error_count   = 0;
+    $errors        = [];
+
+    foreach ($batch_results as $request_id => $result) {
+        if ($result['success']) {
+            $success_count++;
+        } else {
+            $error_count++;
+            $errors[] = "Failed to update customer {$request_id}: " . ($result['error'] ?? 'Unknown error');
+        }
+    }
+
+    log_api_interaction('batch_update_customers', 'INFO', 'Batch customer update completed', [
+        'total_customers'    => count($customers),
+        'successful_updates' => $success_count,
+        'failed_updates'     => $error_count,
+    ]);
+
+    return [
+        'success'         => $error_count === 0,
+        'total_processed' => count($customers),
+        'successful'      => $success_count,
+        'failed'          => $error_count,
+        'errors'          => $errors,
+    ];
+}
+
+/**
+ * Make API request with retry mechanism and enhanced error handling
+ */
+function make_api_request($url, $method = 'POST', $payload = null, $headers = [], $expected_keys = [])
+{
+    $cache       = new CacheManager();
+    $rateLimiter = new RateLimiter(API_RATE_LIMIT_MAX, 60);
+
+    // Use URL + payload as cache key
+    $cache_key = md5($url . ($payload ?? ''));
+
+    // Check cache first
+    $cached_response = $cache->get($cache_key);
+    if ($cached_response !== false) {
+        log_api_interaction('make_api_request', 'INFO', 'Returning cached response', ['url' => $url]);
+        return ['success' => true, 'result' => $cached_response];
+    }
+
+                            // Check rate limit
+    $client_id = 'default'; // Could be enhanced to identify clients uniquely
+    if (! $rateLimiter->isAllowed($client_id)) {
+        $error_msg = 'Rate limit exceeded';
+        log_api_interaction('make_api_request', 'ERROR', $error_msg, ['url' => $url]);
+        return ['success' => false, 'error' => $error_msg];
+    }
+
+    $retries    = 0;
+    $last_error = '';
+
+    while ($retries < API_MAX_RETRIES) {
+        try {
+            $ch = curl_init();
+
+            // Set basic options
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, API_TIMEOUT);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, API_CONNECT_TIMEOUT);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+            // Set method-specific options
+            if ($method === 'POST') {
+                curl_setopt($ch, CURLOPT_POST, true);
+                if ($payload !== null) {
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                }
+            } elseif ($method === 'GET') {
+                curl_setopt($ch, CURLOPT_HTTPGET, true);
+            }
+
+            // Set headers
+            if (! empty($headers)) {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            }
+
+            // Execute request
+            $response   = curl_exec($ch);
+            $http_code  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curl_error = curl_error($ch);
+            $curl_errno = curl_errno($ch);
+
+            curl_close($ch);
+
+            // Handle cURL errors
+            if ($curl_errno !== 0) {
+                $last_error = "cURL error ($curl_errno): $curl_error";
+                log_api_interaction('make_api_request', 'ERROR', $last_error, [
+                    'url'    => $url,
+                    'method' => $method,
+                    'retry'  => $retries + 1,
+                ]);
+
+                if ($retries < API_MAX_RETRIES - 1) {
+                    sleep(API_RETRY_DELAY * ($retries + 1)); // Exponential backoff
+                    $retries++;
+                    continue;
+                }
+                return ['success' => false, 'error' => $last_error, 'http_code' => $http_code];
+            }
+
+            // Handle HTTP errors
+            if ($http_code < 200 || $http_code >= 300) {
+                $last_error = "HTTP error: $http_code";
+                log_api_interaction('make_api_request', 'ERROR', $last_error, [
+                    'url'      => $url,
+                    'method'   => $method,
+                    'response' => substr($response, 0, 500),
+                    'retry'    => $retries + 1,
+                ]);
+
+                // Retry on server errors (5xx) but not on client errors (4xx)
+                if ($http_code >= 500 && $retries < API_MAX_RETRIES - 1) {
+                    sleep(API_RETRY_DELAY * ($retries + 1));
+                    $retries++;
+                    continue;
+                }
+                return ['success' => false, 'error' => $last_error, 'http_code' => $http_code, 'response' => $response];
+            }
+
+            // Parse JSON response
+            $result = json_decode($response, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $last_error = "JSON decode error: " . json_last_error_msg();
+                log_api_interaction('make_api_request', 'ERROR', $last_error, [
+                    'url'      => $url,
+                    'method'   => $method,
+                    'response' => substr($response, 0, 500),
+                ]);
+                return ['success' => false, 'error' => $last_error, 'response' => $response];
+            }
+
+            // Validate response structure
+            $validation = validate_api_response($result, $expected_keys);
+            if (! $validation['valid']) {
+                log_api_interaction('make_api_request', 'ERROR', $validation['error'], [
+                    'url'    => $url,
+                    'method' => $method,
+                    'result' => $result,
+                ]);
+                return ['success' => false, 'error' => $validation['error'], 'result' => $result];
+            }
+
+            // Cache successful response
+            $cache->set($cache_key, $result, API_CACHE_TTL);
+
+            log_api_interaction('make_api_request', 'INFO', 'Request successful', [
+                'url'       => $url,
+                'method'    => $method,
+                'http_code' => $http_code,
+            ]);
+
+            return ['success' => true, 'result' => $result, 'http_code' => $http_code];
+
+        } catch (Exception $e) {
+            $last_error = "Exception: " . $e->getMessage();
+            log_api_interaction('make_api_request', 'ERROR', $last_error, [
+                'url'    => $url,
+                'method' => $method,
+                'retry'  => $retries + 1,
+            ]);
+
+            if ($retries < API_MAX_RETRIES - 1) {
+                sleep(API_RETRY_DELAY * ($retries + 1));
+                $retries++;
+                continue;
+            }
+            return ['success' => false, 'error' => $last_error];
+        }
+    }
+
+    return ['success' => false, 'error' => $last_error];
+
+}
+// Function to push customer data to warehouse API
+function push_customer_to_warehouse($customer)
+{
+    try {
+        // Validate input data
+        if (! isset($customer['first_name']) || ! isset($customer['last_name']) || ! isset($customer['account_number'])) {
+            log_api_interaction('push_customer_to_warehouse', 'ERROR', 'Missing required customer data');
+            return ['success' => false, 'error' => 'Missing required customer data'];
+        }
+
+        $data = [
+            'firstName' => $customer['first_name'],
+            'lastName'  => $customer['last_name'],
+            'accountId' => strtoupper($customer['account_number']),
+            'branch'    => $customer['region'] ?? 'Unknown',
+        ];
+
+        $payload = json_encode($data);
+        if ($payload === false) {
+            log_api_interaction('push_customer_to_warehouse', 'ERROR', 'Failed to encode JSON payload');
+            return ['success' => false, 'error' => 'Failed to encode JSON payload'];
+        }
+
+        $url     = WAREHOUSE_API_URL . '/public.v1.PublicService/CreateCourierCustomer';
+        $headers = [
+            'Content-Type: application/json',
+            'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
+        ];
+
+        $api_response = make_api_request($url, 'POST', $payload, $headers, ['customer']);
+
+        if (! $api_response['success']) {
+            return $api_response;
+        }
+
+        $result = $api_response['result'];
+
+        // Save warehouse_customer_id if successful
+        if (isset($result['customer']) && isset($result['customer']['id'])) {
+            global $conn;
+            $warehouse_customer_id = $result['customer']['id'];
+            $update_sql            = "UPDATE users SET warehouse_customer_id = ? WHERE id = ?";
+            $stmt                  = mysqli_prepare($conn, $update_sql);
+
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "si", $warehouse_customer_id, $customer['id']);
+                if (mysqli_stmt_execute($stmt)) {
+                    log_api_interaction('push_customer_to_warehouse', 'INFO', 'Saved warehouse_customer_id', [
+                        'customer_id'           => $customer['id'],
+                        'warehouse_customer_id' => $warehouse_customer_id,
+                    ]);
+                    mysqli_stmt_close($stmt);
+                    return ['success' => true, 'result' => $result];
+                } else {
+                    $db_error = mysqli_stmt_error($stmt);
+                    log_api_interaction('push_customer_to_warehouse', 'ERROR', 'Failed to save warehouse_customer_id', [
+                        'error'       => $db_error,
+                        'customer_id' => $customer['id'],
+                    ]);
+                    mysqli_stmt_close($stmt);
+                    return ['success' => false, 'error' => 'Database update failed: ' . $db_error];
+                }
+            } else {
+                $db_error = mysqli_error($conn);
+                log_api_interaction('push_customer_to_warehouse', 'ERROR', 'Failed to prepare database statement', [
+                    'error' => $db_error,
+                ]);
+                return ['success' => false, 'error' => 'Database prepare failed: ' . $db_error];
+            }
+        }
+
+        return ['success' => true, 'result' => $result];
+
+    } catch (Exception $e) {
+        log_api_interaction('push_customer_to_warehouse', 'ERROR', 'Exception occurred', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        return ['success' => false, 'error' => 'Exception: ' . $e->getMessage()];
+    }
+}
 
 // Function to update customer data in warehouse API
 function update_courier_customer($customer)
 {
-    // Ensure accountId matches our system account_number (case-insensitive)
-    if (strtoupper($customer['account_number']) !== strtoupper($customer['account_number'])) {
-        error_log("Warehouse API update_courier_customer: Account number mismatch for customer: " . $customer['account_number']);
-        return false;
-    }
-
-    $data = [
-        'id'        => $customer['warehouse_customer_id'],
-        'firstName' => $customer['first_name'],
-        'lastName'  => $customer['last_name'],
-        'accountId' => strtoupper($customer['account_number']),
-        'branch'    => $customer['region'],
-    ];
-
-    $payload = json_encode($data);
-
-    $ch = curl_init(WAREHOUSE_API_URL . '/public.v1.PublicService/UpdateCourierCustomer');
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
-    ]);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    $response = curl_exec($ch);
-    $err      = curl_error($ch);
-    curl_close($ch);
-
-    if ($err) {
-        error_log("Warehouse API update_courier_customer error: $err");
-        return false;
-    }
-
-    $result = json_decode($response, true);
-    if (isset($result['error'])) {
-        error_log("Warehouse API update_courier_customer API error: " . $result['error']);
-        return false;
-    }
-
-    // Save warehouse_customer_id if returned
-    if (isset($result['success']) && $result['success'] && isset($result['customer_id'])) {
-        $warehouse_customer_id = $result['customer_id'];
-        $update_sql = "UPDATE users SET warehouse_customer_id = '$warehouse_customer_id' WHERE id = " . intval($customer['id']);
-        if (mysqli_query($conn, $update_sql)) {
-            error_log("Updated warehouse_customer_id $warehouse_customer_id for user " . $customer['id']);
-        } else {
-            error_log("Failed to update warehouse_customer_id for user " . $customer['id'] . ": " . mysqli_error($conn));
+    try {
+        // Validate input data
+        if (! isset($customer['warehouse_customer_id']) || ! isset($customer['first_name']) ||
+            ! isset($customer['last_name']) || ! isset($customer['account_number'])) {
+            log_api_interaction('update_courier_customer', 'ERROR', 'Missing required customer data');
+            return ['success' => false, 'error' => 'Missing required customer data'];
         }
-    }
 
-    return $result;
+        // Validate warehouse_customer_id is not empty
+        if (empty($customer['warehouse_customer_id'])) {
+            log_api_interaction('update_courier_customer', 'ERROR', 'Invalid warehouse_customer_id');
+            return ['success' => false, 'error' => 'Invalid warehouse_customer_id'];
+        }
+
+        $data = [
+            'id'        => $customer['warehouse_customer_id'],
+            'firstName' => $customer['first_name'],
+            'lastName'  => $customer['last_name'],
+            'accountId' => strtoupper($customer['account_number']),
+            'branch'    => $customer['region'] ?? 'Unknown',
+        ];
+
+        $payload = json_encode($data);
+        if ($payload === false) {
+            log_api_interaction('update_courier_customer', 'ERROR', 'Failed to encode JSON payload');
+            return ['success' => false, 'error' => 'Failed to encode JSON payload'];
+        }
+
+        $url     = WAREHOUSE_API_URL . '/public.v1.PublicService/UpdateCourierCustomer';
+        $headers = [
+            'Content-Type: application/json',
+            'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
+        ];
+
+        $api_response = make_api_request($url, 'POST', $payload, $headers);
+
+        if (! $api_response['success']) {
+            return $api_response;
+        }
+
+        $result = $api_response['result'];
+
+        // Save warehouse_customer_id if returned (for cases where it might change)
+        if (isset($result['success']) && $result['success'] && isset($result['customer_id'])) {
+            global $conn;
+            $warehouse_customer_id = $result['customer_id'];
+            $update_sql            = "UPDATE users SET warehouse_customer_id = ? WHERE id = ?";
+            $stmt                  = mysqli_prepare($conn, $update_sql);
+
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "si", $warehouse_customer_id, $customer['id']);
+                if (mysqli_stmt_execute($stmt)) {
+                    log_api_interaction('update_courier_customer', 'INFO', 'Updated warehouse_customer_id', [
+                        'customer_id'           => $customer['id'],
+                        'warehouse_customer_id' => $warehouse_customer_id,
+                    ]);
+                    mysqli_stmt_close($stmt);
+                    return ['success' => true, 'result' => $result];
+                } else {
+                    $db_error = mysqli_stmt_error($stmt);
+                    log_api_interaction('update_courier_customer', 'ERROR', 'Failed to update warehouse_customer_id', [
+                        'error'       => $db_error,
+                        'customer_id' => $customer['id'],
+                    ]);
+                    mysqli_stmt_close($stmt);
+                    return ['success' => false, 'error' => 'Database update failed: ' . $db_error];
+                }
+            } else {
+                $db_error = mysqli_error($conn);
+                log_api_interaction('update_courier_customer', 'ERROR', 'Failed to prepare database statement', [
+                    'error' => $db_error,
+                ]);
+                return ['success' => false, 'error' => 'Database prepare failed: ' . $db_error];
+            }
+        }
+
+        return ['success' => true, 'result' => $result];
+
+    } catch (Exception $e) {
+        log_api_interaction('update_courier_customer', 'ERROR', 'Exception occurred', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        return ['success' => false, 'error' => 'Exception: ' . $e->getMessage()];
+    }
 }
 
-// Function to pull package data from warehouse API and update local pre_alert table    
+// Function to pull shipments data from warehouse API and update local shipments table
+function pull_shipments_from_warehouse($limit = 10)
+{
+    global $conn;
+
+    $cursor  = '';
+    $hasMore = true;
+
+    while ($hasMore) {
+        $payload = json_encode([
+            'cursor' => $cursor,
+            'limit'  => $limit,
+        ]);
+
+        $ch = curl_init(WAREHOUSE_API_URL . '/public.v1.PublicService/ListShipments');  
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'X-Logis-Auth: ' . WAREHOUSE_API_KEY,
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response  = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err       = curl_error($ch);
+        curl_close($ch);
+
+        if ($err) {
+            error_log("Warehouse API pull_shipments_from_warehouse curl error: $err");
+            return false;
+        }
+
+        if ($http_code !== 200) {
+            error_log("Warehouse API pull_shipments_from_warehouse HTTP error: $http_code, Response: $response");
+            return false;
+        }
+
+        $result = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Warehouse API pull_shipments_from_warehouse JSON decode error: " . json_last_error_msg() . ", Response: $response");
+            return false;
+        }
+
+        if (! isset($result['shipments'])) {
+            error_log("Warehouse API pull_shipments_from_warehouse invalid response structure, missing 'shipments' key. Response: " . json_encode($result));
+            return false;
+        }
+
+        foreach ($result['shipments'] as $shipment) {
+            $shipmentNumber   = $shipment['id'] ?? '';
+            $type             = $shipment['ShipmentType'] ?? '';
+            $origin           = $shipment['origin'] ?? '';
+            $destination      = $shipment['destination'] ?? '';
+            $description      = $shipment['description'] ?? '';
+            $grossRevenue     = $shipment['grossRevenue'] ?? 0;
+            $totalPackages    = $shipment['totalPackages'] ?? 0;
+            $totalWeight      = $shipment['totalWeight'] ?? 0;
+            $volume           = $shipment['volume'] ?? 0;
+            $userId           = $shipment['userId'] ?? null;
+            $departureDate    = $shipment['departureDate'] ?? null;
+            $arrivalDate      = $shipment['arrivalDate'] ?? null;
+            $status           = $shipment['status'] ?? 'Preparing';
+            $shipmentSimpleId = $shipment['simpleId'] ?? null;
+            $shipmentStatus   = $shipment['ShipmentType'] ?? null;
+
+            $sqlCheck = "SELECT id FROM shipments WHERE shipment_number = '" . mysqli_real_escape_string($conn, $shipmentNumber) . "'";
+            $resCheck = mysqli_query($conn, $sqlCheck);
+            if (mysqli_num_rows($resCheck) > 0) {
+                $row       = mysqli_fetch_assoc($resCheck);
+                $sqlUpdate = "UPDATE shipments SET
+                    type = '" . mysqli_real_escape_string($conn, $type) . "',
+                    origin = '" . mysqli_real_escape_string($conn, $origin) . "',
+                    destination = '" . mysqli_real_escape_string($conn, $destination) . "',
+                    description = '" . mysqli_real_escape_string($conn, $description) . "',
+                    gross_revenue = " . floatval($grossRevenue) . ",
+                    total_packages = " . intval($totalPackages) . ",
+                    total_weight = " . floatval($totalWeight) . ",
+                    volume = " . floatval($volume) . ",
+                    user_id = " . ($userId !== null ? intval($userId) : "NULL") . ",
+                    departure_date = " . ($departureDate !== null ? "'" . mysqli_real_escape_string($conn, $departureDate) . "'" : "NULL") . ",
+                    arrival_date = " . ($arrivalDate !== null ? "'" . mysqli_real_escape_string($conn, $arrivalDate) . "'" : "NULL") . ",
+                    status = '" . mysqli_real_escape_string($conn, $status) . "',
+                    shipmentSimpleId = " . ($shipmentSimpleId !== null ? "'" . mysqli_real_escape_string($conn, $shipmentSimpleId) . "'" : "NULL") . ",
+                    shipmentStatus = " . ($shipmentStatus !== null ? "'" . mysqli_real_escape_string($conn, $shipmentStatus) . "'" : "NULL") . "
+                    WHERE id = " . intval($row['id']);
+                $updateResult = mysqli_query($conn, $sqlUpdate);
+                if (! $updateResult) {
+                    error_log("Warehouse API pull_shipments_from_warehouse DB update error: " . mysqli_error($conn) . " for shipment: $shipmentNumber");
+                } else {
+                    error_log("Warehouse API pull_shipments_from_warehouse updated shipment: $shipmentNumber");
+                }
+            } else {
+                $sqlInsert = "INSERT INTO shipments
+                    (shipment_number, type, origin, destination, description, gross_revenue, total_packages, total_weight, volume, user_id, departure_date, arrival_date, status, shipmentSimpleId, shipmentStatus) VALUES (
+                    '" . mysqli_real_escape_string($conn, $shipmentNumber) . "',
+                    '" . mysqli_real_escape_string($conn, $type) . "',
+                    '" . mysqli_real_escape_string($conn, $origin) . "',
+                    '" . mysqli_real_escape_string($conn, $destination) . "',
+                    '" . mysqli_real_escape_string($conn, $description) . "',
+                    " . floatval($grossRevenue) . ",
+                    " . intval($totalPackages) . ",
+                    " . floatval($totalWeight) . ",
+                    " . floatval($volume) . ",
+                    " . ($userId !== null ? intval($userId) : "NULL") . ",
+                    " . ($departureDate !== null ? "'" . mysqli_real_escape_string($conn, $departureDate) . "'" : "NULL") . ",
+                    " . ($arrivalDate !== null ? "'" . mysqli_real_escape_string($conn, $arrivalDate) . "'" : "NULL") . ",
+                    '" . mysqli_real_escape_string($conn, $status) . "',
+                    " . ($shipmentSimpleId !== null ? "'" . mysqli_real_escape_string($conn, $shipmentSimpleId) . "'" : "NULL") . ",
+                    " . ($shipmentStatus !== null ? "'" . mysqli_real_escape_string($conn, $shipmentStatus) . "'" : "NULL") . "
+                    )";
+                $insertResult = mysqli_query($conn, $sqlInsert);
+                if (! $insertResult) {
+                    error_log("Warehouse API pull_shipments_from_warehouse DB insert error: " . mysqli_error($conn) . " for shipment: $shipmentNumber");
+                } else {
+                    error_log("Warehouse API pull_shipments_from_warehouse inserted shipment: $shipmentNumber");
+                }
+            }
+        }
+
+        $cursor  = $result['nextCursor'] ?? '';
+        $hasMore = ! empty($cursor);
+    }
+
+    return true;
+}
+
+// Function to pull package data from warehouse API and update local pre_alert table
 function pull_packages_from_warehouse($limit = 10)
 {
     global $conn;
@@ -190,12 +719,12 @@ function pull_packages_from_warehouse($limit = 10)
 
             // Get store from pre-alert merchant
             $store = '-';
-            if (!empty($trackingNumber) && isset($user_id) && $user_id > 0) {
+            if (! empty($trackingNumber) && isset($user_id) && $user_id > 0) {
                 $sqlPreAlert = "SELECT Merchant FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "' AND User_id = " . intval($user_id) . " LIMIT 1";
                 $resPreAlert = mysqli_query($conn, $sqlPreAlert);
                 if ($resPreAlert && mysqli_num_rows($resPreAlert) > 0) {
                     $rowPreAlert = mysqli_fetch_assoc($resPreAlert);
-                    $store = $rowPreAlert['Merchant'] ?? '-';
+                    $store       = $rowPreAlert['Merchant'] ?? '-';
                 }
             }
 
@@ -249,7 +778,7 @@ function pull_packages_from_warehouse($limit = 10)
             $sqlCheck = "SELECT id FROM packages WHERE tracking_number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "'";
             $resCheck = mysqli_query($conn, $sqlCheck);
             if (mysqli_num_rows($resCheck) > 0) {
-                $row       = mysqli_fetch_assoc($resCheck);
+                $row = mysqli_fetch_assoc($resCheck);
 
                 // Calculate value_of_package using the function
                 include_once 'function.php';
@@ -379,7 +908,7 @@ function sync_customers_with_warehouse($local_customers)
     // Push missing local customers to warehouse API
     foreach ($local_customers as $lc) {
         if (! isset($warehouse_map[$lc['account_number']])) {
-            // Get region from delivery_preference (home region)
+                                     // Get region from delivery_preference (home region)
             $region = $lc['region']; // default from users
             global $conn;
             if (isset($conn) && $conn) {
@@ -424,7 +953,7 @@ function sync_customers_with_warehouse($local_customers)
 function update_all_courier_customers()
 {
     global $conn;
-    if (!isset($conn) || !$conn) {
+    if (! isset($conn) || ! $conn) {
         error_log("Warehouse API update_all_courier_customers: Database connection not available");
         return false;
     }
@@ -435,7 +964,7 @@ function update_all_courier_customers()
             LEFT JOIN delivery_preference dp ON u.id = dp.user_id
             WHERE u.warehouse_customer_id IS NOT NULL AND u.warehouse_customer_id != ''";
     $result = mysqli_query($conn, $sql);
-    if (!$result) {
+    if (! $result) {
         error_log("Warehouse API update_all_courier_customers: Query failed: " . mysqli_error($conn));
         return false;
     }
@@ -443,10 +972,10 @@ function update_all_courier_customers()
     $updated_count = 0;
     while ($row = mysqli_fetch_assoc($result)) {
         $customer = [
-            'first_name'           => $row['first_name'],
-            'last_name'            => $row['last_name'],
-            'account_number'       => $row['account_number'],
-            'region'               => $row['region'],
+            'first_name'            => $row['first_name'],
+            'last_name'             => $row['last_name'],
+            'account_number'        => $row['account_number'],
+            'region'                => $row['region'],
             'warehouse_customer_id' => $row['warehouse_customer_id'],
         ];
 
@@ -520,12 +1049,12 @@ function process_package_created($package, $conn)
 
     // Get store from pre-alert merchant
     $store = '-';
-    if (!empty($trackingNumber) && isset($user_id) && $user_id > 0) {
+    if (! empty($trackingNumber) && isset($user_id) && $user_id > 0) {
         $sqlPreAlert = "SELECT Merchant FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "' AND User_id = " . intval($user_id) . " LIMIT 1";
         $resPreAlert = mysqli_query($conn, $sqlPreAlert);
         if ($resPreAlert && mysqli_num_rows($resPreAlert) > 0) {
             $rowPreAlert = mysqli_fetch_assoc($resPreAlert);
-            $store = $rowPreAlert['Merchant'] ?? '-';
+            $store       = $rowPreAlert['Merchant'] ?? '-';
         }
     }
 
@@ -785,12 +1314,12 @@ function process_package_updated($package, $conn)
 
         // Get store from pre-alert merchant
         $store = '-';
-        if (!empty($trackingNumber) && $user_id > 0) {
+        if (! empty($trackingNumber) && $user_id > 0) {
             $sqlPreAlert = "SELECT Merchant FROM pre_alert WHERE Tracking_Number = '" . mysqli_real_escape_string($conn, $trackingNumber) . "' AND User_id = " . intval($user_id) . " LIMIT 1";
             $resPreAlert = mysqli_query($conn, $sqlPreAlert);
             if ($resPreAlert && mysqli_num_rows($resPreAlert) > 0) {
                 $rowPreAlert = mysqli_fetch_assoc($resPreAlert);
-                $store = $rowPreAlert['Merchant'] ?? '-';
+                $store       = $rowPreAlert['Merchant'] ?? '-';
             }
         }
 

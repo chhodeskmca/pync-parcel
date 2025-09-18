@@ -10,3 +10,5 @@ uploaded-file/*
 .vscode/
 .idea/
 vendor/
+
+cache/*

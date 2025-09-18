@@ -63,7 +63,7 @@
                 $active_packages = mysqli_fetch_assoc($result_active)['active'];
 
                 // Get authorized users for shipment
-                $sql_auth_users    = "SELECT first_name, last_name, identification_type, id_number FROM authorized_users WHERE shipment_id = " . $package['shipment_id'];
+                $sql_auth_users    = "SELECT first_name, last_name, id_type, id_number FROM authorized_users WHERE user_id = " . $package['user_id'];
                 $result_auth_users = mysqli_query($conn, $sql_auth_users);
                 if ($result_auth_users && mysqli_num_rows($result_auth_users) > 0) {
                     while ($row = mysqli_fetch_assoc($result_auth_users)) {
@@ -607,7 +607,7 @@
 										</div>
 										<div class="Tracking-value">
 											 <span class="heading">Identification Type</span>
-											 <span class="value"><?php echo htmlspecialchars($user['identification_type']); ?></span>
+											 <span class="value"><?php echo htmlspecialchars($user['id_type']); ?></span>
 										</div>
 										 <div class="Tracking-value">
 											 <span class="heading">ID Number</span>

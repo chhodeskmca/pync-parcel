@@ -270,7 +270,18 @@
 				 	<?php
 							$sort = isset($_GET['sort']) ? $_GET['sort'] : 'latest';
 							$order = ($sort == 'oldest') ? 'ASC' : 'DESC';
-							$sql = "SELECT* FROM pre_alert ORDER BY created_at $order";
+
+							// Pagination parameters
+							$limit = 10; // Number of pre-alerts per page
+							$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+							$offset = ($page - 1) * $limit;
+
+							$sql_count = "SELECT COUNT(*) as total FROM pre_alert";
+							$result_count = mysqli_query($conn, $sql_count);
+							$total_prealerts = mysqli_fetch_assoc($result_count)['total'];
+							$total_pages = ceil($total_prealerts / $limit);
+
+							$sql = "SELECT* FROM pre_alert ORDER BY created_at $order LIMIT $limit OFFSET $offset";
 							if( mysqli_num_rows( mysqli_query($conn, $sql)) > 0  ) {
 
 					?>
@@ -362,12 +373,47 @@
 						 </tbody>
                     </table>
                 </div>
+                  <!-- Pagination -->
+                  <div class="mt-3 panel-footer">
+                      <div class="row">
+                          <div class="col col-sm-6 col-xs-6">Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_prealerts; ?></b> entries</div>
+                          <div class="col-sm-6 col-xs-6">
+                              <ul class="pagination justify-content-end" style="color:black;">
+                                  <?php if ($page > 1) {?>
+                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?><?php echo isset($_GET['sort']) ? '&sort=' . $_GET['sort'] : ''; ?>"><</a></li>
+                                  <?php } else {?>
+                                      <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                                  <?php }?>
+                                  <?php for ($i = 1; $i <= $total_pages; $i++) {?>
+                                      <li class="page-item<?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?><?php echo isset($_GET['sort']) ? '&sort=' . $_GET['sort'] : ''; ?>"><?php echo $i; ?></a></li>
+                                  <?php }?>
+                                  <?php if ($page < $total_pages) {?>
+                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?><?php echo isset($_GET['sort']) ? '&sort=' . $_GET['sort'] : ''; ?>">></a></li>
+                                  <?php } else {?>
+                                      <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                                  <?php }?>
+                              </ul>
+                              <ul class="pagination visible-xs pull-right d-none">
+                                  <?php if ($page > 1) {?>
+                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?><?php echo isset($_GET['sort']) ? '&sort=' . $_GET['sort'] : ''; ?>"><</a></li>
+                                  <?php } else {?>
+                                      <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                                  <?php }?>
+                                  <?php if ($page < $total_pages) {?>
+                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?><?php echo isset($_GET['sort']) ? '&sort=' . $_GET['sort'] : ''; ?>">></a></li>
+                                  <?php } else {?>
+                                      <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                                  <?php }?>
+                              </ul>
+                          </div>
+                      </div>
+                  </div>
 				<?php  
 					}else{ 
 								   
 					 echo "<p class='text-center' style='font-size: 25px'>No Pre-Alerts available.</p>";
 					}				  
-				?> 
+				?>
             </div>
         </div>
     </div>

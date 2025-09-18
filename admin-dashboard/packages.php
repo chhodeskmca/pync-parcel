@@ -415,7 +415,7 @@
                 <!-- <td><?php echo ucfirst($rows['shipment_type']) ?? 'N/A'; ?></td> -->
                 <!-- <td><?php echo $rows['branch'] ?? 'N/A'; ?></td> -->
                 <!-- <td><?php echo $rows['tag'] ?? 'N/A'; ?></td> -->
-                <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
+                <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . $rows['value_of_package'] : '—'; ?></span></td>
                 <td><?php echo $rows['describe_package']; ?></td>
                 <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
                 <!-- <td><span class="Inv-status">Open</span></td> -->

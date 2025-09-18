@@ -1,33 +1,206 @@
 <?php
-// initialize session
+// Initialize session
 session_start();
 include '../config.php';  // database connection
 include '../function.php';  // function comes from user dashboard
 include 'function.php';  // function comes from admin dashboard
+include '../warehouse_api.php';  // warehouse API functions
 include 'authorized-admin.php';
+include 'ShipmentController.php';  // shipment controller
 $current_file_name = basename($_SERVER['PHP_SELF']);  // getting current file name
 
-// Pagination parameters
-$limit = 10;  // Number of shipments per page
-$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
+// Initialize controller
+$shipmentController = new ShipmentController($conn);
 
-// Fetch total count for pagination
-$sql_count = "SELECT COUNT(*) as total FROM shipments";
-$result_count = mysqli_query($conn, $sql_count);
-$total_shipments = mysqli_fetch_assoc($result_count)['total'];
+// Handle sync request
+$sync_message = '';
+if (isset($_GET['sync']) && $_GET['sync'] === '1') {
+    $sync_result = $shipmentController->syncShipmentsFromWarehouse();
+    if ($sync_result['success']) {
+        $sync_message = '<div class="alert alert-success">Shipments synced successfully!</div>';
+    } else {
+        $sync_message = '<div class="alert alert-danger">Failed to sync shipments: ' . htmlspecialchars($sync_result['error']) . '</div>';
+    }
+}
+
+// Handle AJAX requests
+if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+    handleAjaxRequest($shipmentController);
+    exit;
+}
+
+// Handle update check requests
+if (isset($_GET['check_updates']) && $_GET['check_updates'] == '1') {
+    handleUpdateCheck($shipmentController);
+    exit;
+}
+
+// Pagination and filter parameters
+$limit = 10;  // Number of packages per page
+$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$status = isset($_GET['status']) ? trim($_GET['status']) : '';
+$sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'created_at DESC';
+
+// Validate sort parameter for security
+$allowed_sorts = [
+    'created_at DESC', 'created_at ASC',
+    'tracking_number ASC', 'tracking_number DESC',
+    'value_of_package DESC', 'value_of_package ASC'
+];
+if (!in_array($sort, $allowed_sorts)) {
+    $sort = 'created_at DESC';
+}
+
+// Validate pagination parameters
+$validation_errors = $shipmentController->validatePaginationParams($page, $limit);
+if (!empty($validation_errors)) {
+    $page = 1; // Reset to first page on validation error
+    $error_message = '<div class="alert alert-warning">Invalid pagination parameters. Showing first page.</div>';
+}
+
+$data = $shipmentController->getShipments($page, $limit, $search, $status, $sort);
+$shipments = $data['shipments'];
+$total_shipments = $data['total'];
 $total_pages = ceil($total_shipments / $limit);
 
-// Fetch paginated shipments from local DB
-$sql = "SELECT * FROM shipments ORDER BY id DESC LIMIT $limit OFFSET $offset";
-$result = mysqli_query($conn, $sql);
+// Handle errors
+$error_message = '';
+if (empty($shipments)) {
+    $shipments = [];
+    $total_shipments = 0;
+    $total_pages = 0;
+}
 
-$shipments = [];
-if (mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        // Use snake_case column names directly
-        $shipments[] = $row;
+/**
+ * Handle AJAX requests for search/filter/pagination
+ */
+function handleAjaxRequest($controller) {
+    $limit = 10;
+    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+    $status = isset($_GET['status']) ? trim($_GET['status']) : '';
+    $sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'created_at DESC';
+
+    // Validate sort parameter
+    $allowed_sorts = [
+        'created_at DESC', 'created_at ASC',
+        'tracking_number ASC', 'tracking_number DESC',
+        'value_of_package DESC', 'value_of_package ASC'
+    ];
+    if (!in_array($sort, $allowed_sorts)) {
+        $sort = 'created_at DESC';
     }
+
+    $data = $controller->getShipments($page, $limit, $search, $status, $sort);
+    $shipments = $data['shipments'];
+    $total_shipments = $data['total'];
+    $total_pages = ceil($total_shipments / $limit);
+
+    // Generate table HTML
+    ob_start();
+    ?>
+    <div class="panel-body table-responsive">
+        <table class="table m-auto shadow table-striped table-hover table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Shipment Number</th>
+                <th>Type</th>
+                <th>Packages</th>
+                <th>Total Weight</th>
+                <th>Gross Revenue</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($shipments)) { ?>
+                <?php foreach ($shipments as $shipment) { ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($shipment['shipment_number'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['type'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['total_packages'] ?? '0'); ?> packages</td>
+                        <td><?php echo htmlspecialchars($shipment['total_weight'] ?? '0.00'); ?> lbs</td>
+                        <td><span class="item_value">$<?php echo htmlspecialchars($shipment['gross_revenue'] ?? '0.00'); ?></span></td>
+                        <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> → <?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td>
+                        <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status'] ?? ''); ?></span></td>
+                        <td><?php echo htmlspecialchars(timeAgo($shipment['created_at'] ?? '')); ?></td>
+                        <td>
+                            <ul class="action-list">
+                                <li>
+                                  <a href="shipments-view.php?tracking=<?php echo htmlspecialchars($shipment['shipment_number'] ?? ''); ?>">
+                                     <i class="fa-solid fa-eye"></i>
+                                  </a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                <?php } ?>
+            <?php } else { ?>
+                <tr>
+                    <td colspan="9" style="text-align: center;">No shipments found matching your criteria</td>
+                </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+    </div>
+    <?php
+    $table_html = ob_get_clean();
+
+    // Generate pagination HTML
+    ob_start();
+    ?>
+    <div class="mt-3 panel-footer">
+        <div class="row">
+            <div class="col col-sm-6 col-xs-6">Showing <b><?php echo count($shipments); ?></b> out of <b><?php echo $total_shipments; ?></b> entries</div>
+            <div class="col-sm-6 col-xs-6">
+                <ul class="pagination justify-content-end" style="color:black;">
+                    <?php if ($page > 1) { ?>
+                        <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>"><</a></li>
+                    <?php } else { ?>
+                        <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                    <?php } ?>
+                    <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
+                        <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>"><?php echo $i; ?></a></li>
+                    <?php } ?>
+                    <?php if ($page < $total_pages) { ?>
+                        <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&status=<?php echo urlencode($status); ?>&sort=<?php echo urlencode($sort); ?>">></a></li>
+                    <?php } else { ?>
+                        <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                    <?php } ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <?php
+    $pagination_html = ob_get_clean();
+
+    // Return JSON response
+    header('Content-Type: application/json');
+    echo json_encode([
+        'table' => $table_html,
+        'pagination' => $pagination_html,
+        'total' => $total_shipments,
+        'page' => $page,
+        'total_pages' => $total_pages
+    ]);
+}
+
+/**
+ * Handle update check requests
+ */
+function handleUpdateCheck($controller) {
+    // Get basic stats for update checking
+    $stats = $controller->getShipmentStats();
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'has_updates' => false, // You can implement more sophisticated update detection
+        'stats' => $stats,
+        'timestamp' => time()
+    ]);
 }
 ?>
 
@@ -255,21 +428,71 @@ if (mysqli_num_rows($result) > 0) {
                     <div class="row">
                         <div class="d-flex justify-content-between add_shipping">
                             <h4 class="title">Shipments</h4>
-                             <span data-toggle="modal" data-target="#create_shipping"><i class="fa-solid fa-plus"></i> New</span>
+                            <div>
+                                <span><a href="?sync=1" style="color:white !important;"><i class="fa-solid fa-sync"></i> Sync</a></span>
+                                <span data-toggle="modal" data-target="#create_shipping"><i class="fa-solid fa-plus"></i> New</span>
+                            </div>
                         </div>
                     </div>
+                    <?php if (!empty($sync_message)) echo $sync_message; ?>
+                    <?php if (!empty($error_message)) echo $error_message; ?>
                 </div>
-                <div class="search-form">
-                     <form action="#" class="input-group">
-                        <input type="search" class="rounded form-control" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
-                        <button type="submit" class="btn btn-outline-primary"   data-mdb-ripple-init> <img class="search-icon" src="assets/img/search.png" alt="" /></button>
-                     </form>
-                  </div>
-                <div class="loading"
-                    style="color:#E87946; text-align: center;   font-size: 20px;   margin-bottom: 10px;">
-                    <span style="background: #E87946;  margin-right: 10px;"
-                        class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true">
-                    </span>Loading...
+                <!-- Search and Filter Container -->
+                <div class="search-filter-container" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="search-input-group">
+                                <input type="search" id="searchInput" class="form-control" placeholder="Search by tracking number, description, or shipment number..." aria-label="Search" />
+                                <button type="button" id="searchBtn" class="btn-search">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select id="statusFilter" class="form-select">
+                                        <option value="">All Statuses</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="in_transit">In Transit</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select id="sortBy" class="form-select">
+                                        <option value="created_at DESC">Newest First</option>
+                                        <option value="created_at ASC">Oldest First</option>
+                                        <option value="tracking_number ASC">Tracking Number A-Z</option>
+                                        <option value="value_of_package DESC">Highest Value</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-badges" id="filterBadges"></div>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div>
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Loading shipments...</div>
+                    </div>
+                </div>
+
+                <!-- Progress Container -->
+                <div class="progress-container d-none" id="progressContainer">
+                    <div class="alert alert-progress">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <strong>Processing...</strong>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar progress-bar-custom" id="progressBar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 <div class="panel-body table-responsive" style="display: none;">
     <table class="table m-auto shadow table-striped table-hover table-bordered">
@@ -281,7 +504,13 @@ if (mysqli_num_rows($result) > 0) {
                 <th>Destination</th>
                 <th>Status</th>
                 <th>Description</th>
-                <th>Created at</th>
+                <th>Created At</th>
+                <!-- <th>Packages</th>
+                <th>Total Weight</th>
+                <th>Gross Revenue</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Date</th> -->
                 <th>View</th>
             </tr>
         </thead>
@@ -289,17 +518,18 @@ if (mysqli_num_rows($result) > 0) {
             <?php if (!empty($shipments)) { ?>
                 <?php foreach ($shipments as $shipment) { ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($shipment['shipment_number']); ?></td>
-                        <td><img src="assets/img/<?php echo strtolower($shipment['type']); ?>.png" alt="<?php echo htmlspecialchars($shipment['type']); ?>" /></td>
-                        <td><?php echo htmlspecialchars($shipment['origin']); ?></td>
-                        <td><?php echo htmlspecialchars($shipment['destination']); ?></td>
-                        <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status']); ?></span></td>
-                        <td><?php echo htmlspecialchars($shipment['description'] ?? 'N/A'); ?></td>
-                        <td><?php echo htmlspecialchars(date('M d, Y, h:i A', strtotime($shipment['created_at']))); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['shipment_number'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['type'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($shipment['desitination'] ?? ''); ?></td>
+                        <!-- <td><?php echo htmlspecialchars($shipment['origin'] ?? ''); ?> → <?php echo htmlspecialchars($shipment['destination'] ?? ''); ?></td> -->
+                        <td><span style="background:#fde047;padding: 4px; border-radius:5px;color:#222;font-size: 11px;display:inline-block"><?php echo htmlspecialchars($shipment['status'] ?? ''); ?></span></td>
+                        <td><?php echo htmlspecialchars($shipment['description'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars(timeAgo($shipment['created_at'] ?? '')); ?></td>
                         <td>
                             <ul class="action-list">
                                 <li>
-                                  <a href="shipments-view.php?id=<?php echo $shipment['id']; ?>">
+                                  <a href="shipments-view.php?tracking=<?php echo htmlspecialchars($shipment['shipment_number'] ?? ''); ?>">
                                      <i class="fa-solid fa-eye"></i>
                                   </a>
                                 </li>
@@ -309,7 +539,7 @@ if (mysqli_num_rows($result) > 0) {
                 <?php } ?>
             <?php } else { ?>
                 <tr>
-                    <td colspan="8" style="text-align: center;">No shipments available</td>
+                    <td colspan="9" style="text-align: center;">No shipments found matching your criteria</td>
                 </tr>
             <?php } ?>
           </tbody>
@@ -447,9 +677,255 @@ if (mysqli_num_rows($result) > 0) {
   </body>
 </html>
 <script type="text/javascript">
-    $(window).on('load', function() {
-        // Page is fully loaded
-        $('.table-responsive').show('slow');
-        $('.loading').hide();
+    $(document).ready(function() {
+        // Initialize variables
+        let currentPage = 1;
+        let searchTimeout;
+        let isLoading = false;
+
+        // Show table on page load
+        $(window).on('load', function() {
+            $('.table-responsive').show('slow');
+            $('#loadingOverlay').fadeOut();
+        });
+
+        // Enhanced search functionality
+        $('#searchInput').on('input', function() {
+            clearTimeout(searchTimeout);
+            const searchTerm = $(this).val().trim();
+
+            searchTimeout = setTimeout(function() {
+                if (searchTerm.length >= 2 || searchTerm.length === 0) {
+                    performSearch(searchTerm);
+                }
+            }, 500);
+        });
+
+        // Search button click
+        $('#searchBtn').on('click', function() {
+            const searchTerm = $('#searchInput').val().trim();
+            performSearch(searchTerm);
+        });
+
+        // Filter functionality
+        $('#statusFilter, #sortBy').on('change', function() {
+            performSearch($('#searchInput').val().trim());
+        });
+
+        // Perform search and filter
+        function performSearch(searchTerm) {
+            if (isLoading) return;
+
+            isLoading = true;
+            showLoading();
+
+            const statusFilter = $('#statusFilter').val();
+            const sortBy = $('#sortBy').val();
+
+            // Update filter badges
+            updateFilterBadges(searchTerm, statusFilter, sortBy);
+
+            $.ajax({
+                url: 'shipments.php',
+                type: 'GET',
+                data: {
+                    search: searchTerm,
+                    status: statusFilter,
+                    sort: sortBy,
+                    page: 1,
+                    ajax: 1
+                },
+                success: function(response) {
+                    // Update table content
+                    const $response = $(response);
+                    $('.table-responsive').html($response.find('.table-responsive').html());
+                    $('.panel-footer').html($response.find('.panel-footer').html());
+
+                    // Reinitialize pagination
+                    initializePagination();
+
+                    hideLoading();
+                    isLoading = false;
+                },
+                error: function() {
+                    hideLoading();
+                    isLoading = false;
+                    showError('Search failed. Please try again.');
+                }
+            });
+        }
+
+        // Update filter badges
+        function updateFilterBadges(search, status, sort) {
+            let badges = '';
+
+            if (search) {
+                badges += `<span class="badge badge-primary filter-badge" data-type="search">${search} <i class="fa fa-times"></i></span>`;
+            }
+
+            if (status) {
+                badges += `<span class="badge badge-info filter-badge" data-type="status">${status} <i class="fa fa-times"></i></span>`;
+            }
+
+            if (sort !== 'created_at DESC') {
+                badges += `<span class="badge badge-secondary filter-badge" data-type="sort">${$('#sortBy option:selected').text()} <i class="fa fa-times"></i></span>`;
+            }
+
+            $('#filterBadges').html(badges);
+
+            // Remove filter on badge click
+            $('.filter-badge').on('click', function() {
+                const type = $(this).data('type');
+                if (type === 'search') {
+                    $('#searchInput').val('');
+                } else if (type === 'status') {
+                    $('#statusFilter').val('');
+                } else if (type === 'sort') {
+                    $('#sortBy').val('created_at DESC');
+                }
+                performSearch($('#searchInput').val().trim());
+            });
+        }
+
+        // Initialize pagination
+        function initializePagination() {
+            $('.pagination .page-link').on('click', function(e) {
+                e.preventDefault();
+                const href = $(this).attr('href');
+                if (href && href !== '#') {
+                    const urlParams = new URLSearchParams(href.split('?')[1]);
+                    const page = urlParams.get('page');
+
+                    if (page) {
+                        loadPage(parseInt(page));
+                    }
+                }
+            });
+        }
+
+        // Load specific page
+        function loadPage(page) {
+            if (isLoading) return;
+
+            isLoading = true;
+            showLoading();
+
+            const searchTerm = $('#searchInput').val().trim();
+            const statusFilter = $('#statusFilter').val();
+            const sortBy = $('#sortBy').val();
+
+            $.ajax({
+                url: 'shipments.php',
+                type: 'GET',
+                data: {
+                    search: searchTerm,
+                    status: statusFilter,
+                    sort: sortBy,
+                    page: page,
+                    ajax: 1
+                },
+                success: function(response) {
+                    const $response = $(response);
+                    $('.table-responsive').html($response.find('.table-responsive').html());
+                    $('.panel-footer').html($response.find('.panel-footer').html());
+
+                    initializePagination();
+                    hideLoading();
+                    isLoading = false;
+
+                    // Smooth scroll to top of table
+                    $('html, body').animate({
+                        scrollTop: $('.panel-body').offset().top - 100
+                    }, 300);
+                },
+                error: function() {
+                    hideLoading();
+                    isLoading = false;
+                    showError('Failed to load page. Please try again.');
+                }
+            });
+        }
+
+        // Show loading overlay
+        function showLoading() {
+            $('#loadingOverlay').fadeIn(200);
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            $('#loadingOverlay').fadeOut(200);
+        }
+
+        // Show progress bar
+        function showProgress() {
+            $('#progressContainer').removeClass('d-none');
+            $('#progressBar').css('width', '0%');
+
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += Math.random() * 15;
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+                $('#progressBar').css('width', progress + '%');
+            }, 200);
+        }
+
+        // Hide progress bar
+        function hideProgress() {
+            $('#progressBar').css('width', '100%');
+            setTimeout(function() {
+                $('#progressContainer').addClass('d-none');
+            }, 300);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorHtml = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+            $('.panel-heading').prepend(errorHtml);
+
+            // Auto remove after 5 seconds
+            setTimeout(function() {
+                $('.alert-danger').fadeOut();
+            }, 5000);
+        }
+
+        // Real-time updates (polling every 30 seconds)
+        setInterval(function() {
+            if (!isLoading && document.visibilityState === 'visible') {
+                // Check for updates silently
+                $.ajax({
+                    url: 'shipments.php',
+                    type: 'GET',
+                    data: { check_updates: 1 },
+                    success: function(response) {
+                        // You can implement update notification logic here
+                        // For now, just log that updates are being checked
+                        console.log('Checking for shipment updates...');
+                    }
+                });
+            }
+        }, 30000);
+
+        // Initialize on page load
+        initializePagination();
+
+        // Clear search on escape key
+        $(document).on('keydown', function(e) {
+            if (e.keyCode === 27) { // Escape key
+                $('#searchInput').val('');
+                performSearch('');
+            }
+        });
+
+        // Enter key support for search
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                performSearch($(this).val().trim());
+            }
+        });
     });
 </script>

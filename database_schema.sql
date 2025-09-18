@@ -242,3 +242,42 @@ ALTER TABLE packages ADD COLUMN IF NOT EXISTS warehouse_package_id VARCHAR(255) 
 ALTER TABLE packages ADD COLUMN IF NOT EXISTS tracking_progress VARCHAR(255) DEFAULT NULL;
 ALTER TABLE packages ADD COLUMN IF NOT EXISTS invoice_file VARCHAR(255) DEFAULT NULL;
 ALTER TABLE packages ADD COLUMN store VARCHAR(255) DEFAULT '-' AFTER value_of_package;
+
+
+-- ===========================
+-- 5. CREATE INDEXES FOR PERFORMANCE
+-- ===========================
+
+-- Packages table indexes
+CREATE INDEX IF NOT EXISTS idx_packages_shipment_id ON packages(shipment_id);
+CREATE INDEX IF NOT EXISTS idx_packages_tracking_number ON packages(tracking_number);
+CREATE INDEX IF NOT EXISTS idx_packages_user_id ON packages(user_id);
+CREATE INDEX IF NOT EXISTS idx_packages_shipment_status ON packages(shipment_status);
+CREATE INDEX IF NOT EXISTS idx_packages_created_at ON packages(created_at);
+CREATE INDEX IF NOT EXISTS idx_packages_warehouse_package_id ON packages(warehouse_package_id);
+
+-- Shipments table indexes
+CREATE INDEX IF NOT EXISTS idx_shipments_shipment_number ON shipments(shipment_number);
+CREATE INDEX IF NOT EXISTS idx_shipments_user_id ON shipments(user_id);
+CREATE INDEX IF NOT EXISTS idx_shipments_status ON shipments(status);
+CREATE INDEX IF NOT EXISTS idx_shipments_shipment_simple_id ON shipments(shipmentSimpleId);
+CREATE INDEX IF NOT EXISTS idx_shipments_created_at ON shipments(created_at);
+
+-- Users table indexes
+CREATE INDEX IF NOT EXISTS idx_users_account_number ON users(account_number);
+CREATE INDEX IF NOT EXISTS idx_users_warehouse_customer_id ON users(warehouse_customer_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Pre-alert table indexes
+CREATE INDEX IF NOT EXISTS idx_pre_alert_tracking_number ON pre_alert(Tracking_Number);
+CREATE INDEX IF NOT EXISTS idx_pre_alert_user_id ON pre_alert(User_id);
+CREATE INDEX IF NOT EXISTS idx_pre_alert_status ON pre_alert(Status);
+
+-- Delivery preference table indexes
+CREATE INDEX IF NOT EXISTS idx_delivery_preference_user_id ON delivery_preference(user_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_preference_region ON delivery_preference(region);
+
+-- Composite indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_packages_user_shipment ON packages(user_id, shipment_id);
+CREATE INDEX IF NOT EXISTS idx_packages_user_status ON packages(user_id, shipment_status);
+CREATE INDEX IF NOT EXISTS idx_shipments_user_status ON shipments(user_id, status);
