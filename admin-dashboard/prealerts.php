@@ -514,9 +514,9 @@
 			   function Pre_alert() 
 			    {
 				  $.post("codes.php",{ showing_PreAlert_for_PreAlert_page : "", Pre_alert_id : $Pre_alert_id },function(response)
-						   {  
-							  
-								$jsArray          = JSON.parse(response); 
+						   {
+							   try {
+								$jsArray          = JSON.parse(response);
 								$describe_package = $jsArray['describe_package'];
 								$tracking_number  = $jsArray['tracking_number'];
 								$value_of_package = $jsArray['value_of_package'];
@@ -524,19 +524,23 @@
 								//$merchant       = $jsArray['merchant'];
 								$invoice          = $.trim( $jsArray['invoice'] ) ;
 								$invoice          =  $invoice == '' ? '#' : '../uploaded-file/' + $jsArray['invoice'];
-								
+
 								$('.Pre-Alert-details .Description').text($describe_package);
 								$('.Pre-Alert-details .Tracking').text($tracking_number);
 								$('.Pre-Alert-details .Courier').text($courier_company);
 								$('.Pre-Alert-details .Value').text($value_of_package);
 								$('.Pre-Alert-details .Customer').text($customer_name);
-								$('.Pre-Alert-details .account_num').text($account_number); 
+								$('.Pre-Alert-details .account_num').text($account_number);
 								$('.Pre-Alert-details .Invoice').attr('href', $invoice);
-								
+
 								//$invoice == '#' ? alertify.success("") : '';
 								$('#view_user_information .modal-content').css('background-size', '0px');
 								$('#view_user_information .modal-body').css('opacity', '1');
-				 		   } 	 
+							   } catch (e) {
+								   console.error('JSON parse error:', e);
+								   alertify.error('Failed to load pre-alert details.');
+							   }
+				 		   }
 				       );
 			    }   
 					   
