@@ -242,8 +242,12 @@
 		
 		if( isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) ){
 
-		     $Pre_alert_id = $_REQUEST['Pre_alert_id'];
-			 $sql     = "SELECT * FROM pre_alert where id = $Pre_alert_id";
+		     if (!isset($_REQUEST['Pre_alert_id']) || !is_numeric($_REQUEST['Pre_alert_id'])) {
+		         echo json_encode(['error' => 'Invalid Pre_alert_id']);
+		         exit;
+		     }
+		     $Pre_alert_id = intval($_REQUEST['Pre_alert_id']);
+			 $sql     = "SELECT * FROM pre_alert WHERE id = $Pre_alert_id";
 			 $result  = mysqli_query($conn, $sql);
 			 if ($result && mysqli_num_rows($result) > 0) {
 			     $rows = mysqli_fetch_assoc($result);

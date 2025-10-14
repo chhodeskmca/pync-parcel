@@ -20,7 +20,7 @@
     $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $offset = ($page - 1) * $limit;
 
-    $sql_count      = 'SELECT COUNT(*) as total FROM packages';
+    $sql_count      = 'SELECT COUNT(*) as total FROM packages WHERE tracking_number NOT IN (SELECT tracking_number FROM pre_alert WHERE tracking_number IS NOT NULL)';
     $result_count   = mysqli_query($conn, $sql_count);
     $total_packages = mysqli_fetch_assoc($result_count)['total'];
 
@@ -339,8 +339,8 @@
                 $sort  = isset($_GET['sort']) ? $_GET['sort'] : 'latest';
                 $order = ($sort == 'oldest') ? 'ASC' : 'DESC';
 
-                // Check if we have database packages
-                $sql             = "SELECT * FROM packages ORDER BY created_at $order LIMIT $limit OFFSET $offset";
+                // Check if we have database packages (excluding pre-alerts)
+                $sql             = "SELECT * FROM packages WHERE tracking_number NOT IN (SELECT tracking_number FROM pre_alert WHERE tracking_number IS NOT NULL) ORDER BY created_at $order LIMIT $limit OFFSET $offset";
                 $result          = mysqli_query($conn, $sql);
                 $has_db_packages = mysqli_num_rows($result) > 0;
 
