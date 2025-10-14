@@ -88,12 +88,12 @@
                   <p>Shipments</p>
                 </a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a href="codes.php?clear_cache=1">
                   <img class="user-icon" src="assets/img/cache.png" alt="Cache" />
                   <p>Clear Cache (DEV ONLY)</p>
                 </a>
-              </li>
+              </li> -->
               <li class="nav-item log-out">
                 <a  href="../user-area/log-out.php">
                 <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
@@ -111,7 +111,7 @@
           <div class="main-header-logo">
             <!-- Logo Header -->
             <div class="logo-header">
-              <a href="index.html" class="logo">
+              <a href="index.php" class="logo">
                 <img
                   src="assets/img/kaiadmin/logo_light.svg"
                   alt="navbar brand"

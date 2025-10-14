@@ -26,7 +26,7 @@
        <header class="home-header fixed-top">
         <nav class="navbar navbar-expand-lg shadow-sm" id="mainNav">
             <div class="container">
-                <a class="navbar-brand fw-bold" href="index.html">
+                <a class="navbar-brand fw-bold" href="index.php">
 				  <img class="logo" src="assets/img/logo.png" alt="" />
 				</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">Menu<i class="bi-list"></i>

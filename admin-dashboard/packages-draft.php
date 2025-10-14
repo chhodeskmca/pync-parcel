@@ -20,7 +20,7 @@
         <div class="sidebar-logo">
           <!-- Logo Header -->
           <div class="logo-header">
-            <a href="index.html" class="logo">
+            <a href="index.php" class="logo">
               <img
                 src="assets/img/logo.png"
                 alt="navbar brand"
@@ -45,7 +45,7 @@
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item active">
-                <a href="index.html">
+                <a href="index.php">
                    <img class="home-icon" src="assets/img/home.png" alt="home" />
                   <p>Dashboard</p> 
                 </a>
@@ -102,7 +102,7 @@
           <div class="main-header-logo">
             <!-- Logo Header -->
             <div class="logo-header">
-              <a href="index.html" class="logo">
+              <a href="index.php" class="logo">
                 <img
                   src="assets/img/kaiadmin/logo_light.svg"
                   alt="navbar brand"
