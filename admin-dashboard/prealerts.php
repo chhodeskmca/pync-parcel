@@ -501,7 +501,7 @@
 			    $('#view_user_information .modal-content').css('background-size', '50px');
 				$('#view_user_information .modal-body').css('opacity', '0');
 				
-			    $Pre_alert_id   = $(this).data('pre_alert_id') ; 
+			    $Pre_alert_id   = $(this).data('Pre_alert_id') ;
 			    $customer_name  = $(this).data('customer_name') ; 
 			    $account_number = $(this).data('account_number') ; 
 				
