@@ -250,6 +250,16 @@
 		     
 		}
 		 
-		//================================================== Pre-alert showing for Pre-alert page end  =============================== 
-	   
+		//================================================== Pre-alert showing for Pre-alert page end  ===============================
+
+		//================================================== Cache clear endpoint start ===============================
+		if (isset($_REQUEST['clear_cache'])) {
+		    include('CacheManager.php');
+		    $cache = new CacheManager();
+		    $cache->clear();
+		    $_SESSION['message'] = 'Cache cleared successfully';
+		    header('location: index.php');
+		    die();
+		}
+		//================================================== Cache clear endpoint end ===============================
 ?>

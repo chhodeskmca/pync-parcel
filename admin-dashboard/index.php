@@ -88,7 +88,13 @@
                   <p>Shipments</p>
                 </a>
               </li>
-			    <li class="nav-item log-out">
+              <li class="nav-item">
+                <a href="codes.php?clear_cache=1">
+                  <img class="user-icon" src="assets/img/cache.png" alt="Cache" />
+                  <p>Clear Cache (DEV ONLY)</p>
+                </a>
+              </li>
+              <li class="nav-item log-out">
                 <a  href="../user-area/log-out.php">
                 <img class="user-icon" src="assets/img/shutdown.png" alt="User" />
                   <p>Log out</p>

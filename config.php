@@ -27,11 +27,11 @@ if (!defined('IS_PRODUCTION')) {
 }
 
 if (!defined('RECAPTCHA_SITE_KEY')) {
-    define('RECAPTCHA_SITE_KEY', $_ENV['RECAPTCHA_SITE_KEY'] ?? '');
+    define('RECAPTCHA_SITE_KEY', $_ENV['RECAPTCHA_SITE_KEY'] ?? '6LdJX2orAAAAADNLtaBt1_hthT7n2xq1xcVwSR9q');
 }
 
 if (!defined('RECAPTCHA_SECRET_KEY')) {
-    define('RECAPTCHA_SECRET_KEY', $_ENV['RECAPTCHA_SECRET_KEY'] ?? '');
+    define('RECAPTCHA_SECRET_KEY', $_ENV['RECAPTCHA_SECRET_KEY'] ?? '6LdJX2orAAAAAFGf0vxYIvKGxET4GNkBiQjtPpsR');
 }
 
 if (!defined('RECAPTCHA_ENABLED')) {
