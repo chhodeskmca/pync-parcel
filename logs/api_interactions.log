@@ -1,0 +1,4 @@
+[2025-10-14 06:19:00] [INFO] make_api_request: Request successful | Context: {"url":"https:\/\/courier.shipavecorp.com\/rpc\/public.v1.PublicService\/CreateCourierCustomer","method":"POST","http_code":200}
+[2025-10-14 06:19:00] [INFO] push_customer_to_warehouse: Saved warehouse_customer_id | Context: {"customer_id":"5","warehouse_customer_id":"7ae30217-cbd8-4f63-b3c8-9b154cd1aa6c"}
+[2025-10-14 06:23:37] [INFO] make_api_request: Request successful | Context: {"url":"https:\/\/courier.shipavecorp.com\/rpc\/public.v1.PublicService\/CreateCourierCustomer","method":"POST","http_code":200}
+[2025-10-14 06:23:37] [INFO] push_customer_to_warehouse: Saved warehouse_customer_id | Context: {"customer_id":"6","warehouse_customer_id":"4c7de7e1-27b1-4f8e-886b-2907a8614898"}

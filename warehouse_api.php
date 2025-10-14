@@ -1,7 +1,7 @@
 <?php
 include_once 'config.php';
 include_once __DIR__ . '/function.php'; // for DB connection
-include_once 'CacheManager.php';        // Include cache manager
+include_once __DIR__ . '/admin-dashboard/CacheManager.php';        // Include cache manager
 
 // Configuration constants for API handling
 define('API_MAX_RETRIES', 3);

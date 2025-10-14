@@ -1,49 +1,51 @@
 <?php
-    session_start();
+session_start();
 
-    require_once __DIR__ . '/vendor/autoload.php';
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
+require_once __DIR__ . '/vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-    use PHPMailer\PHPMailer\Exception;
-    use PHPMailer\PHPMailer\PHPMailer;
+include 'config.php';
 
-    require 'phpmailer/src/Exception.php';
-    require 'phpmailer/src/PHPMailer.php';
-    require 'phpmailer/src/SMTP.php';
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
-    require_once __DIR__ . '/routes/web.php';
-    $routes   = include __DIR__ . '/routes/web.php';
-    $base_url = $routes['base_url'];
+require 'phpmailer/src/Exception.php';
+require 'phpmailer/src/PHPMailer.php';
+require 'phpmailer/src/SMTP.php';
 
-    //Create an instance; passing `true` enables exceptions
-    $mail = new PHPMailer(true);
-                                                                                                                           //Server settings
-                                                                                                                           //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();                                                                                                       //Send using SMTP
-    $mail->Host       = $_ENV['MAIL_HOST'];                                                                                //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                                                                              //Enable SMTP authentication
-    $mail->Username   = $_ENV['MAIL_USERNAME'];                                                                            //SMTP username
-    $mail->Password   = $_ENV['MAIL_PASSWORD'];                                                                            //SMTP password
-    $mail->SMTPSecure = $_ENV['MAIL_ENCRYPTION'] === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
-    $mail->Port       = $_ENV['MAIL_PORT'];                                                                                //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+require_once __DIR__ . '/routes/web.php';
+$routes   = include __DIR__ . '/routes/web.php';
+$base_url = $routes['base_url'];
 
-    if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
-    {
-        // forgot Password a email
-        try {
+//Create an instance; passing `true` enables exceptions
+$mail = new PHPMailer(true);
+//Server settings
+//$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+$mail->isSMTP();                                                                                                       //Send using SMTP
+$mail->Host       = MAIL_HOST;                                                                                //Set the SMTP server to send through
+$mail->SMTPAuth   = true;                                                                                              //Enable SMTP authentication
+$mail->Username   = MAIL_USERNAME;                                                                            //SMTP username
+$mail->Password   = MAIL_PASSWORD;                                                                            //SMTP password
+$mail->SMTPSecure = MAIL_ENCRYPTION === 'tls' ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
+$mail->Port       = MAIL_PORT;                                                                                //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
-            $email      = $_REQUEST['PasswordResetEmail'];
-            $token_hash = $_REQUEST['token_hash'];
+if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
+{
+  // forgot Password a email
+  try {
 
-            //Recipients
-            $mail->setFrom('contact@freelancerhanip.com', 'Pyncparcel.com');
-            $mail->addAddress("$email", 'recipient email address.');
+    $email      = $_REQUEST['PasswordResetEmail'];
+    $token_hash = $_REQUEST['token_hash'];
 
-                                 //Content
-            $mail->isHTML(true); //Set email format to HTML
-            $mail->Subject = 'Password Reset Request for Your Account';
-            $mail->Body    = "
+    //Recipients
+    $mail->setFrom(MAIL_USERNAME, APP_NAME);
+    $mail->addAddress("$email", 'recipient email address.');
+
+    //Content
+    $mail->isHTML(true); //Set email format to HTML
+    $mail->Subject = 'Password Reset Request for Your Account';
+    $mail->Body    = "
 								<div style='border:1px solid #ddd; margin: auto; padding: 11px;'>
 									  <h4>Pyncparcel</h4>
 									  <img style='max-width:500px; display:block; margin: auto; ' src='" . $base_url . "assets/img/logo.png'>
@@ -58,44 +60,42 @@
 								</div>
 							   ";
 
-            $mail->send();
-            $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>";
+    $mail->send();
+    $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>";
 
-            if (isset($_REQUEST['AnotherRequest'])) {
+    if (isset($_REQUEST['AnotherRequest'])) {
 
-                $_SESSION['AnotherRequestMessage'] = "";
-                header('location: ' . $base_url . 'forgotpwd.php?mailsent=' . $email . '&AnotherRequest');
+      $_SESSION['AnotherRequestMessage'] = "";
+      header('location: ' . $base_url . 'forgotpwd.php?mailsent=' . $email . '&AnotherRequest');
+    } else {
 
-            } else {
-
-                header('location: ' . $base_url . 'forgotpwd.php?mailsent=' . $email);
-            }
-
-            die();
-
-        } catch (Exception $e) {
-            error_log("Password reset email error: " . $e->getMessage());
-            $_SESSION['message'] = "Something went wrong, please try again";
-            header('location: ' . $base_url . 'forgotpwd.php');
-            die();
-        }
+      header('location: ' . $base_url . 'forgotpwd.php?mailsent=' . $email);
     }
+
+    die();
+  } catch (Exception $e) {
+    error_log("Password reset email error: " . $e->getMessage());
+    $_SESSION['message'] = "Something went wrong, please try again";
+    header('location: ' . $base_url . 'forgotpwd.php');
+    die();
+  }
+}
 ?>
 <!-- when user has signed up , I will get a email-->
 <?php
 
-    if (isset($_REQUEST['signUp_email'])) {
+if (isset($_POST['signUp_email'])) {
 
-        try {
-            $signUp_email   = $_REQUEST['signUp_email'];
-            $Account_Number = isset($_REQUEST['Account_Number']) ? strtoupper($_REQUEST['Account_Number']) : 'a/n';
-            $first_name     = isset($_REQUEST['first_name']) ? $_REQUEST['first_name'] : 'a/n';
+  try {
+    $signUp_email   = $_POST['signUp_email'];
+    $Account_Number = isset($_POST['Account_Number']) ? strtoupper($_POST['Account_Number']) : 'a/n';
+    $first_name     = isset($_POST['first_name']) ? $_POST['first_name'] : 'a/n';
 
-            $body = "<div style='padding:10px; max-width: 700px; margin: auto; color:#222 !important'>
+    $body = "<div style='padding:10px; max-width: 700px; margin: auto; color:#222 !important'>
 
-			  <h1 style='font-size: 20px;'>Your Pync Parcel Chateau Journey Starts Here ✨</h1>
+			  <h1 style='font-size: 20px;'>Your <?php echo APP_NAME; ?> Journey Starts Here ✨</h1>
 			  <p>Hello $first_name,</p>
-			  <p> Welcome to Pync Parcel Chateau – where shipping is made seamless, and service is made special.
+			  <p> Welcome to <?php echo APP_NAME; ?> – where shipping is made seamless, and service is made special.
 
 				Below is your unique overseas shipping address. Use this address whenever you’re shopping online so we can get your parcels to you quickly and securely.
 				</p>
@@ -120,30 +120,29 @@
 			   <h4>Your next steps:</h4>
 			   <p>1.Save your shipping address above</p>
 			   <p>2.Update your preferred delivery address under “My Account”</p>
-			   <p>3.Start shopping and let the Pync Chateau take care of the rest</p>
-			   <p>Here’s to your first delivery,The Pync Parcel Chateau Team</p>
+			   <p>3.Start shopping and let the <?php echo APP_NAME; ?> take care of the rest</p>
+			   <p>Here’s to your first delivery,The <?php echo APP_NAME; ?> Team</p>
 		</div>";
 
-            $email = $signUp_email; //$_REQUEST['PasswordResetEmail'] ;
-                                    //Recipients
-            $mail->setFrom('contact@freelancerhanip.com', 'Pyncparcel.com');
-            $mail->addAddress("$email", 'recipient email address.');
+    $email = $signUp_email; //$_REQUEST['PasswordResetEmail'] ;
+    //Recipients
+    $mail->setFrom(MAIL_USERNAME, APP_NAME);
+    $mail->addAddress("$email", 'recipient email address.');
 
-                                 //Content
-            $mail->isHTML(true); //Set email format to HTML
-            $mail->Subject = 'Welcome to the Pync Chateau - Your Shipping Address is Ready!';
-            $mail->Body    = $body;
+    //Content
+    $mail->isHTML(true); //Set email format to HTML
+    $mail->Subject = 'Welcome to the ' . APP_NAME . ' - Your Shipping Address is Ready!';
+    $mail->Body    = $body;
 
-            $mail->send();
-            $_SESSION['message'] = "Registration successful. You can now log in";
-            header('location: ' . $base_url . 'sign-in.php');
-            die();
-
-        } catch (Exception $e) {
-            error_log("Sign-up email error: " . $e->getMessage());
-            $_SESSION['message'] = "Something went wrong, please try again";
-            header('location: ' . $base_url . 'forgotpwd.php');
-            die();
-        }
-    }
+    $mail->send();
+    $_SESSION['message'] = "Registration successful. You can now log in";
+    header('location: ' . $base_url . 'sign-in.php');
+    die();
+  } catch (Exception $e) {
+    error_log("Sign-up email error: " . $e->getMessage());
+    $_SESSION['message'] = "Something went wrong, please try again";
+    header('location: ' . $base_url . 'forgotpwd.php');
+    die();
+  }
+}
 ?>
