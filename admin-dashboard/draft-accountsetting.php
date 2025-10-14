@@ -104,7 +104,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"
@@ -366,7 +366,7 @@
 												  </div> 
 												 <div class="form-group">
 												  <label for="Email">Email Address</label>
-												  <input disabled value="hanip4137@gmail.com" type="email" class="form-control" id="Email"
+												  <input disabled value="email@example.com" type="email" class="form-control" id="Email"
 												  />
 												</div>
 											  </div>  

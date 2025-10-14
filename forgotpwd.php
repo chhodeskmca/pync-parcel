@@ -165,22 +165,15 @@ session_start();
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
         <script src="js/bootstrap.js"></script>
-        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script> 
+
 		<!--Jquery-->
 		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <!-- custom JS-->
         <script src="js/custom.js"></script>
 		<script>
-	    // Submission form will start immediately without delay
 	    $(document).ready(function() {
 		  $('#myForm').on('submit', function(e) {
 			$('.spinner').css('display', 'inline');
-			// e.preventDefault(); // Removed delay, allow immediate submission
-			// let form = this; // Store reference to the form element
-
-			// setTimeout(function() {
-			//  form.submit(); // Native submit after delay
-			// }, 1000); // 5000ms = 5 seconds
 		  });
 		});
 		</script>

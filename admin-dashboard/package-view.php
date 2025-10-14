@@ -74,6 +74,15 @@
         }
     }
 
+    // Define tracking steps in order
+    $tracking_steps = [
+        'Received at Warehouse',
+        'In Transit to Jamaica',
+        'Undergoing Customs Clearance',
+        'Ready for Delivery Instructions',
+        'Delivered',
+    ];
+
     // Handle package update
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_package'])) {
         $courier_charge    = mysqli_real_escape_string($conn, $_POST['courier_charge'] ?? '');
@@ -124,9 +133,34 @@
             $updates[] = "invoice_total = '" . floatval($courier_charge) . "'";
         }
         if (! empty($tracking_progress)) {
-            // Sanitize and limit tracking_progress length to avoid data truncation error
-            $safe_tracking_progress = substr(mysqli_real_escape_string($conn, $tracking_progress), 0, 255);
-            $updates[]              = "tracking_progress = '" . $safe_tracking_progress . "'";
+            // Validate tracking_progress against allowed steps and sequence
+            $current_step_index = array_search($package['tracking_progress'], $tracking_steps);
+            $new_step_index     = array_search($tracking_progress, $tracking_steps);
+
+            if ($new_step_index === false) {
+                echo "<div class='alert alert-danger'>Invalid tracking progress step.</div>";
+            } elseif ($new_step_index < $current_step_index && $current_step_index !== false) {
+                echo "<div class='alert alert-danger'>Cannot revert to a previous tracking step.</div>";
+            } else {
+                // Sanitize and limit tracking_progress length to avoid data truncation error
+                $safe_tracking_progress = substr(mysqli_real_escape_string($conn, $tracking_progress), 0, 255);
+                $updates[]              = "tracking_progress = '" . $safe_tracking_progress . "'";
+
+                // Update tracking_history
+                $current_history = json_decode($package['tracking_history'] ?? '[]', true);
+                if (! is_array($current_history)) {
+                    $current_history = [];
+                }
+
+                // Add new step if it's a progression
+                if ($new_step_index > $current_step_index || $current_step_index === false) {
+                    $current_history[] = [
+                        'step' => $tracking_progress,
+                        'date' => date('Y-m-d H:i:s'),
+                    ];
+                    $updates[] = "tracking_history = '" . mysqli_real_escape_string($conn, json_encode($current_history)) . "'";
+                }
+            }
         }
         if (! empty($tracking_date_mysql)) {
             $updates[] = "created_at = '" . $tracking_date_mysql . "'";
@@ -253,7 +287,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"

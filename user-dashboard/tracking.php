@@ -34,6 +34,18 @@
         'Delivered',
     ];
 
+    // Parse tracking_history to get dates for each step
+    $tracking_history = json_decode($package['tracking_history'] ?? '[]', true);
+    if (! is_array($tracking_history)) {
+        $tracking_history = [];
+    }
+
+    // Create a map of step to date
+    $step_dates = [];
+    foreach ($tracking_history as $entry) {
+        $step_dates[$entry['step']] = $entry['date'];
+    }
+
     // Determine completed steps based on tracking_progress or status
     $current_status  = $package['tracking_progress'] ?? $package['status'];
     $completed_up_to = 0;
@@ -159,7 +171,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"
@@ -346,9 +358,8 @@
 	<h1 class="trackingHeading">Tracking Information</h1>
 	<ul class="timeline">
 	<?php
-        $created_date = strtotime($package['created_at']);
         foreach ($steps as $index => $step) {
-            $step_date = date('m/d/Y', strtotime('+' . ($index * 5) . ' days', $created_date)); // Add 5 days per step
+            $step_date = isset($step_dates[$step]) ? date('m/d/Y', strtotime($step_dates[$step])) : date('m/d/Y', strtotime($package['created_at'])); // Use history date or created_at as fallback
             $opacity   = ($index < $completed_up_to) ? '1' : '0.2';
         ?>
 	  <li class="timeline-item">

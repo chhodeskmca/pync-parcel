@@ -112,7 +112,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"
@@ -276,9 +276,6 @@
 									<a class="nav-link active" id="pills-home-tab-nobd" data-bs-toggle="pill" href="#pills-home-nobd" role="tab" aria-controls="pills-home-nobd" aria-selected="true">Outstanding</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link" id="pills-profile-tab-nobd" data-bs-toggle="pill" href="#pills-profile-nobd" role="tab" aria-controls="pills-profile-nobd" aria-selected="false">Total</a>
-								</li>
-								<li class="nav-item">
 									<a class="nav-link" id="pills-contact-tab-nobd" data-bs-toggle="pill" href="#pills-contact-nobd" role="tab" aria-controls="pills-contact-nobd" aria-selected="false">History</a>
 								</li>
 							</ul>
@@ -286,9 +283,6 @@
 								<div class="tab-pane fade show active" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd">
 								   <h5 class="totlAmountdue">Total Amount Due</h5>
 								    <strong>$ 0.00 USD</strong>
-								</div>
-								<div class="tab-pane fade pending_payment" id="pills-profile-nobd" role="tabpanel" aria-labelledby="pills-profile-tab-nobd">
-									<p class="text-center">There are no data to display.</p>
 								</div>
 								<div class="tab-pane fade" id="pills-contact-nobd" role="tabpanel" aria-labelledby="pills-contact-tab-nobd">
 								  <p class="text-center">There are no data to display.</p>

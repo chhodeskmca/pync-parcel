@@ -8,12 +8,12 @@
 	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
      <link rel="stylesheet" href="https://unpkg.com/bs-brain@2.0.4/tutorials/timelines/timeline-5/assets/css/timeline-5.css">
     <!-- CSS Files -->
-    <link rel="stylesheet" href="../../user-dashboard hanip/assets/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="../../user-dashboard hanip/assets/css/kaiadmin.min.css" />
+    <link rel="stylesheet" href="../../user-dashboard/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../user-dashboard/assets/css/kaiadmin.min.css" />
 	<!-- font awesome -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<!-- custom css -->
-    <link rel="stylesheet" href="../../user-dashboard hanip/assets/css/custom.css" />
+    <link rel="stylesheet" href="../../user-dashboard/assets/css/custom.css" />
     <link rel="stylesheet" href="assets/css/admin.css" />
 	 <style type="text/css">
 	  body{
@@ -172,7 +172,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"

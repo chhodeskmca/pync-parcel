@@ -247,6 +247,17 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
         // }, 1000); // 5000ms = 5 seconds
       });
     });
+
+    // Optimize input responsiveness
+    $(document).ready(function() {
+        $('#firstName, #last_name, #txtPhoneNo, #email, #pass, #verifypwd').on('input', function() {
+            // Debounce input events to prevent excessive processing
+            clearTimeout($(this).data('timer'));
+            $(this).data('timer', setTimeout(function() {
+                // Optional: Add any lightweight validation or feedback here if needed
+            }, 100));
+        });
+    });
   </script>
   <script src="js/custom.js"></script>
 </body>

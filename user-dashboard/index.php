@@ -15,23 +15,23 @@
 	    'Delivered' => 0
 	);
 
-	// Query to get package counts by status for the logged-in user
-	$sql = "SELECT status, COUNT(*) as count FROM packages WHERE user_id = $user_id GROUP BY status";
+	// Query to get package counts by effective status for the logged-in user, excluding pre-alerts
+	$sql = "SELECT COALESCE(tracking_progress, status) as effective_status, COUNT(*) as count FROM packages WHERE user_id = $user_id AND tracking_number NOT IN (SELECT tracking_number FROM pre_alert WHERE user_id = $user_id) GROUP BY effective_status";
 	$result = mysqli_query($conn, $sql);
 	if ($result) {
 	    while ($row = mysqli_fetch_assoc($result)) {
-	        $status = $row['status'];
+	        $effective_status = $row['effective_status'];
 	        $count = $row['count'];
-	        // Map statuses to dashboard categories
-	        if ($status == 'Received at Origin' || $status == 'At Sorting Facility') {
+	        // Map effective statuses to dashboard categories
+	        if ($effective_status == 'Received at Origin' || $effective_status == 'At Sorting Facility' || $effective_status == 'Received at Warehouse') {
 	            $status_counts['Received at Warehouse'] += $count;
-	        } elseif ($status == 'In Transit' || $status == 'Shipped') {
+	        } elseif ($effective_status == 'In Transit' || $effective_status == 'Shipped' || $effective_status == 'In Transit to Jamaica') {
 	            $status_counts['In transit to Jamaica'] += $count;
-	        } elseif ($status == 'Processing at Customs') {
+	        } elseif ($effective_status == 'Processing at Customs' || $effective_status == 'Undergoing Customs Clearance') {
 	            $status_counts['Undergoing Customs Clearance'] += $count;
-	        } elseif ($status == 'Ready for Pickup' || $status == 'Out for Delivery' || $status == 'Scheduled for Delivery') {
+	        } elseif ($effective_status == 'Ready for Pickup' || $effective_status == 'Out for Delivery' || $effective_status == 'Scheduled for Delivery' || $effective_status == 'Ready for Delivery Instructions') {
 	            $status_counts['Ready for Delivery Instructions'] += $count;
-	        } elseif ($status == 'Delivered') {
+	        } elseif ($effective_status == 'Delivered') {
 	            $status_counts['Delivered'] += $count;
 	        }
 	    }
@@ -145,7 +145,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"
@@ -308,7 +308,7 @@
             </div>
             <div class="row">
 			   <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
+                <div class="card card-stats card-round" style="cursor: pointer;" onclick="window.location.href='package.php?filter=Received at Warehouse'">
                   <div class="card-body">
                     <div class="row align-items-center">
                       <div class="col-icon">
@@ -329,7 +329,7 @@
                 </div>
               </div>
                <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
+                <div class="card card-stats card-round" style="cursor: pointer;" onclick="window.location.href='package.php?filter=In transit to Jamaica'">
                   <div class="card-body">
                     <div class="row align-items-center">
                       <div class="col-icon">
@@ -350,7 +350,7 @@
                 </div>
               </div>
 			   <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
+                <div class="card card-stats card-round" style="cursor: pointer;" onclick="window.location.href='package.php?filter=Undergoing Customs Clearance'">
                   <div class="card-body">
                     <div class="row align-items-center">
                       <div class="col-icon">
@@ -371,7 +371,7 @@
                 </div>
               </div>
 			  <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
+                <div class="card card-stats card-round" style="cursor: pointer;" onclick="window.location.href='package.php?filter=Ready for Delivery Instructions'">
                   <div class="card-body">
                     <div class="row align-items-center">
                       <div class="col-icon">
@@ -392,9 +392,9 @@
                 </div>
               </div>
 			 <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
+                <div class="card card-stats card-round" style="cursor: pointer;" onclick="window.location.href='package.php?filter=Delivered'">
                   <div class="card-body">
-                    <div class="row align-items-center">
+            <div class="row align-items-center">
                       <div class="col-icon">
                         <div
                           class="text-center icon-big icon-secondary bubble-shadow-small"

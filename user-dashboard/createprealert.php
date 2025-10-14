@@ -114,7 +114,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"
@@ -310,7 +310,7 @@
                         </div>
 						 <div class="form-group">
                           <label for="comment">Describe Package Content (eg. Sun-glasses)</label>
-                          <textarea  name="describe_package" class="form-control" id="comment" rows="3"></textarea>
+                          <textarea required name="describe_package" class="form-control" id="comment" rows="3"></textarea>
                         </div>
                       </div>
 					   <div class="col-md-6 col-lg-4">
@@ -365,7 +365,17 @@
 			  <div class="col-md-12">
                 <div class="card card-round">
 				<?php
-                    $sql = "SELECT* FROM pre_alert where User_id = $user_id ORDER BY id DESC";
+                    // Pagination parameters
+                    $limit = 10;
+                    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+                    $offset = ($page - 1) * $limit;
+
+                    $sql_count = "SELECT COUNT(*) as total FROM pre_alert WHERE User_id = $user_id";
+                    $result_count = mysqli_query($conn, $sql_count);
+                    $total_prealerts = mysqli_fetch_assoc($result_count)['total'];
+                    $total_pages = ceil($total_prealerts / $limit);
+
+                    $sql = "SELECT * FROM pre_alert WHERE User_id = $user_id ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
                     if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
                     ?>
                   <div class="card-header">
@@ -374,9 +384,9 @@
 					</div>
                   </div>
                   <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                       <!-- Projects table -->
-                      <table class="table  mb-0">
+                      <table class="table mb-0">
                         <thead class="thead-light">
                           <tr>
                             <th scope="col">Tracking Number</th>
@@ -414,6 +424,31 @@
                               ?>
 						</tbody>
                       </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="mt-3 panel-footer">
+                      <div class="row">
+                        <div class="col col-sm-6 col-xs-6">
+                          Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_prealerts; ?></b> entries
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                          <ul class="pagination justify-content-end" style="color:black;">
+                            <?php if ($page > 1) {?>
+                              <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
+                            <?php } else {?>
+                              <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
+                            <?php }?>
+                            <?php for ($i = 1; $i <= $total_pages; $i++) {?>
+                              <li class="page-item<?php echo $i == $page ? ' active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                            <?php }?>
+                            <?php if ($page < $total_pages) {?>
+                              <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
+                            <?php } else {?>
+                              <li class="page-item disabled"><a class="page-link" href="#">></a></li>
+                            <?php }?>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
 				<?php

@@ -102,7 +102,7 @@
             <div class="logo-header">
               <a href="index.php" class="logo">
                 <img
-                  src="assets/img/kaiadmin/logo_light.svg"
+                  src="assets/img/logo.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   height="20"
@@ -269,34 +269,66 @@
                           $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
                           $offset = ($page - 1) * $limit;
 
-                          // Count only from packages
-                          $sql_count      = "SELECT COUNT(*) as total FROM packages WHERE user_id = $user_id";
-                          $result_count   = mysqli_query($conn, $sql_count);
-                          $total_packages = mysqli_fetch_assoc($result_count)['total'];
-                          $total_pages    = ceil($total_packages / $limit);
+                          // Get filter parameters
+                          $type_filter  = isset($_GET['type']) ? mysqli_real_escape_string($conn, $_GET['type']) : 'all';
+                          $status_filter = isset($_GET['filter']) ? mysqli_real_escape_string($conn, $_GET['filter']) : '';
 
-                          // Select only packages
-                          $sql = "
-                              SELECT
-                                  id,
-                                  tracking_number,
-                                  tracking_name AS courier_company,
-                                  weight,
-                                  value_of_package,
-                                  describe_package,
-                                  store,
-                                  created_at
-                              FROM packages
-                              WHERE user_id = $user_id
-                              ORDER BY created_at DESC
-                              LIMIT $limit OFFSET $offset
-                          ";
+                          // Build queries for union
+                          $queries = [];
+                          $count_queries = [];
+                          if ($type_filter == 'warehouse' || $type_filter == 'all') {
+                              $where = "WHERE user_id = $user_id";
+                              if ($status_filter) {
+                                  // Map filter to effective statuses
+                                  $effective_statuses = [];
+                                  if ($status_filter == 'Received at Warehouse') {
+                                      $effective_statuses = ['Received at Origin', 'At Sorting Facility', 'Received at Warehouse'];
+                                  } elseif ($status_filter == 'In transit to Jamaica') {
+                                      $effective_statuses = ['In Transit', 'Shipped', 'In Transit to Jamaica'];
+                                  } elseif ($status_filter == 'Undergoing Customs Clearance') {
+                                      $effective_statuses = ['Processing at Customs', 'Undergoing Customs Clearance'];
+                                  } elseif ($status_filter == 'Ready for Delivery Instructions') {
+                                      $effective_statuses = ['Ready for Pickup', 'Out for Delivery', 'Scheduled for Delivery', 'Ready for Delivery Instructions'];
+                                  } elseif ($status_filter == 'Delivered') {
+                                      $effective_statuses = ['Delivered'];
+                                  }
+                                  if (!empty($effective_statuses)) {
+                                      $status_list = "'" . implode("','", $effective_statuses) . "'";
+                                      $where .= " AND COALESCE(tracking_progress, status) IN ($status_list)";
+                                  }
+                              }
+                              $queries[] = "SELECT 'warehouse' as type, tracking_number, tracking_name AS courier_company, weight, store, invoice_total as package_value, describe_package, created_at FROM packages $where";
+                              $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
+                          }
+                          if ($type_filter == 'prealert' || $type_filter == 'all') {
+                              $where = "WHERE user_id = $user_id";
+                              $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at FROM pre_alert $where";
+                              $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
+                          }
+
+                          // Count total
+                          $total_packages = 0;
+                          foreach ($count_queries as $cq) {
+                              $result_count = mysqli_query($conn, $cq);
+                              $total_packages += mysqli_fetch_assoc($result_count)['cnt'];
+                          }
+                          $total_pages = ceil($total_packages / $limit);
+
+                          // Select with union
+                          $sql = implode(' UNION ALL ', $queries) . " ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
                           $result = mysqli_query($conn, $sql);
                           if (mysqli_num_rows($result) > 0) {
                           ?>
                   <div class="card-header">
                     <div class="card-head-row card-tools-still-right justify-content-center">
-                      <div style="font-size: 18px;" class="card-title"><h1>My Packages</h1></div>
+                      <div style="font-size: 18px;" class="card-title"><h1>My Packages<?php if ($status_filter) echo ' - ' . htmlspecialchars($status_filter); ?></h1></div>
+                      <div class="card-tools">
+                        <select id="typeFilter" class="form-select" onchange="changeType(this.value)">
+                          <option value="all" <?php echo $type_filter == 'all' ? 'selected' : ''; ?>>All</option>
+                          <option value="warehouse" <?php echo $type_filter == 'warehouse' ? 'selected' : ''; ?>>Warehouse Records</option>
+                          <option value="prealert" <?php echo $type_filter == 'prealert' ? 'selected' : ''; ?>>Pre-alerts</option>
+                        </select>
+                      </div>
 					</div>
                   </div>
                   <div class="p-0 card-body">
@@ -316,11 +348,11 @@
                         <tbody style="text-align-last: center;">
 						 <?php while ($rows = mysqli_fetch_array($result)) {?>
                           <tr>
-                            <td><a href="tracking.php?tracking=<?php echo $rows['tracking_number']; ?>"><?php echo $rows['tracking_number']; ?></a></td>
+                            <td><?php if ($rows['type'] == 'warehouse') { ?><a href="tracking.php?tracking=<?php echo $rows['tracking_number']; ?>" style="color: #E87946;"><?php echo $rows['tracking_number']; ?></a><?php } else { echo $rows['tracking_number']; } ?></td>
                             <td class="text-end"><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : 'N/A'; ?></td>
                             <td class="text-end"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
                             <td class="text-end"><?php echo(isset($rows['store']) && $rows['store'] != 0) ? $rows['store'] : '—'; ?></td>
-                            <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . $rows['value_of_package'] : '—'; ?></span></td>
+                            <td><span class="item_value"><?php echo($rows['package_value'] && $rows['package_value'] != "0") ? "$ " . $rows['package_value'] : '—'; ?></span></td>
                             <td class="text-end"><?php echo $rows['describe_package']; ?></td>
                             <td class="text-end"><?php echo date('d/m/y', strtotime($rows['created_at'])); ?></td>
                           </tr>
@@ -337,16 +369,19 @@
                           </div>
                           <div class="col-sm-6 col-xs-6">
                               <ul class="pagination justify-content-end" style="color:black;">
-                                  <?php if ($page > 1) {?>
-                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>"><</a></li>
+                                  <?php
+                                  $base_url = "?type=$type_filter";
+                                  if ($status_filter) $base_url .= "&filter=$status_filter";
+                                  if ($page > 1) {?>
+                                      <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>"><</a></li>
                                   <?php } else {?>
                                       <li class="page-item disabled"><a class="page-link" href="#"><</a></li>
                                   <?php }?>
                                   <?php for ($i = 1; $i <= $total_pages; $i++) {?>
-                                      <li class="page-item<?php echo $i == $page ? ' active' : ''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                      <li class="page-item<?php echo $i == $page ? ' active' : ''; ?>"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
                                   <?php }?>
                                   <?php if ($page < $total_pages) {?>
-                                      <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>">></a></li>
+                                      <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">></a></li>
                                   <?php } else {?>
                                       <li class="page-item disabled"><a class="page-link" href="#">></a></li>
                                   <?php }?>
@@ -379,5 +414,13 @@
     <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <script src="assets/js/kaiadmin.min.js"></script>
 	<script src="assets/js/custom.js"></script>
+    <script>
+      function changeType(type) {
+        const url = new URL(window.location);
+        url.searchParams.set('type', type);
+        url.searchParams.delete('page'); // Reset to page 1
+        window.location.href = url.toString();
+      }
+    </script>
   </body>
 </html>

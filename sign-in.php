@@ -165,20 +165,20 @@ $base_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_N
 		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
          <!-- custom JS-->
         <script src="js/custom.js"></script> 
-		<script type="text/javascript"> 
+		<script type="text/javascript">
 	    //=============password show and hide===================
-	    $('.pwd-show-hide').click(function(){ 
-		
+	    $('.pwd-show-hide').click(function(){
+
 		   if( $("#pass[name='pwd']").attr('type') == 'password'){
-			   
+
 			  $("#pass[name='pwd']").attr('type', 'text');
-			  
+
 		   }else{
 			 $("#pass[name='pwd']").attr('type', 'password');
-		   } 
-		   
-	    }); 
-		
+		   }
+
+	    });
+
         // Submission form will start immediately without delay
 	    $(document).ready(function() {
 		  $('#myForm').on('submit', function(e) {
@@ -190,6 +190,17 @@ $base_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_N
 			//  form.submit(); // Native submit after delay
 			// }, 1000); // 5000ms = 5 seconds
 		  });
+		});
+
+		// Optimize input responsiveness
+		$(document).ready(function() {
+		    $('#email, #pass').on('input', function() {
+		        // Debounce input events to prevent excessive processing
+		        clearTimeout($(this).data('timer'));
+		        $(this).data('timer', setTimeout(function() {
+		            // Optional: Add any lightweight validation or feedback here if needed
+		        }, 100));
+		    });
 		});
 		</script>
     </body>

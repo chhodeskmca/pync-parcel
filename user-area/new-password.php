@@ -451,57 +451,49 @@ button:hover {
 	    }); 
 	 
 			$new_pwd   =  $(".new_pwd").val();
-		    let debounceTimer;
 		    $(".new_pwd").on('input', function() {
-		        clearTimeout(debounceTimer);
-		        debounceTimer = setTimeout(() => {
-		            $Verify_pwd = $(".Verifypwd").val();
-		            $(".Verifypwd").css('border', '1px solid red');
-		            $('#VerifyPassword p').text("");
+		        $Verify_pwd = $(".Verifypwd").val();
+		        $(".Verifypwd").css('border', '1px solid red');
+		        $('#VerifyPassword p').text("");
 
-		            $EleNewPwd = $(this);
-		            $new_pwd = $(this).val();
-		            if ($new_pwd.length < 8) {
-		                $('#New_Password p').css('color', 'red');
-		                $EleNewPwd.css('border', '1px solid red');
-		                $('#New_Password p').text('Password must contain at least 8 characters with a capital letter ');
-		            } else if ($new_pwd.length >= 8 && /[A-Z]/.test($new_pwd)) {
-		                $(".new_pwd").css('border', '2px solid #ddd');
-		                $('#New_Password p').css('color', '#205e22');
-		                $('#New_Password p').text('Good Password!');
+		        $EleNewPwd = $(this);
+		        $new_pwd = $(this).val();
+		        if ($new_pwd.length < 8) {
+		            $('#New_Password p').css('color', 'red');
+		            $EleNewPwd.css('border', '1px solid red');
+		            $('#New_Password p').text('Password must contain at least 8 characters with a capital letter ');
+		        } else if ($new_pwd.length >= 8 && /[A-Z]/.test($new_pwd)) {
+		            $(".new_pwd").css('border', '2px solid #ddd');
+		            $('#New_Password p').css('color', '#205e22');
+		            $('#New_Password p').text('Good Password!');
 
-		                if ($new_pwd == $Verify_pwd) {
-		                    $('#VerifyPassword p').text("Password matched!");
-		                    $('#VerifyPassword p').css('color', '#205e22');
-		                    $(".Verifypwd").css('border', '1px solid #ddd');
-		                } else {
-		                    $('#VerifyPassword p').css('color', 'red');
-		                    $(".Verifypwd").css('border', '1px solid red');
-		                    $('#VerifyPassword p').text("Password didn't match");
-		                }
+		            if ($new_pwd == $Verify_pwd) {
+		                $('#VerifyPassword p').text("Password matched!");
+		                $('#VerifyPassword p').css('color', '#205e22');
+		                $(".Verifypwd").css('border', '1px solid #ddd');
+		            } else {
+		                $('#VerifyPassword p').css('color', 'red');
+		                $(".Verifypwd").css('border', '1px solid red');
+		                $('#VerifyPassword p').text("Password didn't match");
 		            }
-		        }, 300); // 300ms debounce
+		        }
 		    });
 
-		    let debounceTimer2;
 		    $("#Verifypwd").on('input', function() {
-		        clearTimeout(debounceTimer2);
-		        debounceTimer2 = setTimeout(() => {
-		            $VerifyPwd = $(this).val();
-		            $input = $(this);
+		        $VerifyPwd = $(this).val();
+		        $input = $(this);
 
-		            if ($new_pwd.length >= 8 && /[A-Z]/.test($new_pwd)) {
-		                $('#VerifyPassword p').css('color', 'red');
-		                $input.css('border', '1px solid red');
-		                $('#VerifyPassword p').text("Password didn't match");
+		        if ($new_pwd.length >= 8 && /[A-Z]/.test($new_pwd)) {
+		            $('#VerifyPassword p').css('color', 'red');
+		            $input.css('border', '1px solid red');
+		            $('#VerifyPassword p').text("Password didn't match");
 
-		                if ($new_pwd == $VerifyPwd) {
-		                    $('#VerifyPassword p').text("Password matched!");
-		                    $('#VerifyPassword p').css('color', '#205e22');
-		                    $input.css('border', '1px solid #ddd');
-		                }
+		            if ($new_pwd == $VerifyPwd) {
+		                $('#VerifyPassword p').text("Password matched!");
+		                $('#VerifyPassword p').css('color', '#205e22');
+		                $input.css('border', '1px solid #ddd');
 		            }
-		        }, 300); // 300ms debounce
+		        }
 		    });
 
         // form submission 

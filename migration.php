@@ -14,7 +14,8 @@ $alterQueries = [
     "ALTER TABLE packages ADD COLUMN IF NOT EXISTS shipment_status VARCHAR(100) DEFAULT NULL;",
     "ALTER TABLE packages ADD COLUMN IF NOT EXISTS shipment_type VARCHAR(100) DEFAULT NULL;",
     "ALTER TABLE packages ADD COLUMN IF NOT EXISTS branch VARCHAR(100) DEFAULT NULL;",
-    "ALTER TABLE packages ADD COLUMN IF NOT EXISTS tag VARCHAR(100) DEFAULT NULL;"
+    "ALTER TABLE packages ADD COLUMN IF NOT EXISTS tag VARCHAR(100) DEFAULT NULL;",
+    "ALTER TABLE packages ADD COLUMN IF NOT EXISTS tracking_history JSON DEFAULT NULL;"
 ];
 
 foreach ($alterQueries as $query) {
