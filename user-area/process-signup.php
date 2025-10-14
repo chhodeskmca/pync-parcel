@@ -101,7 +101,7 @@ if (! isset($_REQUEST['signup'])) {
 }
 
 $response = $_POST['g-recaptcha-response'];
-$secret = '6LdJX2orAAAAAFGf0vxYIvKGxET4GNkBiQjtPpsR'; // recaptcha secret key
+$secret = RECAPTCHA_SECRET_KEY; // recaptcha secret key
 $VerifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secret&response=$response");
 $api_response = json_decode($VerifyResponse) ; // API response
 

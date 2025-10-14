@@ -120,8 +120,8 @@
 					<p>I accept the <a href="terms-and-conditions.php">terms and conditions</a> of Pync Parcel Chateau</p>
 				</div>
 				<!-- recaptcha-->
-				<div class="Google-recaptcha"> 
-				   <div class="g-recaptcha" data-sitekey="6LdJX2orAAAAADNLtaBt1_hthT7n2xq1xcVwSR9q"></div>
+				<div class="Google-recaptcha">
+				   <div class="g-recaptcha" data-sitekey="<?php echo RECAPTCHA_SITE_KEY; ?>"></div>
 				</div>
 				<!-- Submit Button-->
 				<div class="d-grid">
@@ -218,7 +218,7 @@
                   };
             });
 	            $(document).ready(function () {
-                $("#txtPhoneNo").on('input', function () { 
+                $("#txtPhoneNo").on('blur', function () {
 				   let val = $(this).val();
 				   val = val.replace(/[^0-9]/g, '');
 				   if(val.length > 3 && val.length <= 6){
@@ -228,8 +228,8 @@
 				   }
 				   $(this).val(val);
                 });
-            });    
-			// html input number value and adding dash with number end 
+            });
+			// html input number value and adding dash with number end
 	   // Submission form will start immediately without delay
 	   
 	    $(document).ready(function() {

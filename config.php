@@ -22,6 +22,18 @@ if (!defined('IS_PRODUCTION')) {
     define('IS_PRODUCTION', ($_ENV['APP_ENV'] ?? 'development') === 'production');
 }
 
+if (!defined('RECAPTCHA_SITE_KEY')) {
+    define('RECAPTCHA_SITE_KEY', $_ENV['RECAPTCHA_SITE_KEY'] ?? '');
+}
+
+if (!defined('RECAPTCHA_SECRET_KEY')) {
+    define('RECAPTCHA_SECRET_KEY', $_ENV['RECAPTCHA_SECRET_KEY'] ?? '');
+}
+
+if (!defined('RECAPTCHA_ENABLED')) {
+    define('RECAPTCHA_ENABLED', ($_ENV['RECAPTCHA_ENABLED'] ?? 'false') === 'true');
+}
+
 $conn = mysqli_connect($hostName, $userName, $userPassword, $dbName);
 if (! $conn) {
     die("<h1 style=text-align: center'> Error: establishing A Databse connection </h1>");
