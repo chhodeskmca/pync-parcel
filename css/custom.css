@@ -116,7 +116,8 @@ header .con-icon {
 
 /* Bannser section */ 
 .banner-section {
-	background-image: linear-gradient(#00000003), url('../assets/img/hero.jpg');
+	/* background-image: linear-gradient(#00000003), url('../assets/img/hero.jpg'); */
+	background-image: linear-gradient(#00000003), url('../assets/img/A_joyful_stylish_group_of_friends_mixed_ethnicities_7d421d78-dd4a-40f6-9808-1ef1908a89fb.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
