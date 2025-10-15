@@ -704,14 +704,10 @@
 
         // Enhanced search functionality
         $('#searchInput').on('input', function() {
-            clearTimeout(searchTimeout);
             const searchTerm = $(this).val().trim();
-
-            searchTimeout = setTimeout(function() {
-                if (searchTerm.length >= 2 || searchTerm.length === 0) {
-                    performSearch(searchTerm);
-                }
-            }, 500);
+            if (searchTerm.length >= 2 || searchTerm.length === 0) {
+                performSearch(searchTerm);
+            }
         });
 
         // Search button click

@@ -192,16 +192,7 @@ $base_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_N
 		  });
 		});
 
-		// Optimize input responsiveness
-		$(document).ready(function() {
-		    $('#email, #pass').on('input', function() {
-		        // Debounce input events to prevent excessive processing
-		        clearTimeout($(this).data('timer'));
-		        $(this).data('timer', setTimeout(function() {
-		            // Optional: Add any lightweight validation or feedback here if needed
-		        }, 100));
-		    });
-		});
+
 		</script>
     </body>
 </html>

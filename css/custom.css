@@ -1,11 +1,16 @@
-@font-face{ 
-  font-family:stangith;
-  src: url('../assets/fonts/stangith.ttf');
+@font-face {
+  font-family: 'Stangith';
+  src: url('../assets/fonts/stangith.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
-@font-face{ 
-  font-family:avenir-light.otf;
-  src: url('../assets/fonts/avenir-light.otf');
-} 
+
+@font-face {
+  font-family: 'Avenir Light';
+  src: url('../assets/fonts/avenir-light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
 body,p,a,li,div,button,input, form, label, td{ 
  font-family:avenir-light !important;
 } 
@@ -136,7 +141,7 @@ header .con-icon {
 	font-family: Avenir !important;
 }
 .banner-section button {
-	background: #000;
+	background: #F8EFE3;
 	font-size: 24px;
 	text-transform: capitalize;
 	font-weight: 600;
@@ -145,7 +150,7 @@ header .con-icon {
 	width: 250px;
 	height: 44px;
 	border: none !important;
-	padding-bottom: 6px;
+	padding-bottom: 2px;
 	transition: 0.3s;
 }
 .banner-section button:hover {
