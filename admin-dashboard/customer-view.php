@@ -357,9 +357,9 @@
 							  Packages available
 							</div>
 						</div>
-					    <div  class="col-md-3 col-lg-2">
+						<div  class="col-md-3 col-lg-2">
 
-							<p>Store Location</p>
+							<p>Delivery Region</p>
 							<h3><?php echo $user_row['region'] ?? 'Portland (Knutsford)'; ?></h3>
 						</div>
 					<div class="package-details customerview"> 
@@ -560,11 +560,21 @@
 											 <span class="value">
 											  <?php echo (!empty($rows['parish'])) ? $rows['parish'] : 'N/A'; ?></span>
 										</div>
-										<div class="Tracking-value">
-											 <span class="heading">Region</span>
-											 <span class="value">
-											  <?php echo (!empty($rows['region'])) ? $rows['region'] : 'N/A'; ?></span>
-										</div>
+						    <div class="Tracking-value">
+							   <span class="heading">Region</span>
+							   <span class="value">
+							    <?php echo (!empty($rows['region'])) ? $rows['region'] : 'N/A'; ?></span>
+						    </div>
+						    <div class="Tracking-value">
+							   <span class="heading">Address Line 1</span>
+							   <span class="value">
+							    <?php echo (!empty($rows['address_line1'])) ? $rows['address_line1'] : 'N/A'; ?></span>
+						    </div>
+						    <div class="Tracking-value">
+							   <span class="heading">Address Line 2</span>
+							   <span class="value">
+							    <?php echo (!empty($rows['address_line2'])) ? $rows['address_line2'] : 'N/A'; ?></span>
+						    </div>
 							        </div>
 									<div class="col-md-6">
 									  <p class="title" style="font-size: 30px;font-weight: 900;font-weight: 700; text-align:center; color: #E87946;">Authorized Users</p>

@@ -109,11 +109,18 @@
                 }
                 $new_file_name = uniqid('invoice_') . '.' . $file_ext;
                 $destination   = $upload_dir . $new_file_name;
-                if (move_uploaded_file($file_tmp_path, $destination)) {
-                    $invoice_file_path = 'uploads/invoices/' . $new_file_name;
-                } else {
-                    echo "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
-                }
+				if (move_uploaded_file($file_tmp_path, $destination)) {
+					$invoice_file_path = 'uploads/invoices/' . $new_file_name;
+					// Delete old invoice file if it exists and is different
+					if (! empty($package['invoice_file']) && $package['invoice_file'] !== $invoice_file_path) {
+						$old_path = __DIR__ . '/' . $package['invoice_file'];
+						if (file_exists($old_path)) {
+							@unlink($old_path);
+						}
+					}
+				} else {
+					echo "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
+				}
             }
         }
 

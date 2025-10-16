@@ -310,17 +310,17 @@
                 <div style='display:none;' class="panel-body table-responsive">
                     <table class="m-auto shadow table-area">
                         <thead>
-                            <tr>
-                                <th>Tracking</th>
-                                <th>Courier</th>
-                                <th>Description</th>
-                                <th>Customer</th>
-                                <th>Weight</th>
-                                <th>Value</th>
-                                <th>Linked</th>
-                                <th>Created at</th>
-                                <th>View</th>
-                            </tr>
+              <tr>
+                <th>Tracking</th>
+                <th>Courier</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Weight</th>
+                <th>Value</th>
+                <th>Linked</th>
+                <th>Created at</th>
+                <th>View</th>
+              </tr>
                         </thead>
                         <tbody>
 						    <?php
@@ -346,7 +346,7 @@
 									<td><?php echo $rows['tracking_number']; ?></td>
 									<td><?php echo $rows['courier_company']; ?></td>
 									<td><?php echo $rows['describe_package']; ?></td>
-									<td> <span class="customer_name"><?php echo $customer_name; ?></span> </td>
+                                    <td> <span class="type_label">Pre-alert</span> </td>
 									<td><span style="border: 1px solid #ddd;  padding: 1px;">N/A</span></td>
 									<td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
 									<td> <span class="linked" style="background:#dcfce7;color:#3c995e"> Linked</span></td>

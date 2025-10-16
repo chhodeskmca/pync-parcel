@@ -64,6 +64,100 @@
     }
     // none completed
 
+  // Allowed tracking steps (same as admin)
+  $steps = [
+    'Received at Warehouse',
+    'In Transit to Jamaica',
+    'Undergoing Customs Clearance',
+    'Ready for Delivery Instructions',
+    'Delivered',
+  ];
+
+  // Handle user updates (charge amount, status, invoice) — allow only for owner
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_package'])) {
+    // Ensure package belongs to current user
+    if ($package['user_id'] != $user_id) {
+      echo "<div class='alert alert-danger'>Access denied.</div>";
+    } else {
+      $courier_charge    = mysqli_real_escape_string($conn, $_POST['courier_charge'] ?? '');
+      $tracking_progress = mysqli_real_escape_string($conn, $_POST['tracking_progress'] ?? '');
+
+      // Handle invoice upload
+      $invoice_file_path = null;
+      if (isset($_FILES['invoice_file']) && $_FILES['invoice_file']['error'] === UPLOAD_ERR_OK) {
+        $allowed_extensions = ['pdf', 'png', 'jpg', 'jpeg'];
+        $file_tmp_path      = $_FILES['invoice_file']['tmp_name'];
+        $file_name          = basename($_FILES['invoice_file']['name']);
+        $file_size          = $_FILES['invoice_file']['size'];
+        $file_ext           = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        if (! in_array($file_ext, $allowed_extensions)) {
+          echo "<div class='alert alert-danger'>Invalid file type. Only PDF, PNG, JPG files are allowed.</div>";
+        } elseif ($file_size > 10 * 1024 * 1024) {
+          echo "<div class='alert alert-danger'>File size exceeds 10MB limit.</div>";
+        } else {
+          $upload_dir = __DIR__ . '/uploads/invoices/';
+          if (! is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+          }
+          $new_file_name = uniqid('invoice_') . '.' . $file_ext;
+          $destination   = $upload_dir . $new_file_name;
+          if (move_uploaded_file($file_tmp_path, $destination)) {
+            $invoice_file_path = 'uploads/invoices/' . $new_file_name;
+            // delete old invoice if present and different
+            if (! empty($package['invoice_file']) && $package['invoice_file'] !== $invoice_file_path) {
+              $old_path = __DIR__ . '/' . $package['invoice_file'];
+              if (file_exists($old_path)) {
+                @unlink($old_path);
+              }
+            }
+          } else {
+            echo "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
+          }
+        }
+      }
+
+      $updates = [];
+      if (! empty($courier_charge)) {
+        $updates[] = "invoice_total = '" . floatval($courier_charge) . "'";
+      }
+      if (! empty($tracking_progress) && in_array($tracking_progress, $steps)) {
+        // allow user to set status (no strict progression check for user)
+        $safe_tracking_progress = substr(mysqli_real_escape_string($conn, $tracking_progress), 0, 255);
+        $updates[] = "tracking_progress = '" . $safe_tracking_progress . "'";
+        // append to tracking_history
+        $current_history = json_decode($package['tracking_history'] ?? '[]', true);
+        if (! is_array($current_history)) $current_history = [];
+        $current_history[] = ['step' => $tracking_progress, 'date' => date('Y-m-d H:i:s')];
+        $updates[] = "tracking_history = '" . mysqli_real_escape_string($conn, json_encode($current_history)) . "'";
+      }
+      if (! empty($invoice_file_path)) {
+        $updates[] = "invoice_file = '" . mysqli_real_escape_string($conn, $invoice_file_path) . "'";
+      }
+
+      if (! empty($updates)) {
+        $update_sql = "UPDATE packages SET " . implode(', ', $updates) . " WHERE tracking_number = '" . mysqli_real_escape_string($conn, $package['tracking_number']) . "'";
+        if (mysqli_query($conn, $update_sql)) {
+          echo "<div class='alert alert-success'>Package updated successfully.</div>";
+          // refresh package data
+          $sql = "SELECT p.*, pr.merchant FROM packages p LEFT JOIN `pre_alert` pr ON p.tracking_number = pr.tracking_number AND p.user_id = pr.user_id WHERE p.tracking_number = '" . mysqli_real_escape_string($conn, $package['tracking_number']) . "' AND p.user_id = $user_id";
+          $result = mysqli_query($conn, $sql);
+          if ($result && mysqli_num_rows($result) > 0) {
+            $package = mysqli_fetch_assoc($result);
+            // rebuild tracking history map
+            $tracking_history = json_decode($package['tracking_history'] ?? '[]', true);
+            $step_dates = [];
+            foreach ($tracking_history as $entry) {
+              $step_dates[$entry['step']] = $entry['date'];
+            }
+          }
+        } else {
+          echo "<div class='alert alert-danger'>Error updating package: " . mysqli_error($conn) . "</div>";
+        }
+      }
+    }
+  }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -340,10 +434,36 @@
 				 <span class="value"><?php echo htmlspecialchars($package['courier_company'] ?? 'N/A'); ?></span>
 			</div>
 
-			<div class="Tracking-value">
-				 <span class="heading">Value of Package</span>
-				 <span class="value">$<?php echo number_format($package['value_of_package'] ?? 0, 2); ?></span>
-			</div>
+      <div class="Tracking-value">
+         <span class="heading">Value of Package</span>
+         <span class="value">$<?php echo number_format($package['value_of_package'] ?? 0, 2); ?></span>
+      </div>
+      <!-- Update form: charge amount, status, invoice upload -->
+      <form method="POST" enctype="multipart/form-data" class="mt-3">
+        <div class="mb-2">
+          <label class="form-label">Charge Amount (USD)</label>
+          <input type="text" name="courier_charge" class="form-control" value="<?php echo isset($package['invoice_total']) ? htmlspecialchars(number_format($package['invoice_total'], 2)) : ''; ?>" placeholder="Enter charge amount or leave blank to use calculated value">
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Status</label>
+          <select name="tracking_progress" class="form-select">
+            <option value="">-- Keep current --</option>
+            <?php foreach ($steps as $s) { ?>
+              <option value="<?php echo htmlspecialchars($s); ?>" <?php echo (isset($package['tracking_progress']) && $package['tracking_progress'] == $s) ? 'selected' : ''; ?>><?php echo htmlspecialchars($s); ?></option>
+            <?php } ?>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Invoice (upload/replace)</label>
+          <?php if (!empty($package['invoice_file'])) { ?>
+            <div class="mb-1"><a target="_blank" href="<?php echo htmlspecialchars($package['invoice_file']); ?>">View current invoice</a></div>
+          <?php } ?>
+          <input type="file" name="invoice_file" accept=".pdf,.png,.jpg,.jpeg" class="form-control" />
+        </div>
+        <div>
+          <button type="submit" name="update_package" class="btn btn-primary">Save</button>
+        </div>
+      </form>
 			<div class="Tracking-value">
 				 <span class="heading"> Package Content</span>
 				 <span class="value"><?php echo htmlspecialchars($package['describe_package'] ?? 'N/A'); ?></span>

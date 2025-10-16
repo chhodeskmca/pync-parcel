@@ -367,9 +367,11 @@
                 ?>
 <div class="panel-body table-responsive" style="display: none;">
     <table class="table m-auto shadow table-striped table-hover table-bordered">
-        <thead class="table-light">
+                <thead class="table-light">
             <tr>
                 <th>Tracking</th>
+                <th>PYNC ID</th>
+                <!-- <th>Type</th> -->
                 <th>Courier Company</th>
                 <th>Weight</th>
                 <th>Store</th>
@@ -387,6 +389,7 @@
                 <!-- <th>Inv Total</th> -->
                 <th>Date</th>
                 <th>View</th>
+                <th>Payment Status</th>
             </tr>
         </thead>
         <tbody>
@@ -407,6 +410,8 @@
                         ?>
             <tr>
                 <td><?php echo $rows['tracking_number']; ?></td>
+                <td><?php echo isset($account_number) ? htmlspecialchars($account_number) : '—'; ?></td>
+                <!-- <td>Warehouse Processed</td> -->
                 <td><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : '-'; ?></td>
                 <td class="text-center"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
                 <td><?php echo $rows['store'] ?? '—'; ?></td>
@@ -433,6 +438,9 @@
                         </li>
                     </ul>
                 </td>
+                <td>
+                    <a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
+                </td>
             </tr>
             <?php
                 }
@@ -443,6 +451,7 @@
                         ?>
             <tr>
                 <td><?php echo $package['trackingName']; ?></td>
+                <td>Demo</td>
                 <td><?php echo $package['tracking']; ?></td>
                 <!-- <td><?php echo $package['courierName']; ?></td> -->
                 <td><?php echo $package['description']; ?></td>
@@ -475,6 +484,30 @@
                 ?>
         </tbody>
     </table>
+</div>
+<!-- Payment Status Modal -->
+<div class="modal fade" id="paymentStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Payment Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ps_tracking" />
+                <div class="mb-2">
+                    <label class="form-label">Status</label>
+                    <select id="ps_status" class="form-select">
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="ps_save" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
 </div>
                                 <!-- Pagination -->
                                 <div class="mt-3 panel-footer">
@@ -564,6 +597,36 @@
         <script src="assets/js/kaiadmin.min.js"></script>
         <!-- custom js -->
         <script src="assets/js/custom.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelectorAll('.update-payment').forEach(function(el) {
+                        el.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            var tracking = this.dataset.tracking;
+                            document.getElementById('ps_tracking').value = tracking;
+                            var modal = new bootstrap.Modal(document.getElementById('paymentStatusModal'));
+                            modal.show();
+                        });
+                    });
+
+                    document.getElementById('ps_save').addEventListener('click', function() {
+                        var tracking = document.getElementById('ps_tracking').value;
+                        var status = document.getElementById('ps_status').value;
+                        fetch('../update_payment_status.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status)
+                        }).then(function(res){ return res.json(); }).then(function(data){
+                            if (data && data.success) {
+                                alert('Payment status updated to ' + data.new_status);
+                                location.reload();
+                            } else {
+                                alert('Failed to update payment status');
+                            }
+                        }).catch(function(){ alert('Network error'); });
+                    });
+                });
+            </script>
 </body>
 
 </html>
