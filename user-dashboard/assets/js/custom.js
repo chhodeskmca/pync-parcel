@@ -8,49 +8,30 @@ $('.account_info_btn').click(function () {
 	$('.AddressType').removeAttr("disabled");
 	$('.Delivery-Preference select').removeAttr("disabled");
 });
-/* If Address Type input is clicked and value is 1, 2, 3, 
-   Parish address input will be enabled */
+/* If Parish is selected, show only relevant regions */
 $('.addressParish').change(function () {
 	$RegionAddressVal = $(this).val();
+	$('.RegionAddress').prop('selectedIndex', 0);
+	$('.RegionAddress option').removeAttr("selected");
+	$('.RegionAddress option').hide(); // Hide all options first
+	$('.RegionAddress option:first').show(); // Always show "Choose..." option
+
 	if ($RegionAddressVal == 'Kingston') {
-		$('.RegionAddress').prop('selectedIndex', 0);
-		$('.RegionAddress option').removeAttr("selected");
-		$(".RegionAddress option[value='Portmore']").removeClass("show");
-		$(".RegionAddress option[value='Spanish Town']").removeClass("show");
-		$(".RegionAddress option[value='Old Harbour']").removeClass("show");
-		$(".RegionAddress option[value='Bog Walk']").removeClass("show");
-		$(".RegionAddress option[value='Linstead']").removeClass("show");
-		$(".RegionAddress option[value='Half-Way Tree']").removeClass("show");
-		$(".RegionAddress option[value='Constant Spring']").removeClass("show");
-		$(".RegionAddress option[value='Cross Roads']").removeClass("show");
-		$(".RegionAddress option[value='Kingston']").addClass("show");
+		$(".RegionAddress option[value='Kingston']").show();
 	} else if ($RegionAddressVal == 'St. Andrew') {
-		$('.RegionAddress').prop('selectedIndex', 0);
-		$('.RegionAddress option').removeAttr("selected");
-		$(".RegionAddress option[value='Kingston']").removeClass("show");
-		$(".RegionAddress option[value='Portmore']").removeClass("show");
-		$(".RegionAddress option[value='Spanish Town']").removeClass("show");
-		$(".RegionAddress option[value='Old Harbour']").removeClass("show");
-		$(".RegionAddress option[value='Bog Walk']").removeClass("show");
-		$(".RegionAddress option[value='Linstead']").removeClass("show");
-		$(".RegionAddress option[value='Half-Way Tree']").addClass("show");
-		$(".RegionAddress option[value='Constant Spring']").addClass("show");
-		$(".RegionAddress option[value='Cross Roads']").addClass("show");
+		$(".RegionAddress option[value='Half-Way Tree']").show();
+		$(".RegionAddress option[value='Constant Spring']").show();
+		$(".RegionAddress option[value='Cross Roads']").show();
 	} else if ($RegionAddressVal == 'St. Catherine') {
-		$('.RegionAddress').prop('selectedIndex', 0);
-		$('.RegionAddress option').removeAttr("selected");
-		$(".RegionAddress option[value='Kingston']").removeClass("show");
-		$(".RegionAddress option[value='Half-Way Tree']").removeClass("show");
-		$(".RegionAddress option[value='Constant Spring']").removeClass("show");
-		$(".RegionAddress option[value='Cross Roads']").removeClass("show");
-		$(".RegionAddress option[value='Portmore']").addClass("show");
-		$(".RegionAddress option[value='Spanish Town']").addClass("show");
-		$(".RegionAddress option[value='Old Harbour']").addClass("show");
-		$(".RegionAddress option[value='Bog Walk']").addClass("show");
-		$(".RegionAddress option[value='Linstead']").addClass("show");
+		$(".RegionAddress option[value='Portmore']").show();
+		$(".RegionAddress option[value='Spanish Town']").show();
+		$(".RegionAddress option[value='Old Harbour']").show();
+		$(".RegionAddress option[value='Bog Walk']").show();
+		$(".RegionAddress option[value='Linstead']").show();
 	} else {
-		$(".RegionAddress option").removeClass("show");
-		$('.RegionAddress').prop('selectedIndex', 0);
+		// If no parish selected, hide all region options except "Choose..."
+		$('.RegionAddress option').hide();
+		$('.RegionAddress option:first').show();
 	}
 });
 // reset Password
