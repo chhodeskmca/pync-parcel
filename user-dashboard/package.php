@@ -301,7 +301,7 @@
                               $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
                           }
                           if ($type_filter == 'prealert' || $type_filter == 'all') {
-                              $where = "WHERE user_id = $user_id";
+                              $where = "WHERE user_id = $user_id AND tracking_number NOT IN (SELECT tracking_number FROM packages WHERE user_id = $user_id)";
                               $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at FROM pre_alert $where";
                               $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
                           }

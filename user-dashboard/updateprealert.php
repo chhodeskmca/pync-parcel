@@ -268,23 +268,14 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
 
                 if (isset($_REQUEST['pre_alert_id']) && $_REQUEST['pre_alert_id'] != "") {
 
-                  $Pre_alert_id = $_REQUEST['pre_alert_id'];
+                  $Pre_alert_id = mysqli_real_escape_string($conn, $_REQUEST['pre_alert_id']);
 
-                  // Pagination parameters
-                  $limit = 10; // Number of pre-alerts per page
-                  $page   = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-                  $offset = ($page - 1) * $limit;
+                  $sql = "SELECT * FROM pre_alert WHERE id = '$Pre_alert_id' AND User_id = $user_id";
 
-                  $sql_count = "SELECT COUNT(*) as total FROM pre_alert WHERE User_id = $user_id";
-                  $result_count = mysqli_query($conn, $sql_count);
-                  $total_pre_alerts = mysqli_fetch_assoc($result_count)['total'];
-                  $total_pages = ceil($total_pre_alerts / $limit);
+                  $result = mysqli_query($conn, $sql);
 
-                  $sql = "SELECT * FROM pre_alert WHERE User_id = $user_id ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
+                  if (mysqli_num_rows($result) > 0) {
 
-                  if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
-
-                    $result = mysqli_query($conn, $sql);
                     $rows = mysqli_fetch_array($result);
 
                     // Check if editing is locked after 24 hours

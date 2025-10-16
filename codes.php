@@ -250,39 +250,30 @@ if (isset($_REQUEST['Pre-alert'])) {
 
   if (mysqli_query($conn,  $sql)) {
 
-    // Insert into packages table
-    $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, tracking_name, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$courier_company', '$describe_package', 0.00, $ValueofPackage, '$merchant', NOW())";
-    mysqli_query($conn, $sql_package);
-
-    // Insert old pre-alerts not in packages
-    $sql_old_prealerts = "INSERT INTO packages (user_id, tracking_number, courier_company, tracking_name, describe_package, weight, value_of_package, store, created_at)
-                 SELECT User_id, tracking_number, courier_company, courier_company, describe_package, '0.00', value_of_package, merchant, created_at
-                 FROM pre_alert
-                 WHERE User_id = $user_id
-                 AND tracking_number NOT IN (SELECT tracking_number FROM packages WHERE user_id = $user_id)";
-    mysqli_query($conn, $sql_old_prealerts);
+    // Insert into packages table only if tracking_number doesn't exist
+    $check_sql = "SELECT id FROM packages WHERE user_id = $user_id AND tracking_number = '$tracking_number'";
+    $check_result = mysqli_query($conn, $check_sql);
+    if (mysqli_num_rows($check_result) == 0) {
+      $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, tracking_name, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$courier_company', '$describe_package', 0.00, $ValueofPackage, '$merchant', NOW())";
+      mysqli_query($conn, $sql_package);
+    }
 
     if ($File != '') {
-
       if (move_uploaded_file($fileTmp, "uploaded-file/$File")) {
-
         $_SESSION['message']   =  'You have created pre-alert successfully';
         header('location: user-dashboard/createprealert.php');
         die();
       } else {
-
         $_SESSION['message']  = "Something went wrong, Please try later";
         header('location: user-dashboard/createprealert.php');
         die();
       };
     } else {
-
       $_SESSION['message']   =  'You have created pre-alert successfully';
       header('location: user-dashboard/createprealert.php');
       die();
     }
   } else {
-
     $_SESSION['message']  = "Something went wrong, Please try later";
     header('location: user-dashboard/createprealert.php');
     die();
