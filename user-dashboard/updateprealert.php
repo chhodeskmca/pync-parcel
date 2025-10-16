@@ -366,38 +366,44 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                 value='<?php echo $rows['invoice']; ?>'
                                 type="text" />
 
-                              <input
-                                name='file'
-                                type="file"
-                                class="form-control-file w-100"
-                                id="id"
-                                style="
+                              <div class="invoice">
+                                <input
+                                  name='file'
+                                  type="file"
+                                  class="form-control-file w-100"
+                                  id="id"
+                                  style="
 							   border: 2px solid #E87946; color:<?php echo $rows['invoice'] == "" ? 'black' : '#fff0'; ?>" />
-                              <br />
-                              <p style='margin-bottom:0px' class="fileAllowed"><b>Allowed formats : </b>PDF, DOC, DOCX, JPEG or PNG (MAX. 10MB)</p>
-                              <p style='margin-bottom: 0px; margin-top: 5px; color: #bf1919; font-size: 16px;  line-height: 17px;'>
-                              </p>
-                              <div style="margin-bottom: 10px; width: 250px; display: flex;  border: 1px solid #ddd;  padding: 9px;  border-radius: 6px;  color: #201f1f;  font-size: 14px;  position: relative;">
-                                <?php
-                                if (ltrim($rows['invoice']) != '') {
-                                ?>
-                                  <span style=" display: -webkit-box;  -webkit-line-clamp: 1;  -webkit-box-orient: vertical;  overflow: hidden;  width: 180px;">
+                                <br />
+                                <p style='margin-bottom:0px' class="fileAllowed"><b>Allowed formats : </b>PDF, DOC, DOCX, JPEG or PNG (MAX. 10MB)</p>
+                                <p style='margin-bottom: 0px; margin-top: 5px; color: #bf1919; font-size: 16px;  line-height: 17px;'>
+                                </p>
+                                <div style="display:none" class="alert alert-warning alert-dismissible fade show" role="alert">
+                                  <strong style="color: red;"></strong>
+                                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                <div style="margin-bottom: 10px; width: 250px; display: flex;  border: 1px solid #ddd;  padding: 9px;  border-radius: 6px;  color: #201f1f;  font-size: 14px;  position: relative;">
+                                  <?php
+                                  if (ltrim($rows['invoice']) != '') {
+                                  ?>
+                                    <span style=" display: -webkit-box;  -webkit-line-clamp: 1;  -webkit-box-orient: vertical;  overflow: hidden;  width: 180px;">
 
-                                    <?php echo $rows['invoice']; ?>
+                                      <?php echo $rows['invoice']; ?>
 
-                                  </span>
-                                  <a style="width: 18px; position: absolute;  right: 10px;  top: 11px; "
-                                    class="d-flex"
-                                    href="../uploaded-file/<?php echo $rows['invoice']; ?>">
-                                    <img
-                                      width='18px;'
-                                      src="assets/img/hide.png"
-                                      alt="" />
-                                  </a>
-                                <?php } else {
+                                    </span>
+                                    <a style="width: 18px; position: absolute;  right: 10px;  top: 11px; "
+                                      class="d-flex"
+                                      href="../uploaded-file/<?php echo $rows['invoice']; ?>">
+                                      <img
+                                        width='18px;'
+                                        src="assets/img/hide.png"
+                                        alt="" />
+                                    </a>
+                                  <?php } else {
 
-                                  echo "No invoice attached";
-                                } ?>
+                                    echo "No invoice attached";
+                                  } ?>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -411,34 +417,6 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                         </button>
                       </div>
                     </form>
-
-                    <!-- Pagination -->
-                    <div class="row">
-                      <div class="col-sm-6 col-xs-6">
-                        Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_pre_alerts; ?></b> entries
-                      </div>
-                      <div class="col-sm-6 col-xs-6">
-                        <ul class="pagination justify-content-end" style="color:black;">
-                          <?php if ($page > 1) { ?>
-                            <li class="page-item"><a class="page-link" href="?pre_alert_id=<?php echo $Pre_alert_id; ?>&page=<?php echo $page - 1; ?>">
-                                << /a>
-                            </li>
-                          <?php } else { ?>
-                            <li class="page-item disabled"><a class="page-link" href="#">
-                                << /a>
-                            </li>
-                          <?php } ?>
-                          <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-                            <li class="page-item<?php echo $i == $page ? ' active' : ''; ?>"><a class="page-link" href="?pre_alert_id=<?php echo $Pre_alert_id; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                          <?php } ?>
-                          <?php if ($page < $total_pages) { ?>
-                            <li class="page-item"><a class="page-link" href="?pre_alert_id=<?php echo $Pre_alert_id; ?>&page=<?php echo $page + 1; ?>">></a></li>
-                          <?php } else { ?>
-                            <li class="page-item disabled"><a class="page-link" href="#">></a></li>
-                          <?php } ?>
-                        </ul>
-                      </div>
-                    </div>
 
                 <?php
 
@@ -487,6 +465,28 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
       // Submission form will start after 1 second
       $(document).ready(function() {
         $('.Pre_alert_updating').on('submit', function(e) {
+          // Check if all required fields are filled
+          var isValid = true;
+          $('.Pre_alert_updating input[required], .Pre_alert_updating select[required], .Pre_alert_updating textarea[required]').each(function() {
+            if ($(this).val() === '' || $(this).val() === null) {
+              isValid = false;
+              $(this).addClass('is-invalid');
+            } else {
+              $(this).removeClass('is-invalid');
+            }
+          });
+          // Check if file is selected or if there's an existing file
+          if ($('#id').val() === '' && '<?php echo $rows['invoice']; ?>' === '') {
+            isValid = false;
+            $('.invoice .alert-warning').show();
+            $('.invoice .alert-warning strong').text('Please upload an invoice file.');
+          } else {
+            $('.invoice .alert-warning').hide();
+          }
+          if (!isValid) {
+            e.preventDefault();
+            return false;
+          }
           $('.spinner').css('display', 'inline');
           e.preventDefault(); // Stop form from submitting immediately
           let form = this; // Store reference to the form element

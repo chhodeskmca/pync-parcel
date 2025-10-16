@@ -633,21 +633,16 @@
             });
 			
            $('.txtPhoneNo').on('keydown', function(event) {
-			
-           if (event.which === 8 || event.keyCode === 8) { 
-		
-	        }else{ 
-		
-	        if ($(this).val().length == 3) {
-					
-                    $(this).val($(this).val() + "-");
-                    }
-                    else if ($(this).val().length == 7) {
-                        $(this).val($(this).val() + "-");
-                    } 
-	
-	        } 
-		});
+             if (event.which === 8 || event.keyCode === 8) {
+               // Allow backspace
+             } else {
+               if ($(this).val().length == 3) {
+                 $(this).val($(this).val() + "-");
+               } else if ($(this).val().length == 7) {
+                 $(this).val($(this).val() + "-");
+               }
+             }
+           });
 	    // Shorten select option text if it stretches beyond max-width of select element
 		document.querySelectorAll('.shortenedSelect option').forEach((optionElement) => {
 			const curText = optionElement.textContent;

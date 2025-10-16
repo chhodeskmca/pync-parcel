@@ -543,6 +543,28 @@
 	   // Submission form will start after 1 second
 	    $(document).ready(function() {
 		  $('.create_PreAlert').on('submit', function(e) {
+		    // Check if all required fields are filled
+		    var isValid = true;
+		    $('.create_PreAlert input[required], .create_PreAlert select[required], .create_PreAlert textarea[required]').each(function() {
+		      if ($(this).val() === '' || $(this).val() === null) {
+		        isValid = false;
+		        $(this).addClass('is-invalid');
+		      } else {
+		        $(this).removeClass('is-invalid');
+		      }
+		    });
+		    // Check if file is selected
+		    if ($('#customFile1').val() === '') {
+		      isValid = false;
+		      $('.invoice .alert-warning').show();
+		      $('.invoice .alert-warning strong').text('Please upload an invoice file.');
+		    } else {
+		      $('.invoice .alert-warning').hide();
+		    }
+		    if (!isValid) {
+		      e.preventDefault();
+		      return false;
+		    }
 			 $('.spinner').css('display', 'inline');
 			e.preventDefault(); // Stop form from submitting immediately
 			let form = this; // Store reference to the form element

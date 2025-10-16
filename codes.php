@@ -217,31 +217,34 @@ if (isset($_REQUEST['Pre-alert'])) {
     header('location: user-dashboard/createprealert.php');
     die();
   }
-  $File = $_FILES['file']['name'] == '' ? '' : $_FILES['file']['name'];
+  if (empty($_FILES['file']['name'])) {
+    $_SESSION['message'] = 'Invoice upload is required.';
+    header('location: user-dashboard/createprealert.php');
+    die();
+  }
 
-  if ($File != '') {
+  $File = $_FILES['file']['name'];
 
-    // File uploading
-    $fileExtension =   pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);  // getting file extension
-    if (
-      $fileExtension != 'pdf' && $fileExtension != 'doc'
-      && $fileExtension != 'docx' && $fileExtension != 'jpg' &&
-      $fileExtension != 'jpeg' && $fileExtension != 'png'
-    ) {
-      $_SESSION['message']   =  'The file is not allowed';
-      header('location: user-dashboard/createprealert.php');
-      die();
-    }
-    if ($_FILES['file']['size'] / 1024 / 1024 >= 10) // MAX size 10MB allowed
-    {
-      $_SESSION['message']   =  'The file is too large';
-      header('location: user-dashboard/createprealert.php');
-      die();
-    };
-
-    $File  = uniqid('', true) . '.' . $fileExtension; //unique file name
-    $fileTmp   =   $_FILES['file']['tmp_name'];
+  // File uploading
+  $fileExtension =   pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);  // getting file extension
+  if (
+    $fileExtension != 'pdf' && $fileExtension != 'doc'
+    && $fileExtension != 'docx' && $fileExtension != 'jpg' &&
+    $fileExtension != 'jpeg' && $fileExtension != 'png'
+  ) {
+    $_SESSION['message']   =  'The file is not allowed';
+    header('location: user-dashboard/createprealert.php');
+    die();
+  }
+  if ($_FILES['file']['size'] / 1024 / 1024 >= 10) // MAX size 10MB allowed
+  {
+    $_SESSION['message']   =  'The file is too large';
+    header('location: user-dashboard/createprealert.php');
+    die();
   };
+
+  $File  = uniqid('', true) . '.' . $fileExtension; //unique file name
+  $fileTmp   =   $_FILES['file']['tmp_name'];
 
   $sql = "INSERT INTO pre_alert ( User_id , tracking_number, value_of_package, courier_company, merchant, describe_package, invoice, created_at) VALUES ( $user_id, '$tracking_number', $ValueofPackage, '$courier_company', '$merchant', '$describe_package',  '$File', NOW())";
 
@@ -349,6 +352,12 @@ if (isset($_REQUEST['updatePreAltBtn'])) {
   } else {
     $_SESSION['message'] = 'Pre-alert not found.';
     header("location: user-dashboard/createprealert.php");
+    die();
+  }
+
+  if (empty($_FILES['file']['name']) && empty($old_image)) {
+    $_SESSION['message'] = 'Invoice upload is required.';
+    header("location: user-dashboard/updateprealert.php?pre_alert_id=$Pre_alert_id");
     die();
   }
 

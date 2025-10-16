@@ -1012,21 +1012,16 @@
             });
 			
            $('.txtPhoneNo').on('keydown', function(event) {
-			
-           if (event.which === 8 || event.keyCode === 8) { 
-		
-	        }else{ 
-		
-	        if ($(this).val().length == 3) {
-					
-                    $(this).val($(this).val() + "-");
-                    }
-                    else if ($(this).val().length == 7) {
-                        $(this).val($(this).val() + "-");
-                    } 
-	
-	        } 
-		});
+             if (event.which === 8 || event.keyCode === 8) {
+               // Allow backspace
+             } else {
+               if ($(this).val().length == 3) {
+                 $(this).val($(this).val() + "-");
+               } else if ($(this).val().length == 7) {
+                 $(this).val($(this).val() + "-");
+               }
+             }
+           });
 		
 	   // Submission form will start after 1 second
 	    $(document).ready(function() {  

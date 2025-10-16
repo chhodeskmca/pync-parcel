@@ -120,7 +120,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                 </svg>
               </span>
             </label>
-            <p>I accept the <a href="terms-and-conditions.php">terms and conditions</a> of <strong><?php echo APP_NAME; ?></strong></p>
+            <p>I accept the <a href="terms-and-conditions.php">terms and conditions</a> of <?php echo APP_NAME; ?></p>
           </div>
 				<!-- recaptcha-->
 				<?php if (RECAPTCHA_ENABLED): ?>
@@ -215,29 +215,16 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
       }
 
     });
-    // Phone number formatting: restrict to 10 digits and auto-insert dashes
-    function formatPhoneNumber(value) {
-      // Remove all non-digits
-      value = value.replace(/\D/g, '');
-      // Limit to 10 digits
-      value = value.substring(0, 10);
-      // Format with dashes
-      if (value.length > 6) {
-        value = value.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
-      } else if (value.length > 3) {
-        value = value.replace(/(\d{3})(\d{3})/, '$1-$2');
-      }
-      return value;
-    }
-
-    document.getElementById('txtPhoneNo').addEventListener('input', function(e) {
-      e.target.value = formatPhoneNumber(e.target.value);
-    });
-
-    // Prevent non-numeric input (additional safeguard)
-    document.getElementById('txtPhoneNo').addEventListener('keypress', function(event) {
-      if (!/[0-9]/.test(event.key)) {
-        event.preventDefault();
+    // Phone number formatting: auto-insert dashes while typing
+    $('#txtPhoneNo').on('keydown', function(event) {
+      if (event.which === 8 || event.keyCode === 8) {
+        // Allow backspace
+      } else {
+        if ($(this).val().length == 3) {
+          $(this).val($(this).val() + "-");
+        } else if ($(this).val().length == 7) {
+          $(this).val($(this).val() + "-");
+        }
       }
     });
     // Submission form will start immediately without delay
