@@ -1267,7 +1267,7 @@
   }
 
   .package-details #pills-tab-without-border {
-    width: 277px;
+    width: 100% !important;
   }
 
   .user_profile_edit {

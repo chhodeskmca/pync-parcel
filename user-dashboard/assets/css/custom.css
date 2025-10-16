@@ -342,8 +342,8 @@ html {
 }
 
 .Tracking-area {
-	border: 1px solid #ddd;
-	margin-left: -39px;
+	/* border: 1px solid #ddd;
+	margin-left: -39px; */
 	padding: 0px 0px 40px 80px;
 }
 
