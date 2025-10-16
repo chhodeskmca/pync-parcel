@@ -1022,6 +1022,7 @@ footer {
   position: relative;
   padding-bottom: 60%;
   height: 400px;
+  transition: transform 0.3s ease;
 }
 
 .image-gallery {
@@ -1030,6 +1031,10 @@ footer {
 
 .image-gallery .row {
   margin: 0px;
+}
+
+.hover:hover {
+  transform: scale(1.05);
 }
 
 .hover:hover .hover-overlay {
@@ -1135,6 +1140,64 @@ footer {
   font-size: 24.5px;
 }
 
+.hover-link {
+  text-decoration: none;
+  display: block;
+}
+
+.hover-link:hover {
+  text-decoration: none;
+}
+
+.tile-1::before {
+  content: "We’re here to help";
+  position: absolute;
+  top: 0;
+  left: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 25px;
+  font-weight: 900;
+  text-transform: capitalize;
+  color: #fff;
+}
+
+.tile-2::before {
+  content: "Learn more";
+  position: absolute;
+  top: 0;
+  left: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 25px;
+  font-weight: 900;
+  text-transform: capitalize;
+  color: #fff;
+}
+
+.tile-3::before {
+  content: "Experience the Difference";
+  position: absolute;
+  top: 0;
+  left: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 25px;
+  font-weight: 900;
+  text-transform: capitalize;
+  color: #fff;
+}
+
+.hover:hover .tile-1::before,
+.hover:hover .tile-2::before,
+.hover:hover .tile-3::before {
+  opacity: 1;
+}
+
+.hover:hover .hover-title {
+  opacity: 0;
+}
+
 .image-gallery .hover-2-description {
   width: 100%;
   position: absolute;
@@ -1147,7 +1210,7 @@ footer {
 }
 
 .image-gallery .hover-2:hover .hover-2-description {
-  bottom: 130px;
+  bottom: 190px;
   opacity: 1;
 }
 

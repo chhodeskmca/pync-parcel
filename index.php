@@ -1,4 +1,4 @@
-<?php
+W<?php
 session_start();
 $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name  
 
@@ -363,52 +363,58 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
         <div>
           <div class="row">
             <div class="col-md-4 mb-3 mb-lg-0">
-              <div class="hover hover-2 text-white"><img src="assets/img/CX Care Ref.png" alt="CX Care Ref">
-                <div class="hover-overlay"></div>
-                <div class="hover-2-content px-5 py-4">
-                  <div>
-                    <h3 class="hover-2-title font-weight-bold mb-0">
-                      Real People. Real Care.
-                      <span>Because you're more than just a tracking number</span>
-                    </h3>
-                  </div>
-                  <p class="hover-2-description mb-0"> <a class="gellary-link" href="contact-us.php">
-                      We’re here to help</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-3">
-              <div class="hover hover-2 text-white"><img src="assets/img/Delivery on Your Time.jpg" alt="Delivery on Your Time">
-                <div class="hover-overlay"></div>
-                <div class="hover-2-content px-5 py-4">
-                  <div>
-                    <h3 class="hover-2-title  font-weight-bold mb-0">
-                      Delivery on Your Time
-                      <span>Because your schedule comes first</span>
-                    </h3>
-                  </div>
-                  <p class="hover-2-description  mb-0"><a class="gellary-link" href="help-us.php">Learn more</a></p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="hover hover-2 text-white"><img src="assets/img/I.C.C.jpg" alt="I.C.C">
-                <div class="hover hover-2 text-white rounded">
+              <a href="contact-us.php" class="hover-link">
+                <div class="hover hover-2 text-white"><img src="assets/img/CX Care Ref.png" alt="CX Care Ref">
                   <div class="hover-overlay"></div>
                   <div class="hover-2-content px-5 py-4">
                     <div>
-                      <h3 class="hover-2-title  font-weight-bold mb-0">
-                        Care Without Compromise
-                        <span>Built on integrity, protection, and real connection</span>
+                      <h3 class="hover-2-title font-weight-bold mb-0 hover-title tile-1">
+                        Real People. Real Care.
+                        <span>Because you're more than just a tracking number</span>
                       </h3>
                     </div>
-                    <p class="hover-2-description  mb-0">
-                      <a class="gellary-link" href="sign-up.php">Experience the Difference </a>
+                    <p class="hover-2-description mb-0"> <span class="gellary-link">
+                        We’re here to help</span>
                     </p>
                   </div>
                 </div>
-              </div>
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="help-us.php" class="hover-link">
+                <div class="hover hover-2 text-white"><img src="assets/img/Delivery on Your Time.jpg" alt="Delivery on Your Time">
+                  <div class="hover-overlay"></div>
+                  <div class="hover-2-content px-5 py-4">
+                    <div>
+                      <h3 class="hover-2-title  font-weight-bold mb-0 hover-title tile-2">
+                        Delivery on Your Time
+                        <span>Because your schedule comes first</span>
+                      </h3>
+                    </div>
+                    <p class="hover-2-description  mb-0"><span class="gellary-link">Learn more</span></p>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-4">
+              <a href="sign-up.php" class="hover-link">
+                <div class="hover hover-2 text-white"><img src="assets/img/I.C.C.jpg" alt="I.C.C">
+                  <div class="hover hover-2 text-white rounded">
+                    <div class="hover-overlay"></div>
+                    <div class="hover-2-content px-5 py-4">
+                      <div>
+                        <h3 class="hover-2-title  font-weight-bold mb-0 hover-title tile-3">
+                          Care Without Compromise
+                          <span>Built on integrity, protection, and real connection</span>
+                        </h3>
+                      </div>
+                      <p class="hover-2-description  mb-0">
+                        <span class="gellary-link">Experience the Difference </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
         </div>
