@@ -356,8 +356,8 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                             <th>Value of Package (USD)</th>
                             <th>Package Description</th>
                             <th>Date</th>
-                            <th>View</th>
-                            <th>Payment Status</th>
+                            <!-- <th>View</th>
+                            <th>Payment Status</th> -->
                           </tr>
                         </thead>
                         <tbody style="text-align-last: center;">
@@ -403,8 +403,8 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                                               ?></span></td>
                                 <td class="text-end"><?php echo htmlspecialchars($rows['describe_package'] ?? ''); ?></td>
                                 <td class="text-end"><?php echo (!empty($rows['created_at'])) ? date('d/m/y', strtotime($rows['created_at'])) : ''; ?></td>
-                                <td class="text-end"><a href="tracking.php?tracking=<?php echo htmlspecialchars($rows['tracking_number'] ?? ''); ?>">View</a></td>
-                                <td class="text-end"><a href="#" class="update-payment-user" data-tracking="<?php echo htmlspecialchars($rows['tracking_number'] ?? ''); ?>">Update</a></td>
+                                <!-- <td class="text-end"><a href="tracking.php?tracking=<?php echo htmlspecialchars($rows['tracking_number'] ?? ''); ?>">View</a></td>
+                                <td class="text-end"><a href="#" class="update-payment-user" data-tracking="<?php echo htmlspecialchars($rows['tracking_number'] ?? ''); ?>">Update</a></td> -->
                               </tr>
                           <?php }
                           } ?>

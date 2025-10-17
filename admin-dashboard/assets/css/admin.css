@@ -1012,10 +1012,22 @@
   border-radius: 50%;
   background: #E87946;
   color: #fff !important;
-  padding: 4px 9px;
+  padding: 6px 8px;
   box-shadow: 1px 3px 10px #b7abab;
   transition: 0.3s;
+/* display: flex;
+  align-items: center;
+  justify-content: center; */
 }
+/* .modal-header button>span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+div#view_user_information {
+    align-items: center;
+    justify-content: center;
+} */
 
 .modal-header button:hover {
   background: #E87946C7;

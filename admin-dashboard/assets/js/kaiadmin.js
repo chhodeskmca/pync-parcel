@@ -63,47 +63,47 @@ $(document).ready(function(){
 	$('.btn-refresh-card').on('click', function(){var e=$(this).parents(".card");e.length&&(e.addClass("is-loading"),setTimeout(function(){e.removeClass("is-loading")},3e3))})
 
 	var scrollbarDashboard = $('.sidebar .scrollbar');
-	if (scrollbarDashboard.length > 0) {
+	if (scrollbarDashboard.length > 0 && typeof $.fn.scrollbar === 'function') {
 		scrollbarDashboard.scrollbar();
 	}
 
 	var contentScrollbar = $('.main-panel .content-scroll');
-	if (contentScrollbar.length > 0) {
+	if (contentScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		contentScrollbar.scrollbar();
 	}
 
 	var messagesScrollbar = $('.messages-scroll');
-	if (messagesScrollbar.length > 0) {
+	if (messagesScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		messagesScrollbar.scrollbar();
 	}
 
 	var tasksScrollbar = $('.tasks-scroll');
-	if (tasksScrollbar.length > 0) {
+	if (tasksScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		tasksScrollbar.scrollbar();
 	}
 
 	var quickScrollbar = $('.quick-scroll');
-	if (quickScrollbar.length > 0) {
+	if (quickScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		quickScrollbar.scrollbar();
 	}
 
 	var messageNotifScrollbar = $('.message-notif-scroll');
-	if (messageNotifScrollbar.length > 0) {
+	if (messageNotifScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		messageNotifScrollbar.scrollbar();
 	}
 
 	var notifScrollbar = $('.notif-scroll');
-	if (notifScrollbar.length > 0) {
+	if (notifScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		notifScrollbar.scrollbar();
 	}
 
 	var quickActionsScrollbar = $('.quick-actions-scroll');
-	if (quickActionsScrollbar.length > 0) {
+	if (quickActionsScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		quickActionsScrollbar.scrollbar();
 	}
 
 	var userScrollbar = $('.dropdown-user-scroll');
-	if (userScrollbar.length > 0) {
+	if (userScrollbar.length > 0 && typeof $.fn.scrollbar === 'function') {
 		userScrollbar.scrollbar();
 	}
 

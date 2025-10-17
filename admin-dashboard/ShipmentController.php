@@ -6,7 +6,7 @@
 
 class ShipmentController {
     private $conn;
-    private $cache_dir = '../cache/';
+    private $cache_dir = 'cache/';
     private $cache_expiry = 300; // 5 minutes
 
     public function __construct($db_connection) {
