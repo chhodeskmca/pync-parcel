@@ -5,7 +5,7 @@
 $script_name = $_SERVER['SCRIPT_NAME'];
 $path_parts = explode('/', $script_name);
 $project_root = '/' . $path_parts[1] . '/'; // e.g., /Pync-parcel-source-files/
-$base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $project_root;
+$base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . rtrim($project_root, '/');
 
 // Define routes
 return [
