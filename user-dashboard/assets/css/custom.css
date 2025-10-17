@@ -408,12 +408,12 @@ html {
 	font-size: 18px !important;
 	margin-bottom: 20px;
 	display: inline-block;
-	padding: 0px !important;
-	width: 109px;
+	padding: 10px 16px !important;
+	min-width: 109px;
 	height: 40px;
 	text-align: center;
 	vertical-align: middle;
-	line-height: 37px;
+	line-height: normal;
 	color: #fff;
 	transition: 0.3s !important;
 }
@@ -587,6 +587,12 @@ html {
 .profile .card {
 	background-color: #fffffff5;
 	/*height: 610px;*/
+}
+.nav-pills.nav-pills-no-bd li {
+  margin-left: 0px !important;
+}
+.nav-pills.nav-pills-no-bd li + li {
+  margin-left: 15px !important;
 }
 
 .Account-area .nav-pills.nav-pills-no-bd li .nav-link {
@@ -1295,6 +1301,10 @@ footer p {
 		font-size: 20px;
 		margin-top: 29px;
 	}
+  .sort-form {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
