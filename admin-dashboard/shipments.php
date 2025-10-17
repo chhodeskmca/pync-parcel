@@ -433,7 +433,7 @@
                 <div class="panel packages ">
                 <div class="panel-heading">
                     <div class="row">
-                        <div class="d-flex justify-content-between add_shipping">
+                        <div class="d-flex justify-content-between add_shipping align-items-center">
                             <h4 class="title">Shipments</h4>
                             <div>
                                 <span><a href="?sync=1" style="color:white !important;"><i class="fa-solid fa-sync"></i> Sync</a></span>

@@ -1081,6 +1081,13 @@ footer p {
 	background-size: 100px;
 	display: none;
 }
+.modal{
+  align-content: center;
+}
+.modal-dialog{
+  margin-left: auto;
+  margin-right: auto;
+}
 
 /* Typical Device Breakpoints */
 /* Extra small devices (phones, 600px and down) */
