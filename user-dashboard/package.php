@@ -269,42 +269,61 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                 $user_id = isset($user_id) ? (int) $user_id : 0;
 
                 // Get filter parameters
-                // Default to warehouse records only when landing on Packages page
-                $type_filter  = isset($_GET['type']) ? mysqli_real_escape_string($conn, $_GET['type']) : 'warehouse';
+                // Default to showing all records when landing on Packages page
+                $type_filter  = isset($_GET['type']) ? mysqli_real_escape_string($conn, $_GET['type']) : 'all';
                 $status_filter = isset($_GET['filter']) ? mysqli_real_escape_string($conn, $_GET['filter']) : '';
 
                 // Build queries for union
                 $queries = [];
                 $count_queries = [];
-                if ($type_filter == 'warehouse' || $type_filter == 'all') {
-                  $where = "WHERE user_id = $user_id";
-                  if ($status_filter) {
-                    // Map filter to effective statuses
-                    $effective_statuses = [];
-                    if ($status_filter == 'Received at Warehouse') {
-                      $effective_statuses = ['Received at Origin', 'At Sorting Facility', 'Received at Warehouse'];
-                    } elseif ($status_filter == 'In transit to Jamaica') {
-                      $effective_statuses = ['In Transit', 'Shipped', 'In Transit to Jamaica'];
-                    } elseif ($status_filter == 'Undergoing Customs Clearance') {
-                      $effective_statuses = ['Processing at Customs', 'Undergoing Customs Clearance'];
-                    } elseif ($status_filter == 'Ready for Delivery Instructions') {
-                      $effective_statuses = ['Ready for Pickup', 'Out for Delivery', 'Scheduled for Delivery', 'Ready for Delivery Instructions'];
-                    } elseif ($status_filter == 'Delivered') {
-                      $effective_statuses = ['Delivered'];
+                
+                // First, get all tracking numbers from pre_alert table for this user
+                $prealert_tracking_numbers = [];
+                $prealert_query = "SELECT tracking_number FROM pre_alert WHERE user_id = $user_id";
+                $prealert_result = mysqli_query($conn, $prealert_query);
+                if ($prealert_result) {
+                    while ($row = mysqli_fetch_assoc($prealert_result)) {
+                        $prealert_tracking_numbers[] = "'" . mysqli_real_escape_string($conn, $row['tracking_number']) . "'";
                     }
-                    if (!empty($effective_statuses)) {
-                      $status_list = "'" . implode("','", $effective_statuses) . "'";
-                      $where .= " AND COALESCE(tracking_progress, status) IN ($status_list)";
-                    }
-                  }
-                  // include user_id (PYNC ID) so we can display it in the listing
-                  $queries[] = "SELECT 'warehouse' as type, tracking_number, tracking_name AS courier_company, weight, store, invoice_total as package_value, describe_package, created_at, user_id FROM packages $where";
-                  $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
                 }
+                
+                if ($type_filter == 'warehouse' || $type_filter == 'all') {
+                    $where = "WHERE user_id = $user_id";
+                    
+                    // Exclude tracking numbers that exist in pre_alert table
+                    if (!empty($prealert_tracking_numbers)) {
+                        $where .= " AND tracking_number NOT IN (" . implode(',', $prealert_tracking_numbers) . ")";
+                    }
+                    
+                    if ($status_filter) {
+                        // Map filter to effective statuses
+                        $effective_statuses = [];
+                        if ($status_filter == 'Received at Warehouse') {
+                            $effective_statuses = ['Received at Origin', 'At Sorting Facility', 'Received at Warehouse'];
+                        } elseif ($status_filter == 'In transit to Jamaica') {
+                            $effective_statuses = ['In Transit', 'Shipped', 'In Transit to Jamaica'];
+                        } elseif ($status_filter == 'Undergoing Customs Clearance') {
+                            $effective_statuses = ['Processing at Customs', 'Undergoing Customs Clearance'];
+                        } elseif ($status_filter == 'Ready for Delivery Instructions') {
+                            $effective_statuses = ['Ready for Pickup', 'Out for Delivery', 'Scheduled for Delivery', 'Ready for Delivery Instructions'];
+                        } elseif ($status_filter == 'Delivered') {
+                            $effective_statuses = ['Delivered'];
+                        }
+                        if (!empty($effective_statuses)) {
+                            $status_list = "'" . implode("','", $effective_statuses) . "'";
+                            $where .= " AND COALESCE(tracking_progress, status) IN ($status_list)";
+                        }
+                    }
+                    
+                    // include user_id (PYNC ID) so we can display it in the listing
+                    $queries[] = "SELECT 'warehouse' as type, tracking_number, tracking_name AS courier_company, weight, store, invoice_total as package_value, describe_package, created_at, user_id FROM packages $where";
+                    $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
+                }
+                
                 if ($type_filter == 'prealert' || $type_filter == 'all') {
-                  $where = "WHERE user_id = $user_id AND tracking_number NOT IN (SELECT tracking_number FROM packages WHERE user_id = $user_id)";
-                  $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at, user_id FROM pre_alert $where";
-                  $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
+                    $where = "WHERE user_id = $user_id";
+                    $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at, user_id FROM pre_alert $where";
+                    $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
                 }
 
                 // Count total (defensive)
@@ -326,25 +345,39 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                   $result = mysqli_query($conn, $sql);
                 }
 
-                if ($result && mysqli_num_rows($result) > 0) {
                 ?>
-                  <div class="card-header">
-                    <div class="card-head-row card-tools-still-right justify-content-center">
-                      <div style="font-size: 18px;" class="card-title">
-                        <h1>My Packages<?php if ($status_filter) echo ' - ' . htmlspecialchars($status_filter); ?></h1>
-                      </div>
-                      <div class="card-tools">
-                        <select id="typeFilter" class="form-select" onchange="changeType(this.value)">
-                          <option value="all" <?php echo $type_filter == 'all' ? 'selected' : ''; ?>>All</option>
-                          <option value="warehouse" <?php echo $type_filter == 'warehouse' ? 'selected' : ''; ?>>Warehouse Records</option>
-                          <option value="prealert" <?php echo $type_filter == 'prealert' ? 'selected' : ''; ?>>Pre-alerts</option>
-                        </select>
-                      </div>
+                <div class="card-header">
+                  <div class="card-head-row card-tools-still-right justify-content-center">
+                    <div style="font-size: 18px;" class="card-title">
+                      <h1>My Packages<?php if ($status_filter) echo ' - ' . htmlspecialchars($status_filter); ?></h1>
+                    </div>
+                    <div class="card-tools">
+                      <select id="typeFilter" class="form-select" onchange="changeType(this.value)">
+                        <option value="all" <?php echo $type_filter == 'all' ? 'selected' : ''; ?>>All</option>
+                        <option value="warehouse" <?php echo $type_filter == 'warehouse' ? 'selected' : ''; ?>>Warehouse Records</option>
+                        <option value="prealert" <?php echo $type_filter == 'prealert' ? 'selected' : ''; ?>>Pre-alerts</option>
+                      </select>
                     </div>
                   </div>
+                </div>
+
+                <?php if (!$result || mysqli_num_rows($result) == 0) { ?>
+                  <div class="card-body">
+                    <div class="alert alert-info">
+                      No packages found. 
+                      <?php if ($type_filter == 'prealert') { ?>
+                        <a href="createprealert.php" class="alert-link">Create a pre-alert</a> to track your incoming packages.
+                      <?php } elseif ($type_filter == 'warehouse') { ?>
+                        No warehouse packages found. Packages will appear here once they arrive at our warehouse.
+                      <?php } else { ?>
+                        No packages found. You can <a href="createprealert.php" class="alert-link">create a pre-alert</a> for incoming packages.
+                      <?php } ?>
+                    </div>
+                  </div>
+                <?php } else { ?>
                   <div class="p-0 card-body">
                     <div class="table-responsive">
-                      <table id="mypackages" class="table mb-0 ">
+                      <table id="mypackages" class="table mb-0">
                         <thead class="thead-light">
                           <tr>
                             <th>Tracking</th>
@@ -412,82 +445,39 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                       </table>
                     </div>
                   </div>
-                  <!-- Pagination -->
-                  <!-- Pagination -->
-                  <div class="mt-3 panel-footer">
-                    <div class="row">
-                      <div class="col col-sm-6 col-xs-6">
-                        Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_packages; ?></b> entries
-                      </div>
-                      <div class="col-sm-6 col-xs-6">
-                        <ul class="pagination justify-content-end" style="color:black;">
-                          <?php
-                          $base_url = "?type=$type_filter";
-                          if ($status_filter) $base_url .= "&filter=$status_filter";
-                          ?>
+                  <?php if ($result && mysqli_num_rows($result) > 0) { ?>
+                    <!-- Pagination -->
+                    <div class="mt-3 panel-footer">
+                      <div class="row">
+                        <div class="col col-sm-6 col-xs-6">
+                          Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_packages; ?></b> entries
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                          <ul class="pagination justify-content-end" style="color:black;">
+                            <?php
+                            $base_url = "?type=$type_filter";
+                            if ($status_filter) $base_url .= "&filter=$status_filter";
+                            ?>
 
-                          <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
-                            <a class="page-link" href="<?php echo ($page > 1) ? $base_url . "&page=" . ($page - 1) : '#'; ?>">&laquo;</a>
-                          </li>
-
-                          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                              <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                              <a class="page-link" href="<?php echo ($page > 1) ? $base_url . "&page=" . ($page - 1) : '#'; ?>">&laquo;</a>
                             </li>
-                          <?php endfor; ?>
 
-                          <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
-                            <a class="page-link" href="<?php echo ($page < $total_pages) ? $base_url . "&page=" . ($page + 1) : '#'; ?>">&raquo;</a>
-                          </li>
-                        </ul>
+                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                              <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                              </li>
+                            <?php endfor; ?>
+
+                            <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                              <a class="page-link" href="<?php echo ($page < $total_pages) ? $base_url . "&page=" . ($page + 1) : '#'; ?>">&raquo;</a>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                <?php
-                } else {
-                  ?>
-                  <div class="card-header">
-                    <div class="card-head-row card-tools-still-right justify-content-center">
-                      <div style="font-size: 18px;" class="card-title">
-                        <h1>My Packages<?php if ($status_filter) echo ' - ' . htmlspecialchars($status_filter); ?></h1>
-                      </div>
-                      <div class="card-tools">
-                        <select id="typeFilter" class="form-select" onchange="changeType(this.value)">
-                          <option value="all" <?php echo $type_filter == 'all' ? 'selected' : ''; ?>>All</option>
-                          <option value="warehouse" <?php echo $type_filter == 'warehouse' ? 'selected' : ''; ?>>Warehouse Records</option>
-                          <option value="prealert" <?php echo $type_filter == 'prealert' ? 'selected' : ''; ?>>Pre-alerts</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="p-0 card-body">
-                    <div class="table-responsive">
-                      <table id="mypackages" class="table mb-0 ">
-                        <thead class="thead-light">
-                          <tr>
-                            <th>Tracking</th>
-                            <th>PYNC ID</th>
-                            <!-- <th>Type</th> -->
-                            <th>Courier Company</th>
-                            <th>Weight</th>
-                            <th>Store</th>
-                            <th>Value of Package (USD)</th>
-                            <th>Package Description</th>
-                            <th>Date</th>
-                            <!-- <th>View</th>
-                            <th>Payment Status</th> -->
-                          </tr>
-                        </thead>
-                        <tbody style="text-align-last: center;"></tbody>
-                          <tr>
-                            <td colspan="9" style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'><center>No Package available.</center></td>
-                          </tr>
-                      </table>
-                    </div>
-                  </div>
-                <?php
-                }
-                ?>
+                  <?php } ?>
+                <?php } ?>
               </div>
             </div>
           </div>
