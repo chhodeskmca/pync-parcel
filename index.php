@@ -1,4 +1,4 @@
-W<?php
+<?php
 session_start();
 $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file name  
 
