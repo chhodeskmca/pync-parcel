@@ -413,40 +413,79 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                     </div>
                   </div>
                   <!-- Pagination -->
+                  <!-- Pagination -->
                   <div class="mt-3 panel-footer">
                     <div class="row">
                       <div class="col col-sm-6 col-xs-6">
-                        Showing <b><?php echo $result ? mysqli_num_rows($result) : 0; ?></b> out of <b><?php echo $total_packages; ?></b> entries
+                        Showing <b><?php echo mysqli_num_rows($result); ?></b> out of <b><?php echo $total_packages; ?></b> entries
                       </div>
                       <div class="col-sm-6 col-xs-6">
                         <ul class="pagination justify-content-end" style="color:black;">
                           <?php
                           $base_url = "?type=$type_filter";
                           if ($status_filter) $base_url .= "&filter=$status_filter";
-                          if ($page > 1) { ?>
-                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page - 1; ?>">
-                                << /a>
+                          ?>
+
+                          <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo ($page > 1) ? $base_url . "&page=" . ($page - 1) : '#'; ?>">&laquo;</a>
+                          </li>
+
+                          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                              <a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
                             </li>
-                          <?php } else { ?>
-                            <li class="page-item disabled"><a class="page-link" href="#">
-                                << /a>
-                            </li>
-                          <?php } ?>
-                          <?php if ($total_pages > 0) for ($i = 1; $i <= $total_pages; $i++) { ?>
-                            <li class="page-item<?php echo $i == $page ? ' active' : ''; ?>"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                          <?php } ?>
-                          <?php if ($page < $total_pages) { ?>
-                            <li class="page-item"><a class="page-link" href="<?php echo $base_url; ?>&page=<?php echo $page + 1; ?>">></a></li>
-                          <?php } else { ?>
-                            <li class="page-item disabled"><a class="page-link" href="#">></a></li>
-                          <?php } ?>
+                          <?php endfor; ?>
+
+                          <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo ($page < $total_pages) ? $base_url . "&page=" . ($page + 1) : '#'; ?>">&raquo;</a>
+                          </li>
                         </ul>
                       </div>
                     </div>
                   </div>
                 <?php
                 } else {
-                  echo "<h2 style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'>No Package available.</h2>";
+                  ?>
+                  <div class="card-header">
+                    <div class="card-head-row card-tools-still-right justify-content-center">
+                      <div style="font-size: 18px;" class="card-title">
+                        <h1>My Packages<?php if ($status_filter) echo ' - ' . htmlspecialchars($status_filter); ?></h1>
+                      </div>
+                      <div class="card-tools">
+                        <select id="typeFilter" class="form-select" onchange="changeType(this.value)">
+                          <option value="all" <?php echo $type_filter == 'all' ? 'selected' : ''; ?>>All</option>
+                          <option value="warehouse" <?php echo $type_filter == 'warehouse' ? 'selected' : ''; ?>>Warehouse Records</option>
+                          <option value="prealert" <?php echo $type_filter == 'prealert' ? 'selected' : ''; ?>>Pre-alerts</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="p-0 card-body">
+                    <div class="table-responsive">
+                      <table id="mypackages" class="table mb-0 ">
+                        <thead class="thead-light">
+                          <tr>
+                            <th>Tracking</th>
+                            <th>PYNC ID</th>
+                            <!-- <th>Type</th> -->
+                            <th>Courier Company</th>
+                            <th>Weight</th>
+                            <th>Store</th>
+                            <th>Value of Package (USD)</th>
+                            <th>Package Description</th>
+                            <th>Date</th>
+                            <!-- <th>View</th>
+                            <th>Payment Status</th> -->
+                          </tr>
+                        </thead>
+                        <tbody style="text-align-last: center;"></tbody>
+                          <tr>
+                            <td colspan="9" style='text-align: center; padding: 50px; font-size: 20px;line-height: 21px;'><center>No Package available.</center></td>
+                          </tr>
+                      </table>
+                    </div>
+                  </div>
+                <?php
                 }
                 ?>
               </div>
