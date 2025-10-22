@@ -340,7 +340,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                           </div>
                           <div class="col-md-6 col-lg-4">
                             <div class="form-group">
-                              <label for="Store">merchant (source of purchase)</label>
+                              <label for="Store">Merchant (source of purchase)</label>
                               <input name="merchant" value="<?php echo $rows['merchant']; ?>" required
                                 type="text"
                                 class="form-control"
