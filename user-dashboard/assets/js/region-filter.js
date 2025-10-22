@@ -1,45 +1,89 @@
-// Parish-based region filtering
+// Parish-based region filtering (user)
 $(document).ready(function() {
-    // Only run if user is admin
-    if (!$('body').hasClass('admin-dashboard')) {
-        return;
+    const parishMap = {
+        'Kingston': ['Kingston'],
+        'St. Andrew': ['Half-Way Tree', 'Constant Spring', 'Cross Roads'],
+        'St. Catherine': ['Portmore', 'Spanish Town', 'Old Harbour', 'Bog Walk', 'Linstead']
+    };
+
+    function getParishValue() {
+        return $('.addressParish').length ? $('.addressParish').val() : $('#State').val() || '';
     }
-    
-    function filterRegionsByParish() {
-        const parish = $('.addressParish').val();
-        const regions = $('#RegionAddress option:not(:first)');
+
+    function updateRegionVisibility() {
+        const parish = getParishValue();
+        const $region = $('#RegionAddress');
+        if (!$region.length) return;
+
+        // Get current selection
+        const currentValue = $region.val();
         
-        // Hide all region options except the first one (Choose...)
-        regions.hide();
+        // Get all options except the first (Keep "Choose...")
+        const $options = $region.find('option:not(:first)');
         
-        // Show relevant regions based on parish selection
-        if (parish === 'Kingston') {
-            $('#RegionAddress option[value="Kingston"]').show();
-        } else if (parish === 'St. Andrew') {
-            $('#RegionAddress option[value="Half-Way Tree"]').show();
-            $('#RegionAddress option[value="Constant Spring"]').show();
-            $('#RegionAddress option[value="Cross Roads"]').show();
-        } else if (parish === 'St. Catherine') {
-            $('#RegionAddress option[value="Portmore"]').show();
-            $('#RegionAddress option[value="Spanish Town"]').show();
-            $('#RegionAddress option[value="Old Harbour"]').show();
-            $('#RegionAddress option[value="Bog Walk"]').show();
-            $('#RegionAddress option[value="Linstead"]').show();
-        }
-        
-        // Reset selection if current value is not valid for the selected parish
-        const currentRegion = $('#RegionAddress').val();
-        const visibleOptions = $('#RegionAddress option:visible');
-        if (visibleOptions.filter(`[value="${currentRegion}"]`).length === 0) {
-            $('#RegionAddress').val('');
+        // Get allowed regions for selected parish
+        const allowed = parishMap[parish] || [];
+
+        // Show/hide options based on selected parish
+        $options.each(function() {
+            const $option = $(this);
+            if (allowed.includes($option.val())) {
+                $option.show();
+            } else {
+                $option.hide();
+                // If a hidden option was selected, reset to Choose...
+                if ($option.is(':selected')) {
+                    $region.val('');
+                }
+            }
+        });
+
+        // If current selection is valid for new parish, keep it
+        if (currentValue && allowed.includes(currentValue)) {
+            $region.val(currentValue);
         }
     }
-    
-    // Initial filtering on page load
-    filterRegionsByParish();
-    
-    // Filter when parish selection changes
-    $('.addressParish').change(function() {
-        filterRegionsByParish();
+
+    // Initialize all possible region options once
+    function initializeRegionOptions() {
+        const $region = $('#RegionAddress');
+        if (!$region.length) return;
+
+        // Keep the first "Choose..." option
+        const firstOption = $region.find('option:first').prop('outerHTML');
+        
+        // Get all unique regions
+        const allRegions = new Set();
+        Object.values(parishMap).forEach(regions => {
+            regions.forEach(r => allRegions.add(r));
+        });
+
+        // Build options HTML
+        let newOptions = firstOption;
+        Array.from(allRegions).sort().forEach(region => {
+            newOptions += `<option value="${region}">${region}</option>`;
+        });
+
+        // Set options and update visibility
+        $region.html(newOptions);
+        updateRegionVisibility();
+    }
+
+    // Enable the Region select
+    function enableRegionSelect() {
+        const $region = $('#RegionAddress');
+        $region.prop('disabled', false).removeAttr('readonly');
+    }
+
+    // Initialize on page load
+    try { console.debug('[region-filter] initializing...'); } catch(e) {}
+    initializeRegionOptions();
+    enableRegionSelect();
+
+    // Handle parish changes
+    $(document).on('change', '.addressParish, #State', function() {
+        try { console.debug('[region-filter] parish changed to:', $(this).val()); } catch(e) {}
+        updateRegionVisibility();
+        enableRegionSelect();
     });
 });

@@ -662,5 +662,7 @@
  </script>
 	    <!-- custom js -->
         <script src="assets/js/custom.js"></script> 
+					<!-- admin parish->region mapping -->
+					<script src="assets/js/region-filter.js"></script>
   </body>
 </html>

@@ -9,31 +9,7 @@ $('.account_info_btn').click(function () {
 	$('.Delivery-Preference select').removeAttr("disabled");
 });
 /* If Parish is selected, show only relevant regions */
-$('.addressParish').change(function () {
-	$RegionAddressVal = $(this).val();
-	$('.RegionAddress').prop('selectedIndex', 0);
-	$('.RegionAddress option').removeAttr("selected");
-	$('.RegionAddress option').hide(); // Hide all options first
-	$('.RegionAddress option:first').show(); // Always show "Choose..." option
-
-	if ($RegionAddressVal == 'Kingston') {
-		$(".RegionAddress option[value='Kingston']").show();
-	} else if ($RegionAddressVal == 'St. Andrew') {
-		$(".RegionAddress option[value='Half-Way Tree']").show();
-		$(".RegionAddress option[value='Constant Spring']").show();
-		$(".RegionAddress option[value='Cross Roads']").show();
-	} else if ($RegionAddressVal == 'St. Catherine') {
-		$(".RegionAddress option[value='Portmore']").show();
-		$(".RegionAddress option[value='Spanish Town']").show();
-		$(".RegionAddress option[value='Old Harbour']").show();
-		$(".RegionAddress option[value='Bog Walk']").show();
-		$(".RegionAddress option[value='Linstead']").show();
-	} else {
-		// If no parish selected, hide all region options except "Choose..."
-		$('.RegionAddress option').hide();
-		$('.RegionAddress option:first').show();
-	}
-});
+// Parish change handling moved to region-filter.js
 // reset Password
 $('.pwd-enble-btn').click(function () {
 	$(this).css('display', 'none');
