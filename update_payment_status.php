@@ -2,6 +2,15 @@
 session_start();
 include 'config.php';
 include 'function.php';
+// Ensure only admins can update payment status
+if (function_exists('user_account_information')) {
+    $current_user = user_account_information();
+    if (!isset($current_user['role_as']) || intval($current_user['role_as']) !== 1) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Forbidden']);
+        exit;
+    }
+}
 
 // Simple endpoint to update payment status and adjust balance
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

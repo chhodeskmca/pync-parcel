@@ -317,7 +317,6 @@
                 <th>Type</th>
                 <th>Weight</th>
                 <th>Value</th>
-                <th>Linked</th>
                 <th>Created at</th>
                 <th>View</th>
               </tr>
@@ -348,9 +347,8 @@
 									<td><?php echo $rows['describe_package']; ?></td>
                                     <td> <span class="type_label">Pre-alert</span> </td>
 									<td><span style="border: 1px solid #ddd;  padding: 1px;">N/A</span></td>
-									<td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
-									<td> <span class="linked" style="background:#dcfce7;color:#3c995e"> Linked</span></td>
-									<td><?php echo timeAgo($rows['created_at']); ?></td>
+                                    <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>
+                                    <td><?php echo timeAgo($rows['created_at']); ?></td>
 									<td>
 										<ul class="action-list">
 											<li> 

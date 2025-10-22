@@ -379,7 +379,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                     <div class="table-responsive">
                       <table id="mypackages" class="table mb-0">
                         <thead class="thead-light">
-                          <tr>
+                            <tr>
                             <th>Tracking</th>
                             <th>PYNC ID</th>
                             <!-- <th>Type</th> -->
@@ -437,7 +437,12 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                 <td class="text-end"><?php echo htmlspecialchars($rows['describe_package'] ?? ''); ?></td>
                                 <td class="text-end"><?php echo (!empty($rows['created_at'])) ? date('d/m/y', strtotime($rows['created_at'])) : ''; ?></td>
                                 <!-- <td class="text-end"><a href="tracking.php?tracking=<?php echo htmlspecialchars($rows['tracking_number'] ?? ''); ?>">View</a></td>
-                                <td class="text-end"><a href="#" class="update-payment-user" data-tracking="<?php echo htmlspecialchars($rows['tracking_number'] ?? ''); ?>">Update</a></td> -->
+                                <?php $ps = $rows['payment_status'] ?? 'Pending';
+                                $ps_class = 'ps-unknown';
+                                if (strtolower($ps) === 'paid') $ps_class = 'ps-paid';
+                                if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
+                                ?>
+                                <td class="text-end"><span class="ps-label <?php echo $ps_class; ?>"><?php echo htmlspecialchars($ps); ?></span></td> -->
                               </tr>
                           <?php }
                           } ?>
@@ -507,64 +512,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
         window.location.href = url.toString();
       }
     </script>
-    <!-- Payment status modal -->
-    <div class="modal fade" id="paymentStatusModalUser" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Update Payment Status</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" id="psu_tracking" />
-            <div class="mb-2">
-              <label class="form-label">Status</label>
-              <select id="psu_status" class="form-select">
-                <option value="Pending">Pending</option>
-                <option value="Paid">Paid</option>
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" id="psu_save" class="btn btn-primary">Save</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.update-payment-user').forEach(function(el) {
-          el.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('psu_tracking').value = this.dataset.tracking;
-            var modal = new bootstrap.Modal(document.getElementById('paymentStatusModalUser'));
-            modal.show();
-          });
-        });
-        document.getElementById('psu_save').addEventListener('click', function() {
-          var tracking = document.getElementById('psu_tracking').value;
-          var status = document.getElementById('psu_status').value;
-          fetch('../update_payment_status.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status)
-          }).then(function(res) {
-            return res.json();
-          }).then(function(data) {
-            if (data && data.success) {
-              alert('Payment status updated to ' + data.new_status);
-              location.reload();
-            } else {
-              alert('Failed to update payment status');
-            }
-          }).catch(function() {
-            alert('Network error');
-          });
-        });
-      });
-    </script>
+    
 </body>
 
 </html>

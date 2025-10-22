@@ -421,15 +421,17 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                   <table class="table-area ">
                                     <thead>
                                       <tr>
-                                        <th>Tracking</th>
-                                        <th>Tracking Name</th>
-                                        <th>Type</th>
-                                        <th>Description</th>
-                                        <th>Customer</th>
-                                        <th>Weight</th>
-                                        <th>Created at</th>
-                                        <th>View</th>
-                                      </tr>
+                                          <th>Tracking</th>
+                                          <th>Tracking Name</th>
+                                          <th>Type</th>
+                                          <th>Description</th>
+                                          <th>Customer</th>
+                                          <th>Store</th>
+                                          <th>Weight</th>
+                                          <th>Created at</th>
+                                          <th>View</th>
+                                          <th>Payment Status</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
                                       <?php
@@ -444,6 +446,18 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                           <td><?php echo $rows['package_type']; ?></td>
                                           <td><?php echo $rows['describe_package']; ?></td>
                                           <td> <span class="customer_name"><?php echo $_REQUEST['user_name']; ?></span> </td>
+                                          <td>
+                                            <?php
+                                            // Try to show a store field if present, otherwise fall back to branch or user's region
+                                            if (!empty($rows['store'])) {
+                                                echo htmlspecialchars($rows['store']);
+                                            } elseif (!empty($rows['branch'])) {
+                                                echo htmlspecialchars($rows['branch']);
+                                            } else {
+                                                echo htmlspecialchars($user_row['region'] ?? '—');
+                                            }
+                                            ?>
+                                          </td>
                                           <td><?php echo $rows['weight'] ?? 'N/A'; ?></td>
                                           <td><?php echo timeAgo($rows['created_at']); ?></td>
                                           <td>
@@ -454,6 +468,15 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                                 </a>
                                               </li>
                                             </ul>
+                                          </td>
+                                          <td>
+                                            <?php $ps = $rows['payment_status'] ?? 'Pending';
+                                            $ps_class = 'ps-unknown';
+                                            if (strtolower($ps) === 'paid') $ps_class = 'ps-paid';
+                                            if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
+                                            ?>
+                                            <span class="ps-label <?php echo $ps_class; ?>"><?php echo htmlspecialchars($ps); ?></span>
+                                            &nbsp;<a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
                                           </td>
                                         </tr>
                                       <?php }; ?>
@@ -995,6 +1018,63 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
     unset($_SESSION['message']);
   };
   ?>
+<!-- Payment Status Modal (Customer View) -->
+<div class="modal fade" id="paymentStatusModalCustomer" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Payment Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="psc_tracking" />
+        <div class="mb-2">
+          <label class="form-label">Status</label>
+          <select id="psc_status" class="form-select">
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="psc_save" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Customer view payment status handlers
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.update-payment').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        var tracking = this.dataset.tracking;
+        document.getElementById('psc_tracking').value = tracking;
+        var modal = new bootstrap.Modal(document.getElementById('paymentStatusModalCustomer'));
+        modal.show();
+      });
+    });
+
+    document.getElementById('psc_save').addEventListener('click', function() {
+      var tracking = document.getElementById('psc_tracking').value;
+      var status = document.getElementById('psc_status').value;
+      fetch('../update_payment_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'tracking=' + encodeURIComponent(tracking) + '&status=' + encodeURIComponent(status)
+      }).then(function(res){ return res.json(); }).then(function(data){
+        if (data && data.success) {
+          alert('Payment status updated to ' + data.new_status);
+          location.reload();
+        } else {
+          alert('Failed to update payment status');
+        }
+      }).catch(function(){ alert('Network error'); });
+    });
+  });
+</script>
+
 </body>
 
 </html>

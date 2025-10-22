@@ -448,7 +448,13 @@
                     </ul>
                 </td>
                 <td>
-                    <a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
+                    <?php $ps = $rows['payment_status'] ?? 'Pending';
+                    $ps_class = 'ps-unknown';
+                    if (strtolower($ps) === 'paid') $ps_class = 'ps-paid';
+                    if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
+                    ?>
+                    <span class="ps-label <?php echo $ps_class; ?>"><?php echo htmlspecialchars($ps); ?></span>
+                    &nbsp;<a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
                 </td>
             </tr>
             <?php
