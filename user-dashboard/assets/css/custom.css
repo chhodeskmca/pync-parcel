@@ -200,6 +200,19 @@ html {
 	text-transform: uppercase;
 }
 
+/* Payment status badges (shared with admin) */
+.ps-label {
+	display: inline-block;
+	padding: 4px 8px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 700;
+	color: #fff;
+}
+.ps-paid { background: #22c55e; } /* green */
+.ps-pending { background: #f97316; } /* orange */
+.ps-unknown { background: #94a3b8; } /* gray */
+
 .mandatory_field {
 	color: red;
 	font-size: 15px;
