@@ -288,9 +288,16 @@
                         <div class="col-md-offset-1 col-md-12">
                             <div class="panel packages ">
                                 <div class="panel-heading">
-                                    <div>
+                                    <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h4 class="title">Packages</h4>
+                                        </div>
+                                        <div>
+                                            <select class="form-select" id="packageTypeFilter">
+                                                <option value="all">All</option>
+                                                <option value="warehouse">Warehouse Records</option>
+                                                <option value="prealert">Pre-alerts</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -374,13 +381,7 @@
                 <!-- <th>Type</th> -->
                 <th>Courier Company</th>
                 <th>Weight</th>
-                <th>Store</th>
-                <!-- <th>Name</th> -->
-                <!-- <th>Dimensions (L x W x H)</th> -->
-                <!-- <th>Shipment Status</th> -->
-                <!-- <th>Shipment Type</th> -->
-                <!-- <th>Branch</th> -->
-                <!-- <th>Tag</th> -->
+                <!-- <th>Delivery Region</th> -->
                 <th>Value of Package (USD)</th>
                 <th>Package Description</th>
                 <!-- <th>Status</th> -->
@@ -414,14 +415,22 @@
                 <!-- <td>Warehouse Processed</td> -->
                 <td><?php echo $rows['courier_company'] ? ucfirst($rows['courier_company']) : '-'; ?></td>
                 <td class="text-center"><?php echo($rows['weight'] && $rows['weight'] != 0) ? $rows['weight'] . " lbs" : '—'; ?></td>
-                <td><?php echo $rows['store'] ?? '—'; ?></td>
-                <!-- <td> <span class="customer_name"><?php echo $customer_name ?>  </span></td><?php echo $customer_name; ?></span> </td> -->
-                <!-- <td><?php echo $rows['weight'] ?? 'N/A'; ?></td> -->
-                <!-- <td><?php echo($rows['dim_length'] ?? 'N/A') . ' x ' . ($rows['dim_width'] ?? 'N/A') . ' x ' . ($rows['dim_height'] ?? 'N/A'); ?></td> -->
-                <!-- <td><?php echo $rows['shipment_status'] ?? 'N/A'; ?></td> -->
-                <!-- <td><?php echo ucfirst($rows['shipment_type']) ?? 'N/A'; ?></td> -->
-                <!-- <td><?php echo $rows['branch'] ?? 'N/A'; ?></td> -->
-                <!-- <td><?php echo $rows['tag'] ?? 'N/A'; ?></td> -->
+                <!-- <td><?php 
+                    // Get delivery region from user account
+                    $delivery_region = '';
+                    if ($user_id) {
+                        $region_sql = "SELECT region FROM delivery_preference WHERE user_id = $user_id LIMIT 1";
+                        $region_result = mysqli_query($conn, $region_sql);
+                        if ($region_result && mysqli_num_rows($region_result) > 0) {
+                            $region_row = mysqli_fetch_assoc($region_result);
+                            $delivery_region = $region_row['region'];
+                        }
+                        if (empty($delivery_region)) {
+                            $delivery_region = $row['region'] ?? '—'; // fallback to user's default region
+                        }
+                    }
+                    echo htmlspecialchars($delivery_region);
+                ?></td> -->
                 <td><span class="item_value"><?php echo($rows['value_of_package'] && $rows['value_of_package'] != "0") ? "$ " . $rows['value_of_package'] : '—'; ?></span></td>
                 <td><?php echo $rows['describe_package']; ?></td>
                 <!-- <td> <span class="status">Undergoing Customs Clearance</span> </td> -->
@@ -597,6 +606,7 @@
         <script src="assets/js/kaiadmin.min.js"></script>
         <!-- custom js -->
         <script src="assets/js/custom.js"></script>
+        <script src="assets/js/package-filter.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('.update-payment').forEach(function(el) {

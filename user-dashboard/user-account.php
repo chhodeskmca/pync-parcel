@@ -599,58 +599,46 @@
 											   <div class="col-md-4">
 											   <div class="form-group">
 												  <label for="State">Parish<span class="mandatory_field">*</span></label>
-												  <select   required
-												   <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> 
+												  <select   required readonly
 												   name='Parish'
-												   class="form-select addressParish" 
+												   class="form-select" 
 												   id="State">
 													   <option  value="" >Choose...</option>
 													   <option  
 													    <?php 
-														
 													      echo (user_account_information()['parish'] ?? '') == 'Kingston' ? 'selected' : ''  ;  
-														  
 													    ?>
 													      value="Kingston" > 
 														  Kingston
 													  </option>
 													  <option  
 													    <?php 
-														
 													      echo (user_account_information()['parish'] ?? '') == 'St. Andrew' ? 'selected' : ''  ;  
-														  
 													    ?>
 													    value="St. Andrew">
 														  St. Andrew 
 													  </option>
 													  <option  
 													    <?php  
-														
 													      echo (user_account_information()['parish'] ?? '') == 'St. Catherine' ? 'selected' : ''  ;  
-														  
 														?>
 													   value="St. Catherine"> 
 													    St. Catherine 
 													  </option>
 												   </select>
-												       <p style='margin-bottom: 0px; margin-top: 5px; color: #bf1919; font-size: 16px;  line-height: 17px'> 
-												         <?php 
-													        if( isset($_SESSION['message-7']) ){ 
-														        echo $_SESSION['message-7'];
-														        unset($_SESSION['message-7']);
-														    };
-													 
-													      ?>
-														</p>
 												</div>   
 											    <div class="form-group">
 												  <label for="RegionAddress">Region<span class="mandatory_field">*</span></label>
-												  <select 
-                                                    required												  
-												   <?php echo isset($_REQUEST['no-update-basic-data'])? '':'disabled'; ?> 
-													name="Region" class="form-select RegionAddress"  
+												  <select required readonly
+													name="Region" class="form-select"  
 													id="RegionAddress">
-													 <option style="display:block" value="">Choose...</option>
+													<option value="">Choose...</option>
+													<?php 
+														$user_region = user_account_information()['region'] ?? '';
+														echo '<option value="' . htmlspecialchars($user_region) . '" selected>' . 
+															 htmlspecialchars($user_region) . '</option>';
+													?>
+                                                    </select>
 													 <option class=""
 													   <?php
 														   echo  (user_account_information()['region'] ?? '') == 'Kingston' ? 'selected' : '' ;
@@ -698,6 +686,7 @@
 													  	    <?php 
 														      echo  (user_account_information()['region'] ?? '') == 'Bog Walk' ? 'selected' : '' ;
 													         ?>
+
 													         value="Bog Walk">Bog Walk 
 															</option>
 													        <option  class=""
@@ -1247,7 +1236,7 @@
 		 ?> 
 		 
 	    <!-- custom js -->
-        <script src="assets/js/custom.js"></script>  
+        <script src="assets/js/custom.js"></script>
   </body>
 </html>
 
