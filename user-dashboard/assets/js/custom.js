@@ -92,8 +92,10 @@ $('.AurizedUsr-enble-btn').click(function () {
 				paths.push(accum + '/rates.json');
 			}
 		} catch (e) {}
-		var seen = {};
-		return paths.filter(function(p){ if(seen[p]) return false; seen[p]=true; return true; });
+	var seen = {};
+	var final = paths.filter(function(p){ if(seen[p]) return false; seen[p]=true; return true; });
+	try { console.debug('[rates] candidate paths', final); } catch(e) {}
+	return final;
 	}
 
 	function loadRates(){

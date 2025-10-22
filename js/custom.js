@@ -9,10 +9,11 @@
 				function tryNext() {
 					if (i >= paths.length) return reject(new Error('All paths failed'));
 					var p = paths[i++];
+					try { console.debug('[rates] trying', p); } catch (e) {}
 					fetch(p, {cache: 'no-cache'})
 						.then(function(res){ if(!res.ok) throw new Error('not ok'); return res.json(); })
-						.then(function(json){ resolve(json); })
-						.catch(function(){ tryNext(); });
+						.then(function(json){ try { console.debug('[rates] loaded', p); } catch (e) {} ; resolve(json); })
+						.catch(function(err){ try { console.debug('[rates] failed', p, err && err.message); } catch (e) {} ; tryNext(); });
 				}
 				tryNext();
 			});
@@ -39,9 +40,11 @@
 				} catch (e) {
 					// ignore
 				}
-				// dedupe while preserving order
-				var seen = {};
-				return paths.filter(function(p){ if(seen[p]) return false; seen[p]=true; return true; });
+								// dedupe while preserving order
+								var seen = {};
+								var final = paths.filter(function(p){ if(seen[p]) return false; seen[p]=true; return true; });
+								try { console.debug('[rates] candidate paths', final); } catch (e) {}
+								return final;
 			}
 
 			function loadRates() {
