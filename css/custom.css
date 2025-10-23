@@ -216,6 +216,17 @@ header .con-icon {
   }
 }
 
+/* Ensure link states don't use browser default colors */
+.btn-ship,
+.btn-ship:link,
+.btn-ship:visited,
+.btn-ship:hover,
+.btn-ship:focus,
+.btn-ship:active {
+  color: #222 !important;
+  text-decoration: none !important;
+}
+
 #SDT {
   background-image: url('../assets/img/ppc-pattern.jpg');
   background-size: cover;
@@ -1733,7 +1744,7 @@ footer {
 
   .LylRtdIms p {
     font-size: 18px;
-    line-height: 20px !imporant;
+    line-height: 20px !important;
     text-align: left;
   }
 
@@ -1953,3 +1964,4 @@ footer {
     color: #e87947 !important;
     text-decoration: underline;
   }
+}
