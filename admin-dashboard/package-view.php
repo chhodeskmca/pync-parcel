@@ -454,10 +454,31 @@
 			 <!--Tracking details end-->
 			  <div class="row">
 			    <div class="row Tracking-details-are">
-				      <div class="col-6 Packages_top_info">
-					    <a href="packages.php">
-					     <i class="fa-solid fa-angle-left"></i>
-						 </a>
+					<div class="col-6 Packages_top_info">
+							<?php
+							// Determine back link: prefer ?from= param when it points to an internal allowlisted path.
+							$default_back = 'packages.php';
+							$allowed_bases = [
+								'packages.php',
+								'customer-view.php',
+								'shipments-view.php',
+							];
+							$back = $default_back;
+							if (!empty($_GET['from'])) {
+								// decode and parse
+								$from = urldecode($_GET['from']);
+								// only accept simple allowlisted paths possibly with querystring
+								foreach ($allowed_bases as $base) {
+									if (strpos($from, $base) === 0) {
+										$back = $from;
+										break;
+									}
+								}
+							}
+							?>
+							<a href="<?php echo htmlspecialchars($back); ?>">
+							 <i class="fa-solid fa-angle-left"></i>
+							 </a>
 					     <!--<h4>Packages</h4>
 						 <h2>Computer</h2>-->
 						 <p class="Created_at">Created on <b><?php echo date('M j, Y, g:i A', strtotime($package['created_at'])); ?></b></p>

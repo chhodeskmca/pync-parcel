@@ -451,7 +451,8 @@
 											<td>
 												<ul class="action-list">
 													<li style="list-style:none;">
-													  <a href="package-view.php?tracking=<?php echo urlencode($package['tracking_number']); ?>">
+													  <?php $return_to = 'shipments-view.php?shipment_id=' . urlencode($package['shipment_id'] ?? ''); ?>
+													  <a href="package-view.php?tracking=<?php echo urlencode($package['tracking_number']); ?>&from=<?php echo urlencode($return_to); ?>">
 														 <i class="fa-solid fa-eye"></i>
 													  </a>
 													</li>

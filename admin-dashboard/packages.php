@@ -442,7 +442,8 @@
                 <td>
                     <ul class="mb-0 action-list list-unstyled">
                         <li>
-                            <a href="package-view.php?tracking=<?php echo $rows['tracking_number']; ?>">
+                            <?php $return_to = 'packages.php'; ?>
+                            <a href="package-view.php?tracking=<?php echo urlencode($rows['tracking_number']); ?>&from=<?php echo urlencode($return_to); ?>">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
                         </li>
@@ -455,7 +456,9 @@
                     if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
                     ?>
                     <span class="ps-label <?php echo $ps_class; ?>"><?php echo htmlspecialchars($ps); ?></span>
+                                            <?php if (!isset($rows['package_type']) || strtolower($rows['package_type']) !== 'pre-alert') { ?>
                     &nbsp;<a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
+                                            <?php } ?>
                 </td>
             </tr>
             <?php

@@ -463,7 +463,8 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                           <td>
                                             <ul class="action-list">
                                               <li>
-                                                <a href="package-view.php?tracking=<?php echo $rows['tracking_number']; ?>">
+                                                <?php $return_to = 'customer-view.php?user_id=' . urlencode($_REQUEST['user_id'] ?? ''); ?>
+                                                <a href="package-view.php?tracking=<?php echo urlencode($rows['tracking_number']); ?>&from=<?php echo urlencode($return_to); ?>">
                                                   <i class="fa-solid fa-eye"></i>
                                                 </a>
                                               </li>
@@ -476,7 +477,9 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                             if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
                                             ?>
                                             <span class="ps-label <?php echo $ps_class; ?>"><?php echo htmlspecialchars($ps); ?></span>
-                                            &nbsp;<a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
+                                            <?php if (isset($rows['package_type']) && strtolower($rows['package_type']) !== 'pre-alert') { ?>
+                                              &nbsp;<a href="#" class="update-payment" data-tracking="<?php echo htmlspecialchars($rows['tracking_number']); ?>">Update</a>
+                                            <?php } ?>
                                           </td>
                                         </tr>
                                       <?php }; ?>
