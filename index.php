@@ -106,7 +106,8 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
         if (!isset($_COOKIE['user_id'])) {
 
-          echo "<a href='sign-up.php'><button type='button' class='shadow' style='#F8EFE3'>Ship Now</button></a>";
+          // Use a styled anchor for the CTA so mobile and desktop match
+          echo "<a href='sign-up.php' class='btn-ship'>Ship Now</a>";
         };
         ?>
 
