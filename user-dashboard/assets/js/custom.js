@@ -6,7 +6,14 @@ $('.account_info_btn').click(function () {
 	$('.change-value input').removeAttr("disabled");
 	$('.addressParish').removeAttr("disabled");
 	$('.AddressType').removeAttr("disabled");
-	$('.Delivery-Preference select').removeAttr("disabled");
+		$('.Delivery-Preference select').removeAttr("disabled");
+		// Specifically enable the Region select and refresh visibility so the saved/current region becomes selectable
+		var $region = $('#RegionAddress');
+		if ($region.length) {
+			$region.prop('disabled', false).removeAttr('readonly');
+			// trigger parish change to refresh available region options
+			$('.addressParish').trigger('change');
+		}
 });
 /* If Parish is selected, show only relevant regions */
 // Parish change handling moved to region-filter.js

@@ -57,11 +57,16 @@ $(document).ready(function() {
         Object.values(parishMap).forEach(regions => {
             regions.forEach(r => allRegions.add(r));
         });
+        // Also include any current region value provided by server (so saved selections aren't lost)
+        const currentRegion = $region.data('current');
+        if (currentRegion) allRegions.add(currentRegion);
 
         // Build options HTML
         let newOptions = firstOption;
         Array.from(allRegions).sort().forEach(region => {
-            newOptions += `<option value="${region}">${region}</option>`;
+            // escape HTML when injecting via template literal
+            const esc = String(region).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            newOptions += `<option value="${esc}">${esc}</option>`;
         });
 
         // Set options and update visibility
@@ -75,15 +80,14 @@ $(document).ready(function() {
         $region.prop('disabled', false).removeAttr('readonly');
     }
 
-    // Initialize on page load
+    // Initialize on page load (do NOT enable the Region select here - it should stay disabled until user clicks Enable Edit)
     try { console.debug('[region-filter] initializing...'); } catch(e) {}
     initializeRegionOptions();
-    enableRegionSelect();
 
     // Handle parish changes
     $(document).on('change', '.addressParish, #State', function() {
         try { console.debug('[region-filter] parish changed to:', $(this).val()); } catch(e) {}
         updateRegionVisibility();
-        enableRegionSelect();
+        // do NOT auto-enable the Region select here; enabling is controlled by the 'Enable Edit' button
     });
 });
