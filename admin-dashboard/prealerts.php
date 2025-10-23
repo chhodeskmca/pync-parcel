@@ -26,6 +26,7 @@
 	<!-- custom css -->
     <link rel="stylesheet" href="../user-dashboard/assets/css/custom.css" />
     <link rel="stylesheet" href="assets/css/admin.css" />
+    <link rel="stylesheet" href="assets/css/notifications.css" />
   </head>
   <body>
     <div class="wrapper admin pre-alerts">
@@ -314,6 +315,7 @@
                 <th>Tracking</th>
                 <th>Courier</th>
                 <th>Description</th>
+                <th>Store</th>
                 <th>Type</th>
                 <th>Weight</th>
                 <th>Value</th>
@@ -345,6 +347,7 @@
 									<td><?php echo $rows['tracking_number']; ?></td>
 									<td><?php echo $rows['courier_company']; ?></td>
 									<td><?php echo $rows['describe_package']; ?></td>
+                  <td> <span class="store-value"><?php echo !empty($rows['merchant']) ? htmlspecialchars($rows['merchant']) : (!empty($row['store']) ? htmlspecialchars($row['store']) : ''); ?></span> </td>
                                     <td> <span class="type_label">Pre-alert</span> </td>
 									<td><span style="border: 1px solid #ddd;  padding: 1px;">N/A</span></td>
                                     <td> <span class="item_value">$<?php echo $rows['value_of_package']; ?></span></td>

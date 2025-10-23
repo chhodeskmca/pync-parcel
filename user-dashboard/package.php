@@ -22,6 +22,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
   <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
   <!-- custom css -->
   <link rel="stylesheet" href="assets/css/custom.css" />
+  <link rel="stylesheet" href="assets/css/notifications.css" />
 </head>
 
 <body>
@@ -248,9 +249,9 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
         <div class="page-inner">
           <?php
           if (isset($_SESSION['message'])) {
-            $message_type = $_SESSION['message_type'] ?? 'info';
+            $message_type = $_SESSION['message_type'] ?? 'black';
             $message      = $_SESSION['message'];
-            echo "<div class='alert alert-{$message_type} mt-3' role='alert'>{$message}</div>";
+            echo "<div class='alert alert-{$message_type} notification-warehouse mt-3' role='alert'>{$message}</div>";
             unset($_SESSION['message']);
             unset($_SESSION['message_type']);
           }
@@ -276,54 +277,54 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                 // Build queries for union
                 $queries = [];
                 $count_queries = [];
-                
+
                 // First, get all tracking numbers from pre_alert table for this user
                 $prealert_tracking_numbers = [];
                 $prealert_query = "SELECT tracking_number FROM pre_alert WHERE user_id = $user_id";
                 $prealert_result = mysqli_query($conn, $prealert_query);
                 if ($prealert_result) {
-                    while ($row = mysqli_fetch_assoc($prealert_result)) {
-                        $prealert_tracking_numbers[] = "'" . mysqli_real_escape_string($conn, $row['tracking_number']) . "'";
-                    }
+                  while ($row = mysqli_fetch_assoc($prealert_result)) {
+                    $prealert_tracking_numbers[] = "'" . mysqli_real_escape_string($conn, $row['tracking_number']) . "'";
+                  }
                 }
-                
+
                 if ($type_filter == 'warehouse' || $type_filter == 'all') {
-                    $where = "WHERE user_id = $user_id";
-                    
-                    // Exclude tracking numbers that exist in pre_alert table
-                    if (!empty($prealert_tracking_numbers)) {
-                        $where .= " AND tracking_number NOT IN (" . implode(',', $prealert_tracking_numbers) . ")";
+                  $where = "WHERE user_id = $user_id";
+
+                  // Exclude tracking numbers that exist in pre_alert table
+                  if (!empty($prealert_tracking_numbers)) {
+                    $where .= " AND tracking_number NOT IN (" . implode(',', $prealert_tracking_numbers) . ")";
+                  }
+
+                  if ($status_filter) {
+                    // Map filter to effective statuses
+                    $effective_statuses = [];
+                    if ($status_filter == 'Received at Warehouse') {
+                      $effective_statuses = ['Received at Origin', 'At Sorting Facility', 'Received at Warehouse'];
+                    } elseif ($status_filter == 'In transit to Jamaica') {
+                      $effective_statuses = ['In Transit', 'Shipped', 'In Transit to Jamaica'];
+                    } elseif ($status_filter == 'Undergoing Customs Clearance') {
+                      $effective_statuses = ['Processing at Customs', 'Undergoing Customs Clearance'];
+                    } elseif ($status_filter == 'Ready for Delivery Instructions') {
+                      $effective_statuses = ['Ready for Pickup', 'Out for Delivery', 'Scheduled for Delivery', 'Ready for Delivery Instructions'];
+                    } elseif ($status_filter == 'Delivered') {
+                      $effective_statuses = ['Delivered'];
                     }
-                    
-                    if ($status_filter) {
-                        // Map filter to effective statuses
-                        $effective_statuses = [];
-                        if ($status_filter == 'Received at Warehouse') {
-                            $effective_statuses = ['Received at Origin', 'At Sorting Facility', 'Received at Warehouse'];
-                        } elseif ($status_filter == 'In transit to Jamaica') {
-                            $effective_statuses = ['In Transit', 'Shipped', 'In Transit to Jamaica'];
-                        } elseif ($status_filter == 'Undergoing Customs Clearance') {
-                            $effective_statuses = ['Processing at Customs', 'Undergoing Customs Clearance'];
-                        } elseif ($status_filter == 'Ready for Delivery Instructions') {
-                            $effective_statuses = ['Ready for Pickup', 'Out for Delivery', 'Scheduled for Delivery', 'Ready for Delivery Instructions'];
-                        } elseif ($status_filter == 'Delivered') {
-                            $effective_statuses = ['Delivered'];
-                        }
-                        if (!empty($effective_statuses)) {
-                            $status_list = "'" . implode("','", $effective_statuses) . "'";
-                            $where .= " AND COALESCE(tracking_progress, status) IN ($status_list)";
-                        }
+                    if (!empty($effective_statuses)) {
+                      $status_list = "'" . implode("','", $effective_statuses) . "'";
+                      $where .= " AND COALESCE(tracking_progress, status) IN ($status_list)";
                     }
-                    
-                    // include user_id (PYNC ID) so we can display it in the listing
-                    $queries[] = "SELECT 'warehouse' as type, tracking_number, tracking_name AS courier_company, weight, store, invoice_total as package_value, describe_package, created_at, user_id FROM packages $where";
-                    $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
+                  }
+
+                  // include user_id (PYNC ID) so we can display it in the listing
+                  $queries[] = "SELECT 'warehouse' as type, tracking_number, tracking_name AS courier_company, weight, store, invoice_total as package_value, describe_package, created_at, user_id FROM packages $where";
+                  $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
                 }
-                
+
                 if ($type_filter == 'prealert' || $type_filter == 'all') {
-                    $where = "WHERE user_id = $user_id";
-                    $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at, user_id FROM pre_alert $where";
-                    $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
+                  $where = "WHERE user_id = $user_id";
+                  $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at, user_id FROM pre_alert $where";
+                  $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
                 }
 
                 // Count total (defensive)
@@ -363,8 +364,8 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
 
                 <?php if (!$result || mysqli_num_rows($result) == 0) { ?>
                   <div class="card-body">
-                    <div class="alert alert-info">
-                      No packages found. 
+                    <div class="alert notification-warehouse">
+                      No packages found.
                       <?php if ($type_filter == 'prealert') { ?>
                         <a href="createprealert.php" class="alert-link">Create a pre-alert</a> to track your incoming packages.
                       <?php } elseif ($type_filter == 'warehouse') { ?>
@@ -379,7 +380,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                     <div class="table-responsive">
                       <table id="mypackages" class="table mb-0">
                         <thead class="thead-light">
-                            <tr>
+                          <tr>
                             <th>Tracking</th>
                             <th>PYNC ID</th>
                             <!-- <th>Type</th> -->
@@ -512,7 +513,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
         window.location.href = url.toString();
       }
     </script>
-    
+
 </body>
 
 </html>

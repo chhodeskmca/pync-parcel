@@ -1,0 +1,28 @@
+/* Custom notification styling */
+.notification {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.notification-warehouse {
+  border-left: 4px solid #000 !important;
+  /* Black accent for warehouse notifications */
+}
+
+.notification-prealert {
+  border-left: 4px solid #000 !important;
+  /* Black accent for pre-alert notifications */
+}
+
+/* Store value display */
+.store-value {
+  display: inline-block;
+}
+
+.store-value:empty::before {
+  content: 'N/A';
+  color: #666;
+}

@@ -425,7 +425,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                           <th>Tracking Name</th>
                                           <th>Type</th>
                                           <th>Description</th>
-                                          <th>Customer</th>
+                                          <!-- <th>Customer</th> -->
                                           <th>Store</th>
                                           <th>Weight</th>
                                           <th>Created at</th>
@@ -445,7 +445,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                           <td><?php echo $rows['tracking_name'] ? ucfirst($rows['tracking_name']) : 'N/A'; ?></td>
                                           <td><?php echo $rows['package_type']; ?></td>
                                           <td><?php echo $rows['describe_package']; ?></td>
-                                          <td> <span class="customer_name"><?php echo $_REQUEST['user_name']; ?></span> </td>
+                                          <!-- <td> <span class="customer_name"><?php echo $_REQUEST['user_name']; ?></span> </td> -->
                                           <td>
                                             <?php
                                             // Try to show a store field if present, otherwise fall back to branch or user's region

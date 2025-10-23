@@ -67,6 +67,7 @@
     <!-- custom css -->
     <link rel="stylesheet" href="../user-dashboard/assets/css/custom.css" />
     <link rel="stylesheet" href="assets/css/admin.css" />
+    <link rel="stylesheet" href="assets/css/notifications.css" />
 </head>
 
 <body>
@@ -328,7 +329,7 @@
                                         session_start();
                                     }
                                     if (isset($_SESSION['message'])) {
-                                        $message_type = $_SESSION['message_type'] ?? 'info';
+                                        $message_type = $_SESSION['message_type'] ?? 'black';
                                         $message      = $_SESSION['message'];
                                         echo "<div class='alert alert-{$message_type} mt-3' role='alert'>{$message}</div>";
                                         unset($_SESSION['message']);

@@ -139,6 +139,12 @@
         if (! empty($courier_charge)) {
             $updates[] = "invoice_total = '" . floatval($courier_charge) . "'";
         }
+        if (isset($_POST['charge_amount'])) {
+            $charge_amount = filter_var($_POST['charge_amount'], FILTER_VALIDATE_FLOAT);
+            if ($charge_amount !== false) {
+                $updates[] = "charge_amount = '" . $charge_amount . "'";
+            }
+        }
         if (! empty($tracking_progress)) {
             // Validate tracking_progress against allowed steps and sequence
             $current_step_index = array_search($package['tracking_progress'], $tracking_steps);
@@ -214,6 +220,7 @@
 	<!-- custom css -->
     <link rel="stylesheet" href="../user-dashboard/assets/css/custom.css" />
     <link rel="stylesheet" href="assets/css/admin.css" />
+    <link rel="stylesheet" href="assets/css/notifications.css" />
   </head>
   <body>
     <div class="wrapper admin trackingdetails">
@@ -537,24 +544,19 @@
 						   <h2 style="color:#222; font-family:avenir-light !important;text-align: center;margin-top: 30px;margin-bottom: 16px;"> No invoice attached </h2>
 						<?php endif; ?>
 							<div>
-								<div class="d-flex  justify-content-center" style="cursor:pointer;" onclick="document.getElementById('invoice_file').click();">
+								<div class="d-flex  justify-content-center" style="cursor:pointer;">
 								   <h3>Click here to upload invoice</h3>
 								   <p>Please upload an invoice to avoid any delays in processing at customs</p>
 									<img id="selectedImage" src="assets/img/cloud-computing.png"
 									alt="example placeholder" />
 								</div>
-								<form action="" method="POST" enctype="multipart/form-data" id="invoiceUploadForm" style="display:none;">
-									<input type="file" name="invoice_file" id="invoice_file" accept=".pdf,.png,.jpg,.jpeg" onchange="document.getElementById('invoiceUploadForm').submit();" />
-									<input type="hidden" name="update_package" value="1" />
-									<input type="hidden" name="courier_charge" value="<?php echo htmlspecialchars($package['invoice_total'] ?? ''); ?>" />
-									<input type="hidden" name="tracking_progress" value="<?php echo htmlspecialchars($package['tracking_progress'] ?? ''); ?>" />
-									<input type="hidden" name="tracking_date" value="<?php echo date('Y-m-d', strtotime($package['created_at'])); ?>" />
-								</form>
+								<!-- Hint: file upload is handled via the Update Shipment modal below. The modal contains the
+									 file input named "invoice_file" so admin can set charge, status and upload in one request. -->
 								<p class="file_Supported"><span>Supported: </span> PDF, PNG or JPG (MAX. 10MB)</p>
-							    <div style="display:none" class="alert alert-warning alert-dismissible fade     show" role="alert">
+								<div style="display:none" class="alert alert-warning alert-dismissible fade     show" role="alert">
 								  <strong style="color: red;"></strong>
 								  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-							    </div>
+								</div>
 							</div>
 						</div>
 					<!-- <div class="package-details">
@@ -708,14 +710,17 @@
 				  <span aria-hidden="true"><i class="fa fa-close"></i></span>
 				</button>
 			  </div>
-			  <div class="modal-body">
-			    <form action="" method="POST">
-					    <input type="hidden" name="update_package" value="1">
-					    <div class="form-group change-value">
-							  <label for="courier_charge">Courier charge<span class="mandatory_field">*</span> </label>
-							  <input placeholder="e.g. $20"  type="number" class="form-control" id="courier_charge" name="courier_charge" value="<?php echo htmlspecialchars($package['invoice_total'] ?? ''); ?>"
-							  />
-						</div>
+		  <div class="modal-body">
+		    <form action="" method="POST" enctype="multipart/form-data">
+				<input type="hidden" name="update_package" value="1">
+				<div class="form-group change-value">
+					<label for="courier_charge">Courier charge<span class="mandatory_field">*</span></label>
+					<input placeholder="e.g. 20.00"  type="number" step="0.01" class="form-control" id="courier_charge" name="courier_charge" value="<?php echo htmlspecialchars($package['invoice_total'] ?? ''); ?>" required />
+				</div>
+                <div class="form-group mt-3">
+                    <label for="charge_amount">Package Charge Amount<span class="mandatory_field">*</span></label>
+                    <input placeholder="e.g. 50.00" type="number" step="0.01" class="form-control" id="charge_amount" name="charge_amount" value="<?php echo htmlspecialchars($package['charge_amount'] ?? ''); ?>" required />
+				</div>
                         <div class="form-group">
 						  <label for="tracking_progress">Tracking progress<span class="mandatory_field">*</span></label>
 							  <select   class="form-select AddressType" id="tracking_progress" name="tracking_progress">
@@ -734,6 +739,13 @@
 						   min="<?php echo date('Y-m-d', strtotime('-2 days')); ?>"
 							  />
 					   </div>
+							  <div class="form-group mt-3">
+									<label for="invoice_file_modal">Invoice (upload/replace)</label>
+									<?php if (! empty($package['invoice_file'])): ?>
+										<div class="mb-2"><a target="_blank" href="<?php echo htmlspecialchars($package['invoice_file']); ?>">View current invoice</a></div>
+									<?php endif; ?>
+									<input type="file" name="invoice_file" id="invoice_file_modal" accept=".pdf,.png,.jpg,.jpeg" class="form-control" />
+							  </div>
                      	<div class="card-action d-flex ">
 							   <button type="submit" class="btn my-4 updatePreAltBtn">
 								 Update
@@ -829,6 +841,63 @@
 
 			 }
 		}
+</script>
+
+<script type="text/javascript">
+	// When the invoice area is clicked, open the update modal and focus the file input
+	document.addEventListener('DOMContentLoaded', function() {
+		var invoiceArea = document.querySelector('.invoice .d-flex');
+		if (!invoiceArea) return;
+
+		function focusInvoiceInputSoon() {
+			setTimeout(function() {
+				var fi = document.getElementById('invoice_file_modal');
+				if (fi) fi.focus();
+			}, 300);
+		}
+
+		invoiceArea.addEventListener('click', function(e) {
+			var modalEl = document.getElementById('ShipmenUpdating');
+			if (!modalEl) return;
+
+			// 1) Try Bootstrap 5 native API
+			if (window.bootstrap && typeof bootstrap.Modal === 'function') {
+				try {
+					var bsModal = new bootstrap.Modal(modalEl);
+					bsModal.show();
+					modalEl.addEventListener('shown.bs.modal', focusInvoiceInputSoon, { once: true });
+					return;
+				} catch (err) {
+					// continue to next fallback
+				}
+			}
+
+			// 2) Try jQuery + Bootstrap (older integration)
+			if (window.jQuery) {
+				try {
+					var $modal = jQuery(modalEl);
+					if (typeof $modal.modal === 'function') {
+						$modal.modal('show');
+						$modal.one('shown.bs.modal', focusInvoiceInputSoon);
+						return;
+					}
+				} catch (err) {
+					// continue to next fallback
+				}
+			}
+
+			// 3) Last-resort fallback: manually reveal modal markup
+			try {
+				modalEl.classList.add('show');
+				modalEl.style.display = 'block';
+				modalEl.setAttribute('aria-modal', 'true');
+				modalEl.removeAttribute('aria-hidden');
+				focusInvoiceInputSoon();
+			} catch (err) {
+				console.error('Failed to open modal programmatically', err);
+			}
+		});
+	});
 </script>
 
   </body>
