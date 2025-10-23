@@ -1,25 +1,82 @@
 <?php
 session_start();
 
-require_once __DIR__ . '/vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// Diagnostics: log to a dedicated file to help troubleshoot "white screen" issues on production
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+$debugLog = __DIR__ . '/logs/sendmail_debug.log';
+function sendmail_log($msg)
+{
+  global $debugLog;
+  $line = date('[Y-m-d H:i:s] ') . $msg . PHP_EOL;
+  // Append to debug log (best-effort)
+  @file_put_contents($debugLog, $line, FILE_APPEND | LOCK_EX);
+  // Also send to PHP error log
+  error_log($msg);
+}
+
+// Ensure composer autoload is present — require_once would fatal and produce a white screen if missing.
+$autoload = __DIR__ . '/vendor/autoload.php';
+if (!file_exists($autoload)) {
+  sendmail_log("FATAL: missing $autoload");
+  http_response_code(500);
+  echo "Server error (missing dependencies). Check logs.";
+  exit;
+}
+include_once $autoload;
+
+// Load environment variables if phpdotenv is available. Use safeLoad to avoid throwing when .env missing.
+if (class_exists('Dotenv\\Dotenv')) {
+  try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    if (method_exists($dotenv, 'safeLoad')) {
+      $dotenv->safeLoad();
+    } else {
+      $dotenv->load();
+    }
+  } catch (Throwable $e) {
+    sendmail_log('Dotenv load error: ' . $e->getMessage());
+  }
+} else {
+  sendmail_log('Notice: vlucas/phpdotenv not available; skipping .env load');
+}
 
 include 'config.php';
 
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
-require 'phpmailer/src/Exception.php';
-require 'phpmailer/src/PHPMailer.php';
-require 'phpmailer/src/SMTP.php';
+// Ensure PHPMailer files exist before requiring them
+$phpmailerDir = __DIR__ . '/phpmailer/src';
+foreach (['Exception.php', 'PHPMailer.php', 'SMTP.php'] as $f) {
+  $path = $phpmailerDir . DIRECTORY_SEPARATOR . $f;
+  if (!file_exists($path)) {
+    sendmail_log("FATAL: missing PHPMailer file: $path");
+    http_response_code(500);
+    echo "Server error (missing mailer files). Check logs.";
+    exit;
+  }
+}
+
+require_once $phpmailerDir . '/Exception.php';
+require_once $phpmailerDir . '/PHPMailer.php';
+require_once $phpmailerDir . '/SMTP.php';
 
 require_once __DIR__ . '/routes/web.php';
 $routes   = include __DIR__ . '/routes/web.php';
 $base_url = $routes['base_url'];
 
 //Create an instance; passing `true` enables exceptions
-$mail = new PHPMailer(true);
+try {
+  $mail = new PHPMailer(true);
+} catch (Throwable $e) {
+  sendmail_log('PHPMailer init error: ' . $e->getMessage());
+  http_response_code(500);
+  echo "Server error (mailer init). Check logs.";
+  exit;
+}
 //Server settings
 //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
 $mail->isSMTP();                                                                                                       //Send using SMTP
@@ -60,7 +117,7 @@ if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
 								</div>
 							   ";
 
-    $mail->send();
+  $mail->send();
     $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>";
 
     if (isset($_REQUEST['AnotherRequest'])) {
@@ -74,7 +131,7 @@ if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
 
     die();
   } catch (Exception $e) {
-    error_log("Password reset email error: " . $e->getMessage());
+    sendmail_log('Password reset email error: ' . $e->getMessage());
     $_SESSION['message'] = "Something went wrong, please try again";
     header('location: ' . $base_url . 'forgotpwd.php');
     die();
@@ -136,12 +193,15 @@ if (isset($_POST['signUp_email'])) {
 
     $mail->send();
     $_SESSION['message'] = "Registration successful. You can now log in";
-    header('location: ' . $base_url . 'sign-in.php');
+    // safe redirect
+    $target = rtrim($base_url, '/') . '/sign-in.php';
+    header('location: ' . $target);
     die();
   } catch (Exception $e) {
-    error_log("Sign-up email error: " . $e->getMessage());
+    sendmail_log('Sign-up email error: ' . $e->getMessage());
     $_SESSION['message'] = "Something went wrong, please try again";
-    header('location: ' . $base_url . 'forgotpwd.php');
+    $target = rtrim($base_url, '/') . '/forgotpwd.php';
+    header('location: ' . $target);
     die();
   }
 }
