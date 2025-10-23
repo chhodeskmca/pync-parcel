@@ -140,12 +140,30 @@ if (mysqli_query($conn, $sql)) {
 
     //$_SESSION['message'] = "Registration successful. You can now log in";
 
-    $routes = include __DIR__ . '/../routes/web.php';
+  $routes = include __DIR__ . '/../routes/web.php';
 
-    $redirect_url = IS_PRODUCTION ? SIGNUP_REDIRECT_URL_PROD : SIGNUP_REDIRECT_URL_DEV;
-    if (! $redirect_url) {
-      $redirect_url = $routes['sendmail'];
+  // Determine redirect URL (env overrides allowed)
+  $redirect_url = IS_PRODUCTION ? SIGNUP_REDIRECT_URL_PROD : SIGNUP_REDIRECT_URL_DEV;
+  // If redirect URL provided in env, normalize it
+  if (!empty($redirect_url)) {
+    // If redirect url is a relative path (doesn't start with http), make it absolute using base_url
+    if (!preg_match('#^https?://#i', $redirect_url)) {
+      $base = $routes['base_url'] ?? '';
+      // Ensure exactly one slash between base and path
+      $redirect_url = rtrim($base, '/') . '/' . ltrim($redirect_url, '/');
     }
+    // basic safety: if URL does not point to a reachable path on disk and isn't absolute, fallback
+    // (Note: we can't perform remote HTTP checks here reliably, so we fallback only if path points inside our app and file missing)
+    $parsed = parse_url($redirect_url);
+    if (isset($parsed['host']) && $parsed['host'] === ($_SERVER['HTTP_HOST'] ?? '')) {
+      $localPath = __DIR__ . '/..' . ($parsed['path'] ?? '/');
+      if (!file_exists($localPath) && !is_dir($localPath)) {
+        $redirect_url = $routes['sendmail'];
+      }
+    }
+  } else {
+    $redirect_url = $routes['sendmail'];
+  }
     // Use POST redirect to avoid exposing sensitive data in URL
     echo "<form id='redirectForm' action='$redirect_url' method='POST'>
             <input type='hidden' name='first_name' value='$first_name'>

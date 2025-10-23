@@ -1,12 +1,16 @@
 <?php
 // Centralized route definitions and base URL
 
-// Determine base URL dynamically (project root)
-$script_name = $_SERVER['SCRIPT_NAME'];
-$path_parts = explode('/', $script_name);
-$project_root = '/' . $path_parts[1] . '/'; // e.g., /Pync-parcel-source-files/
+// Determine base URL dynamically (project root). Use dirname() which is more reliable across hosts
+$script_name = $_SERVER['SCRIPT_NAME'] ?? '/';
+$project_root = rtrim(dirname($script_name), '/') . '/'; // results like '/' or '/Pync-parcel/'
+// Normalize double-slash case
+if ($project_root === '//') {
+    $project_root = '/';
+}
 // Ensure base URL ends with a trailing slash to avoid accidental concatenation issues
-$base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $project_root;
+$scheme = (isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http'));
+$base_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . $project_root;
 
 // Define routes
 return [
