@@ -4,3 +4,5 @@
 [2025-10-14 06:23:37] [INFO] push_customer_to_warehouse: Saved warehouse_customer_id | Context: {"customer_id":"6","warehouse_customer_id":"4c7de7e1-27b1-4f8e-886b-2907a8614898"}
 [2025-10-16 06:46:35] [INFO] make_api_request: Request successful | Context: {"url":"https:\/\/hello.lyk.bio\/rpc\/public.v1.PublicService\/CreateCourierCustomer","method":"POST","http_code":200}
 [2025-10-16 06:46:35] [INFO] push_customer_to_warehouse: Saved warehouse_customer_id | Context: {"customer_id":"7","warehouse_customer_id":"0e7373d7-c5ab-4ca1-a5cf-300415459e00"}
+[2025-10-23 07:11:43] [INFO] make_api_request: Request successful | Context: {"url":"https:\/\/hello.lyk.bio\/rpc\/public.v1.PublicService\/CreateCourierCustomer","method":"POST","http_code":200}
+[2025-10-23 07:11:43] [INFO] push_customer_to_warehouse: Saved warehouse_customer_id | Context: {"customer_id":"8","warehouse_customer_id":"1f94908a-fbba-4082-90d6-6f767c61680a"}
