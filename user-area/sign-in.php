@@ -29,7 +29,7 @@ if (isset($_POST['login'])) {
             $user_data = json_encode(['id' => $user['id']]);
             $_SESSION['user_id'] = $user_data;
             setcookie('user_id', $user_data, time() + (86400 * 30), "/"); // 30 days
-            $base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME'], 2) . '/';
+            $base_url = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/') . '/';
             if ($user['role_as'] == 1) {
                 $redirect_url = $base_url . 'admin-dashboard/index.php';
             } else {
