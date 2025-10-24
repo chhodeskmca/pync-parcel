@@ -2,6 +2,8 @@
 // initialize session
 session_start();
 include('../config.php'); // database connection
+
+header('Content-Type: application/json');
 if (isset($_REQUEST['user_basic_account_info_btn'])) {
   // User  form input values
   $first_name        =  ltrim(mysqli_real_escape_string($conn, htmlspecialchars($_REQUEST['first_name'])));

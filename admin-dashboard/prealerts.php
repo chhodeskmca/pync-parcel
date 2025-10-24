@@ -538,7 +538,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               showing_PreAlert_for_PreAlert_page: "1",
               Pre_alert_id: Pre_alert_id
             }, function(response) {
-              console.log(response);
+              console.log('Raw response:', response);
 
               try {
                 var jsArray = JSON.parse(response);
@@ -562,6 +562,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                 $('#view_user_information .modal-body').css('opacity', '1');
               } catch (e) {
                 console.error('JSON parse error:', e);
+                console.error('Response was:', response);
                 alertify.error('Failed to load pre-alert details.');
               }
             });
