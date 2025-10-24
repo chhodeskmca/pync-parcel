@@ -540,27 +540,32 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
             }, function(response) {
               console.log('Response:', response);
 
-              if (response.error) {
-                alertify.error(response.error);
-                $('#view_user_information').modal('hide');
-              } else {
-                var describe_package = response['describe_package'];
-                var tracking_number = response['tracking_number'];
-                var value_of_package = response['value_of_package'];
-                var courier_company = response['courier_company'];
-                var invoice = $.trim(response['invoice']);
-                invoice = (invoice === '' || invoice === 'N/A' || invoice === null || invoice === undefined) ? '#' : '../uploaded-file/' + invoice;
+              try {
+                if (response.error) {
+                  alertify.error(response.error);
+                  $('#view_user_information').modal('hide');
+                } else {
+                  var describe_package = response['describe_package'];
+                  var tracking_number = response['tracking_number'];
+                  var value_of_package = response['value_of_package'];
+                  var courier_company = response['courier_company'];
+                  var invoice = $.trim(response['invoice']);
+                  invoice = (invoice === '' || invoice === 'N/A' || invoice === null || invoice === undefined) ? '#' : '../uploaded-file/' + invoice;
 
-                $('.Pre-Alert-details .Description').text(describe_package ? describe_package : 'N/A');
-                $('.Pre-Alert-details .Tracking').text(tracking_number ? tracking_number : 'N/A');
-                $('.Pre-Alert-details .Courier').text(courier_company ? courier_company : 'N/A');
-                $('.Pre-Alert-details .Value').text('$' + (value_of_package && value_of_package !== '' ? value_of_package : 'N/A'));
-                $('.Pre-Alert-details .Customer').text(customer_name ? customer_name : 'N/A');
-                $('.Pre-Alert-details .account_num').text(account_number ? account_number : 'N/A');
-                $('.Pre-Alert-details .Invoice').attr('href', invoice).attr('download', '');
+                  $('.Pre-Alert-details .Description').text(describe_package ? describe_package : 'N/A');
+                  $('.Pre-Alert-details .Tracking').text(tracking_number ? tracking_number : 'N/A');
+                  $('.Pre-Alert-details .Courier').text(courier_company ? courier_company : 'N/A');
+                  $('.Pre-Alert-details .Value').text('$' + (value_of_package && value_of_package !== '' ? value_of_package : 'N/A'));
+                  $('.Pre-Alert-details .Customer').text(customer_name ? customer_name : 'N/A');
+                  $('.Pre-Alert-details .account_num').text(account_number ? account_number : 'N/A');
+                  $('.Pre-Alert-details .Invoice').attr('href', invoice).attr('download', '');
 
-                $('#view_user_information .modal-content').css('background-size', '0px');
-                $('#view_user_information .modal-body').css('opacity', '1');
+                  $('#view_user_information .modal-content').css('background-size', '0px');
+                  $('#view_user_information .modal-body').css('opacity', '1');
+                }
+              } catch (e) {
+                console.error('Error processing response:', e);
+                alertify.error('Failed to load pre-alert details.');
               }
             }).fail(function() {
               alertify.error('Failed to load pre-alert details.');
