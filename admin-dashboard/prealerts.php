@@ -538,15 +538,17 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               showing_PreAlert_for_PreAlert_page: "1",
               Pre_alert_id: Pre_alert_id
             }, function(response) {
-              console.log('Raw response:', response);
+              console.log('Response:', response);
 
-              try {
-                var jsArray = JSON.parse(response);
-                var describe_package = jsArray['describe_package'];
-                var tracking_number = jsArray['tracking_number'];
-                var value_of_package = jsArray['value_of_package'];
-                var courier_company = jsArray['courier_company'];
-                var invoice = $.trim(jsArray['invoice']);
+              if (response.error) {
+                alertify.error(response.error);
+                $('#view_user_information').modal('hide');
+              } else {
+                var describe_package = response['describe_package'];
+                var tracking_number = response['tracking_number'];
+                var value_of_package = response['value_of_package'];
+                var courier_company = response['courier_company'];
+                var invoice = $.trim(response['invoice']);
                 invoice = (invoice === '' || invoice === 'N/A' || invoice === null || invoice === undefined) ? '#' : '../uploaded-file/' + invoice;
 
                 $('.Pre-Alert-details .Description').text(describe_package ? describe_package : 'N/A');
@@ -557,14 +559,11 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                 $('.Pre-Alert-details .account_num').text(account_number ? account_number : 'N/A');
                 $('.Pre-Alert-details .Invoice').attr('href', invoice).attr('download', '');
 
-                //$invoice == '#' ? alertify.success("") : '';
                 $('#view_user_information .modal-content').css('background-size', '0px');
                 $('#view_user_information .modal-body').css('opacity', '1');
-              } catch (e) {
-                console.error('JSON parse error:', e);
-                console.error('Response was:', response);
-                alertify.error('Failed to load pre-alert details.');
               }
+            }).fail(function() {
+              alertify.error('Failed to load pre-alert details.');
             });
           }
 
