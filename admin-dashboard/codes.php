@@ -226,6 +226,7 @@ if (isset($_REQUEST['new_credit_btn'])) {
   } else {
     echo json_encode(['error' => 'Pre-alert not found']);
   }
+  exit; // Ensure no additional output
 }
 
 //================================================== Pre-alert showing for Pre-alert page end  ===============================
