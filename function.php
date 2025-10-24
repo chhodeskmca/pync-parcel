@@ -7,7 +7,7 @@ include('helpers.php');
  if(isset($_COOKIE['user_id'])) {
 
       $user =  json_decode( $_COOKIE['user_id']);
-      $user_id = $user->id;
+      $user_id = is_object($user) ? $user->id : $user;
 
 }
 
@@ -107,8 +107,8 @@ if (!function_exists('timeAgo')) {
             $ago = new DateTime($datetime);
             $diff = $now->diff($ago);
 
-            $diff->w = floor($diff->d / 7);
-            $diff->d -= $diff->w * 7;
+            $weeks = floor($diff->d / 7);
+            $diff->d -= $weeks * 7;
 
             $string = [
                 'y' => 'year',
@@ -120,7 +120,14 @@ if (!function_exists('timeAgo')) {
                 's' => 'second',
             ];
             foreach ($string as $k => &$v) {
-                if ($diff->$k) {
+                if ($k === 'w') {
+                    if ($weeks > 0) {
+                        $v = $weeks . ' ' . $v . ($weeks > 1 ? 's' : '');
+                    } else {
+                        unset($string[$k]);
+                        continue;
+                    }
+                } elseif ($diff->$k) {
                     $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
                 } else {
                     unset($string[$k]);

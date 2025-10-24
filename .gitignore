@@ -13,3 +13,7 @@ vendor/
 
 cache/
 log/
+user-dashboard/cache/
+user-dashboard/log/
+user-dashboard/vendor/
+user-dashboard/uploads/*

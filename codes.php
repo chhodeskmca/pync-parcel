@@ -430,7 +430,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
 //================================================== password updating end=============================== 
 
-//==================================================address type updating start=============================== 
+//==================================================address type updating start===============================
 
 if (isset($_REQUEST['addresType'])) {
 
@@ -448,3 +448,27 @@ if (isset($_REQUEST['addresType'])) {
   };
 }
 //==================================================address type updating end===============================
+
+//================================================== Pre-alert showing for Pre-alert page start ===============================
+if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing_PreAlert_for_PreAlert_page'] == "1") {
+
+     if (!isset($_REQUEST['Pre_alert_id']) || !is_numeric($_REQUEST['Pre_alert_id'])) {
+         echo json_encode(['error' => 'Invalid Pre_alert_id']);
+         exit;
+     }
+     $Pre_alert_id = intval($_REQUEST['Pre_alert_id']);
+     if ($Pre_alert_id <= 0) {
+         echo json_encode(['error' => 'Invalid Pre_alert_id']);
+         exit;
+     }
+     $sql     = "SELECT * FROM pre_alert WHERE id = $Pre_alert_id";
+     $result  = mysqli_query($conn, $sql);
+     if ($result && mysqli_num_rows($result) > 0) {
+         $rows = mysqli_fetch_assoc($result);
+         echo json_encode($rows);
+     } else {
+         echo json_encode(['error' => 'Pre-alert not found']);
+     }
+
+}
+//================================================== Pre-alert showing for Pre-alert page end  ===============================
