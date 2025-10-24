@@ -278,23 +278,23 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                 $queries = [];
                 $count_queries = [];
 
-                // First, get all tracking numbers from pre_alert table for this user
-                $prealert_tracking_numbers = [];
-                $prealert_query = "SELECT tracking_number FROM pre_alert WHERE user_id = $user_id";
-                $prealert_result = mysqli_query($conn, $prealert_query);
-                if ($prealert_result) {
-                  while ($row = mysqli_fetch_assoc($prealert_result)) {
-                    $prealert_tracking_numbers[] = "'" . mysqli_real_escape_string($conn, $row['tracking_number']) . "'";
-                  }
-                }
+                // // First, get all tracking numbers from pre_alert table for this user
+                // $prealert_tracking_numbers = [];
+                // $prealert_query = "SELECT tracking_number FROM pre_alert WHERE user_id = $user_id";
+                // $prealert_result = mysqli_query($conn, $prealert_query);
+                // if ($prealert_result) {
+                //   while ($row = mysqli_fetch_assoc($prealert_result)) {
+                //     $prealert_tracking_numbers[] = "'" . mysqli_real_escape_string($conn, $row['tracking_number']) . "'";
+                //   }
+                // }
 
                 if ($type_filter == 'warehouse' || $type_filter == 'all') {
                   $where = "WHERE user_id = $user_id";
 
-                  // Exclude tracking numbers that exist in pre_alert table
-                  if (!empty($prealert_tracking_numbers)) {
-                    $where .= " AND tracking_number NOT IN (" . implode(',', $prealert_tracking_numbers) . ")";
-                  }
+                  // // Exclude tracking numbers that exist in pre_alert table
+                  // if (!empty($prealert_tracking_numbers)) {
+                  //   $where .= " AND tracking_number NOT IN (" . implode(',', $prealert_tracking_numbers) . ")";
+                  // }
 
                   if ($status_filter) {
                     // Map filter to effective statuses
@@ -317,13 +317,13 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                   }
 
                   // include user_id (PYNC ID) so we can display it in the listing
-                  $queries[] = "SELECT 'warehouse' as type, tracking_number, tracking_name AS courier_company, weight, store, invoice_total as package_value, describe_package, created_at, user_id FROM packages $where";
-                  $count_queries[] = "SELECT COUNT(*) as cnt FROM packages $where";
+                  $queries[] = "SELECT DISTINCT 'warehouse' as type, p.tracking_number, p.tracking_name AS courier_company, p.weight, COALESCE(p.store, (SELECT merchant FROM pre_alert WHERE tracking_number = p.tracking_number AND user_id = $user_id LIMIT 1)) as store, p.invoice_total as package_value, p.describe_package, p.created_at, p.user_id FROM packages p $where";
+                  $count_queries[] = "SELECT COUNT(DISTINCT tracking_number) as cnt FROM packages p $where";
                 }
 
                 if ($type_filter == 'prealert' || $type_filter == 'all') {
                   $where = "WHERE user_id = $user_id";
-                  $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, NULL as store, value_of_package as package_value, describe_package, created_at, user_id FROM pre_alert $where";
+                  $queries[] = "SELECT 'prealert' as type, tracking_number, courier_company, NULL as weight, merchant as store, value_of_package as package_value, describe_package, created_at, user_id FROM pre_alert $where";
                   $count_queries[] = "SELECT COUNT(*) as cnt FROM pre_alert $where";
                 }
 

@@ -438,8 +438,8 @@
          <span class="heading">Value of Package</span>
          <span class="value">$<?php echo number_format($package['value_of_package'] ?? 0, 2); ?></span>
       </div>
-      <!-- Update form: charge amount, status, invoice upload -->
-      <form method="POST" enctype="multipart/form-data" class="mt-3">
+      <!-- Update form: charge amount, status, invoice upload (ADMIN_ONLY) -->
+      <!-- <form method="POST" enctype="multipart/form-data" class="mt-3">
         <div class="mb-2">
           <label class="form-label">Charge Amount (USD)</label>
           <input type="text" name="courier_charge" class="form-control" value="<?php echo isset($package['invoice_total']) ? htmlspecialchars(number_format($package['invoice_total'], 2)) : ''; ?>" placeholder="Enter charge amount or leave blank to use calculated value">
@@ -461,9 +461,9 @@
           <input type="file" name="invoice_file" accept=".pdf,.png,.jpg,.jpeg" class="form-control" />
         </div>
         <div>
-          <button type="submit" name="update_package" class="btn btn-primary">Save</button>
+          <button type="submit" name="update_package" class="update-package btn btn-primary">Save</button>
         </div>
-      </form>
+      </form> -->
 			<div class="Tracking-value">
 				 <span class="heading"> Package Content</span>
 				 <span class="value"><?php echo htmlspecialchars($package['describe_package'] ?? 'N/A'); ?></span>

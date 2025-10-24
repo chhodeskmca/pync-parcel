@@ -768,7 +768,7 @@
 									<input type="file" name="invoice_file" id="invoice_file_modal" accept=".pdf,.png,.jpg,.jpeg" class="form-control" />
 							  </div>
                      	<div class="card-action d-flex ">
-							   <button type="submit" class="btn my-4 updatePreAltBtn">
+							   <button type="submit" class="btn my-4 updatePreAltBtn update-package">
 								 Update
 							   </button>
 						</div>

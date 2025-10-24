@@ -1712,3 +1712,8 @@ a {
   background: #d1ecf1;
   border-bottom-color: #bee5eb;
 }
+
+button.update-package.btn.btn-primary {
+  background: #e87947 !important;
+  border-color: #e87947 !important;
+}

@@ -196,7 +196,8 @@ header .con-icon {
 .btn-ship {
   display: inline-block;
   background: #F8EFE3;
-  color: #222; /* dark text to match desktop */
+  color: #222;
+  /* dark text to match desktop */
   font-size: 20px;
   text-transform: none;
   font-weight: 700;
@@ -206,13 +207,17 @@ header .con-icon {
   border: none;
   text-decoration: none;
 }
-.btn-ship:hover { opacity: 0.95; }
+
+.btn-ship:hover {
+  opacity: 0.95;
+}
 
 @media only screen and (max-width: 767px) {
   .btn-ship {
     font-size: 18px;
     padding: 12px 36px;
-    color: #222; /* ensure mobile uses same dark text */
+    color: #222;
+    /* ensure mobile uses same dark text */
   }
 }
 
@@ -1964,4 +1969,9 @@ footer {
     color: #e87947 !important;
     text-decoration: underline;
   }
+}
+
+button.update-package.btn.btn-primary {
+  background: #e87947 !important;
+  border-color: #e87947 !important;
 }

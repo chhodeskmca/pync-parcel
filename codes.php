@@ -250,13 +250,13 @@ if (isset($_REQUEST['Pre-alert'])) {
 
   if (mysqli_query($conn,  $sql)) {
 
-    // Insert into packages table only if tracking_number doesn't exist
-    $check_sql = "SELECT id FROM packages WHERE user_id = $user_id AND tracking_number = '$tracking_number'";
-    $check_result = mysqli_query($conn, $check_sql);
-    if (mysqli_num_rows($check_result) == 0) {
-      $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, tracking_name, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$courier_company', '$describe_package', 0.00, $ValueofPackage, '$merchant', NOW())";
-      mysqli_query($conn, $sql_package);
-    }
+    // // Insert into packages table only if tracking_number doesn't exist
+    // $check_sql = "SELECT id FROM packages WHERE user_id = $user_id AND tracking_number = '$tracking_number'";
+    // $check_result = mysqli_query($conn, $check_sql);
+    // if (mysqli_num_rows($check_result) == 0) {
+    //   $sql_package = "INSERT INTO packages (user_id, tracking_number, courier_company, tracking_name, describe_package, weight, value_of_package, store, created_at) VALUES ($user_id, '$tracking_number', '$courier_company', '$courier_company', '$describe_package', 0.00, $ValueofPackage, '$merchant', NOW())";
+    //   mysqli_query($conn, $sql_package);
+    // }
 
     if ($File != '') {
       if (move_uploaded_file($fileTmp, "uploaded-file/$File")) {
@@ -376,9 +376,9 @@ if (isset($_REQUEST['updatePreAltBtn'])) {
 
   $sql = "UPDATE pre_alert SET tracking_number = '$tracking_number', value_of_package =  $value_of_package, courier_company = '$courier_company', merchant = '$merchant', describe_package ='$describe_package', invoice = '$File' WHERE id = $Pre_alert_id";
   if (mysqli_query($conn, $sql)) {
-    // Update corresponding package record
-    $sql_update_package = "UPDATE packages SET tracking_number = '$tracking_number', courier_company = '$courier_company', tracking_name = '$courier_company', describe_package = '$describe_package', value_of_package = $value_of_package, store = '$merchant' WHERE user_id = $user_id AND tracking_number = '$old_tracking_number'";
-    mysqli_query($conn, $sql_update_package);
+    // // Update corresponding package record
+    // $sql_update_package = "UPDATE packages SET tracking_number = '$tracking_number', courier_company = '$courier_company', tracking_name = '$courier_company', describe_package = '$describe_package', value_of_package = $value_of_package, store = '$merchant' WHERE user_id = $user_id AND tracking_number = '$old_tracking_number'";
+    // mysqli_query($conn, $sql_update_package);
 
     if ($_FILES['file']['name'] != '') {
 
