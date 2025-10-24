@@ -1371,8 +1371,16 @@ footer {
   background: #fff;
   margin: 10px 0px;
 }
-
-
+.sticky-side-block{
+  position: sticky;
+  top: 110px;
+}
+.help-us-sec *{
+  text-align: left !important;
+}
+.help-us-sec{
+  margin-top: 100px;
+}
 /* Typical Device Breakpoints */
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (min-width: 200px) and (max-width: 767px) {
@@ -1974,4 +1982,7 @@ footer {
 button.update-package.btn.btn-primary {
   background: #e87947 !important;
   border-color: #e87947 !important;
+}
+.row.gy-3.gy-md-4.gy-lg-0.align-items-lg-center {
+    justify-content: center;
 }
