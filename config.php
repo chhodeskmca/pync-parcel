@@ -74,3 +74,4 @@ $conn = mysqli_connect($hostName, $userName, $userPassword, $dbName);
 if (! $conn) {
     die("<h1 style=text-align: center'> Error: establishing A Databse connection </h1>");
 }
+mysqli_set_charset($conn, 'utf8mb4');

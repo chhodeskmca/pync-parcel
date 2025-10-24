@@ -451,9 +451,15 @@ if (isset($_REQUEST['addresType'])) {
 
 //================================================== Pre-alert showing for Pre-alert page start ===============================
 if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing_PreAlert_for_PreAlert_page'] == "1") {
-  header('Content-Type: application/json');
+  // Clean any previous output
+  if (ob_get_level()) {
+    ob_clean();
+  }
   ob_start();
-     error_log("showing_PreAlert_for_PreAlert_page called with Pre_alert_id: " . ($_REQUEST['Pre_alert_id'] ?? 'not set'));
+
+  header('Content-Type: application/json');
+  error_log("Starting pre-alert request for id: " . ($_REQUEST['Pre_alert_id'] ?? 'not set'));
+
      if (!isset($_REQUEST['Pre_alert_id']) || !is_numeric($_REQUEST['Pre_alert_id'])) {
          error_log("Invalid Pre_alert_id: " . ($_REQUEST['Pre_alert_id'] ?? 'not set'));
          ob_end_clean();
@@ -480,9 +486,35 @@ if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing
      error_log("Query returned " . $num_rows . " rows");
      if ($num_rows > 0) {
          $rows = mysqli_fetch_assoc($result);
-         error_log("Found pre-alert rows: " . var_export($rows, true));
-         $json = json_encode($rows);
-         error_log("JSON encoded: " . $json);
+         error_log("Raw rows: " . var_export($rows, true));
+
+         // Sanitize data to ensure valid UTF-8 and handle binary data
+         $sanitized = [];
+         foreach ($rows as $key => $value) {
+           if (is_string($value)) {
+             // Handle specific problematic fields
+             if ($key === 'weight' && strpos($value, '\x97') !== false) {
+               $sanitized[$key] = 'N/A'; // Replace binary weight with N/A
+             } elseif (preg_match('/[\x00-\x1F\x7F-\x9F]/', $value)) {
+               $sanitized[$key] = 'N/A'; // Replace any binary data with N/A
+             } else {
+               $sanitized[$key] = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+             }
+           } else {
+             $sanitized[$key] = $value;
+           }
+         }
+         error_log("Sanitized rows: " . var_export($sanitized, true));
+
+         $json = json_encode($sanitized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+         if ($json === false) {
+             error_log("json_encode failed: " . json_last_error_msg());
+             ob_end_clean();
+             echo json_encode(['error' => 'JSON encoding failed']);
+             exit;
+         }
+         error_log("JSON encoded length: " . strlen($json));
+         error_log("Final JSON: " . $json);
          ob_end_clean();
          echo $json;
      } else {
