@@ -366,7 +366,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                   <div class="col-md-3 col-lg-2">
 
                     <p>Delivery Region</p>
-                    <h3><?php echo $user_row['region'] ?? 'Portland (Knutsford)'; ?></h3>
+                    <h3><?php echo ($user_row['region'] === 'NA') ? '' : ($user_row['region'] ?? 'Portland (Knutsford)'); ?></h3>
                   </div>
                   <div class="package-details customerview">
                     <div class="card">
@@ -471,10 +471,16 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                             </ul>
                                           </td>
                                           <td>
-                                            <?php $ps = $rows['payment_status'] ?? 'Pending';
-                                            $ps_class = 'ps-unknown';
-                                            if (strtolower($ps) === 'paid') $ps_class = 'ps-paid';
-                                            if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
+                                            <?php
+                                            if (isset($rows['package_type']) && strtolower($rows['package_type']) === 'pre-alert') {
+                                              $ps = 'N/A';
+                                              $ps_class = 'ps-na';
+                                            } else {
+                                              $ps = $rows['payment_status'] ?? 'Pending';
+                                              $ps_class = 'ps-unknown';
+                                              if (strtolower($ps) === 'paid') $ps_class = 'ps-paid';
+                                              if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
+                                            }
                                             ?>
                                             <span class="ps-label <?php echo $ps_class; ?>"><?php echo htmlspecialchars($ps); ?></span>
                                             <?php if (isset($rows['package_type']) && strtolower($rows['package_type']) !== 'pre-alert') { ?>
