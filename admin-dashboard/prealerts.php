@@ -352,10 +352,10 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                             <td>
                               <ul class="action-list">
                                 <li>
-                                  <a
-                                    data-Pre_alert_id='<?php echo $rows['id']; ?>'
-                                    data-customer_name='<?php echo $customer_name; ?>'
-                                    data-account_number='<?php echo $account_number; ?>'
+                              <a
+                                    data-prealert-id='<?php echo $rows['id']; ?>'
+                                    data-customer-name='<?php echo $customer_name; ?>'
+                                    data-account-number='<?php echo $account_number; ?>'
                                     class="view_user_information"
                                     href="#">
                                     <i class="fa-solid fa-eye"></i>
@@ -446,8 +446,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="border-0 modal-header justify-content-end">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
               </div>
               <div class="modal-body">
                 <div class="row Pre-Alert-details">
@@ -524,9 +523,9 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
           $('#view_user_information .modal-content').css('background-size', '50px');
           $('#view_user_information .modal-body').css('opacity', '0');
 
-          var Pre_alert_id = $(this).data('Pre_alert_id');
-          var customer_name = $(this).data('customer_name');
-          var account_number = $(this).data('account_number');
+          var Pre_alert_id = $(this).data('prealert-id');
+          var customer_name = $(this).data('customer-name');
+          var account_number = $(this).data('account-number');
 
           setTimeout(function() {
 
