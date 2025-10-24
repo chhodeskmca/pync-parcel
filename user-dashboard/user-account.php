@@ -609,11 +609,11 @@ if (isset($_REQUEST['pwd_update'])) {
                               </div>
                               <div class="form-group">
                                 <label for="RegionAddress">Region<span class="mandatory_field">*</span></label>
+                                <?php $user_region = user_account_information()['region'] ?? ''; ?>
                                 <select required disabled name="Region" class="form-select RegionAddress addressRegion"
-                                  id="RegionAddress" data-current="<?php echo htmlspecialchars($user_region); ?>">
+                                  id="RegionAddress" data-current="<?php echo htmlspecialchars($user_region); ?>" value="<?php echo htmlspecialchars($user_region); ?>">
                                   <option value="">Choose...</option>
                                   <?php
-                                  $user_region = user_account_information()['region'] ?? '';
                                   $regions = [
                                     'Kingston',
                                     'Half-Way Tree',

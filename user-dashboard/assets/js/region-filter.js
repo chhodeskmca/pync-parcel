@@ -71,6 +71,10 @@ $(document).ready(function() {
 
         // Set options and update visibility
         $region.html(newOptions);
+        // Set the current region value if it exists
+        if (currentRegion) {
+            $region.val(currentRegion);
+        }
         updateRegionVisibility();
     }
 
