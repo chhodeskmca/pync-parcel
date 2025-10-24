@@ -276,6 +276,19 @@ if (isset($_REQUEST['pwd_update'])) {
       <!--Fetching data from a database -->
       <div class="container">
         <div class="page-inner">
+          <?php
+          if (isset($_SESSION['message'])) {
+          ?>
+            <script>
+              // ===== alertify======
+              alertify.set('notifier', 'position', 'top');
+              alertify.success("<?php echo $_SESSION['message']; ?>");
+            </script>
+          <?php
+            unset($_SESSION['message']);
+          };
+          ?>
+
           <!-- account Setting start-->
           <div class="row justify-content-center">
             <div class="col-md-11">
@@ -889,6 +902,9 @@ if (isset($_REQUEST['pwd_update'])) {
   <!-- user account mobile tabs js -->
   <script src="assets/js/account-mobilet-tab.js"></script>
   <script>
+    // Set alertify position to top-center
+    alertify.set('notifier', 'position', 'top-center');
+
     //=============password show and hide===================
 
     $('.pwd-show-hide:first-child img').click(function() {
@@ -1081,7 +1097,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
       // Copy to clipboard
       navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
+        alertify.success("Copied: " + text);
       }).catch(err => {
         console.error("Failed to copy: ", err);
       });
@@ -1093,7 +1109,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
       // Copy to clipboard
       navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
+        alertify.success("Copied: " + text);
       }).catch(err => {
         console.error("Failed to copy: ", err);
       });
@@ -1105,7 +1121,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
       // Copy to clipboard
       navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
+        alertify.success("Copied: " + text);
       }).catch(err => {
         console.error("Failed to copy: ", err);
       });
@@ -1117,7 +1133,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
       // Copy to clipboard
       navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
+        alertify.success("Copied: " + text);
       }).catch(err => {
         console.error("Failed to copy: ", err);
       });
@@ -1129,7 +1145,7 @@ if (isset($_REQUEST['pwd_update'])) {
 
       // Copy to clipboard
       navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
+        alertify.success("Copied: " + text);
       }).catch(err => {
         console.error("Failed to copy: ", err);
       });
@@ -1140,26 +1156,12 @@ if (isset($_REQUEST['pwd_update'])) {
       let text = document.getElementById("ZipCodetextToCopy").innerText;
       // Copy to clipboard
       navigator.clipboard.writeText(text).then(() => {
-        alert("Copied: " + text);
+        alertify.success("Copied: " + text);
       }).catch(err => {
         console.error("Failed to copy: ", err);
       });
     };
   </script>
-
-  <?php
-  if (isset($_SESSION['message'])) {
-  ?>
-    <script>
-      // ===== alertify======
-      alertify.set('notifier', 'position', 'top-right');
-      alertify.success("<?php echo $_SESSION['message']; ?>");
-    </script>
-  <?php
-    unset($_SESSION['message']);
-  };
-  ?>
-
   <!-- custom js -->
   <script src="assets/js/custom.js"></script>
   <!-- parish->region mapping (ensures Region options match selected Parish) -->
