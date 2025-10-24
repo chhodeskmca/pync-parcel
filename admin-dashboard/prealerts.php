@@ -538,6 +538,8 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               Pre_alert_id: Pre_alert_id
             }, function(response) {
               console.log('Response:', response);
+              console.log('Response type:', typeof response);
+              console.log('Response:', response);
 
               try {
                 if (response.error) {

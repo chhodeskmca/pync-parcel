@@ -451,13 +451,15 @@ if (isset($_REQUEST['addresType'])) {
 
 //================================================== Pre-alert showing for Pre-alert page start ===============================
 if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing_PreAlert_for_PreAlert_page'] == "1") {
-
+  ob_start();
      if (!isset($_REQUEST['Pre_alert_id']) || !is_numeric($_REQUEST['Pre_alert_id'])) {
+         ob_end_clean();
          echo json_encode(['error' => 'Invalid Pre_alert_id']);
          exit;
      }
      $Pre_alert_id = intval($_REQUEST['Pre_alert_id']);
      if ($Pre_alert_id <= 0) {
+         ob_end_clean();
          echo json_encode(['error' => 'Invalid Pre_alert_id']);
          exit;
      }
@@ -465,10 +467,12 @@ if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing
      $result  = mysqli_query($conn, $sql);
      if ($result && mysqli_num_rows($result) > 0) {
          $rows = mysqli_fetch_assoc($result);
+         ob_end_clean();
          echo json_encode($rows);
      } else {
+         ob_end_clean();
          echo json_encode(['error' => 'Pre-alert not found']);
      }
-
+     exit;
 }
 //================================================== Pre-alert showing for Pre-alert page end  ===============================
