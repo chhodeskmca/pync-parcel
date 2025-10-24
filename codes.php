@@ -476,11 +476,15 @@ if (isset($_REQUEST['showing_PreAlert_for_PreAlert_page']) && $_REQUEST['showing
        echo json_encode(['error' => 'Database error']);
        exit;
      }
-     if (mysqli_num_rows($result) > 0) {
+     $num_rows = mysqli_num_rows($result);
+     error_log("Query returned " . $num_rows . " rows");
+     if ($num_rows > 0) {
          $rows = mysqli_fetch_assoc($result);
-         error_log("Found pre-alert: " . json_encode($rows));
+         error_log("Found pre-alert rows: " . var_export($rows, true));
+         $json = json_encode($rows);
+         error_log("JSON encoded: " . $json);
          ob_end_clean();
-         echo json_encode($rows);
+         echo $json;
      } else {
          error_log("Pre-alert not found for id: " . $Pre_alert_id);
          ob_end_clean();
