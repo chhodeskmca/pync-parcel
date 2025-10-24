@@ -199,8 +199,9 @@ if (isset($_POST['signUp_email'])) {
     die();
   } catch (Exception $e) {
     sendmail_log('Sign-up email error: ' . $e->getMessage());
-    $_SESSION['message'] = "Something went wrong, please try again";
-    $target = rtrim($base_url, '/') . '/forgotpwd.php';
+    $_SESSION['message'] = "Registration successful, but email delivery failed. You can now log in";
+    // safe redirect
+    $target = rtrim($base_url, '/') . '/sign-in.php';
     header('location: ' . $target);
     die();
   }

@@ -25,3 +25,5 @@
 [2025-10-24 04:38:23] [INFO] make_api_request: Returning cached response | Context: {"url":"https:\/\/hello.lyk.bio\/rpc\/public.v1.PublicService\/UpdateCourierCustomer"}
 [2025-10-24 04:40:01] [INFO] make_api_request: Returning cached response | Context: {"url":"https:\/\/hello.lyk.bio\/rpc\/public.v1.PublicService\/UpdateCourierCustomer"}
 [2025-10-24 04:40:02] [INFO] make_api_request: Request successful | Context: {"url":"https:\/\/hello.lyk.bio\/rpc\/public.v1.PublicService\/UpdateCourierCustomer","method":"POST","http_code":200}
+[2025-10-24 13:29:20] [INFO] make_api_request: Request successful | Context: {"url":"https:\/\/hello.lyk.bio\/rpc\/public.v1.PublicService\/CreateCourierCustomer","method":"POST","http_code":200}
+[2025-10-24 13:29:20] [INFO] push_customer_to_warehouse: Saved warehouse_customer_id | Context: {"customer_id":"19","warehouse_customer_id":"815021f1-ea7d-4915-ab6e-5f9245a1db7d"}
