@@ -491,7 +491,6 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
       </div>
     </div>
     <!--   boostrap   -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="assets/js/core/popper.min.js"></script>
     <script src="assets/js/core/bootstrap.min.js"></script>
@@ -518,6 +517,10 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
         $(".view_user_information").click(function(e) {
           e.preventDefault();
 
+          var $this = $(this);
+          var originalText = $this.html();
+          $this.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Loading...');
+
           $('#view_user_information').modal('show');
 
           $('#view_user_information .modal-content').css('background-size', '50px');
@@ -527,11 +530,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
           var customer_name = $(this).data('customer-name');
           var account_number = $(this).data('account-number');
 
-          setTimeout(function() {
-
-            Pre_alert();
-
-          }, 1000);
+          console.log('Pre_alert_id:', Pre_alert_id);
 
           function Pre_alert() {
             $.post("codes.php", {
@@ -566,11 +565,19 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
               } catch (e) {
                 console.error('Error processing response:', e);
                 alertify.error('Failed to load pre-alert details.');
+                $('#view_user_information').modal('hide');
+              } finally {
+                $this.prop('disabled', false).html(originalText);
               }
-            }).fail(function() {
+            }).fail(function(xhr, status, error) {
+              console.error('AJAX Error:', status, error);
               alertify.error('Failed to load pre-alert details.');
+              $('#view_user_information').modal('hide');
+              $this.prop('disabled', false).html(originalText);
             });
           }
+
+          Pre_alert();
 
         });
 
