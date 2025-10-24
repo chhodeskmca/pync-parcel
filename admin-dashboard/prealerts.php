@@ -520,18 +520,11 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
 
           $('#view_user_information').modal('show');
 
-          $('#view_user_information .modal-content').css('background-size', '50px');
-          $('#view_user_information .modal-body').css('opacity', '0');
-
           var Pre_alert_id = $(this).data('prealert-id');
           var customer_name = $(this).data('customer-name');
           var account_number = $(this).data('account-number');
 
-          setTimeout(function() {
-
-            Pre_alert();
-
-          }, 1000);
+          Pre_alert();
 
           function Pre_alert() {
             $.post("codes.php", {
@@ -556,10 +549,6 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                 $('.Pre-Alert-details .Customer').text(customer_name ? customer_name : 'N/A');
                 $('.Pre-Alert-details .account_num').text(account_number ? account_number : 'N/A');
                 $('.Pre-Alert-details .Invoice').attr('href', invoice).attr('download', '');
-
-                //$invoice == '#' ? alertify.success("") : '';
-                $('#view_user_information .modal-content').css('background-size', '0px');
-                $('#view_user_information .modal-body').css('opacity', '1');
               } catch (e) {
                 console.error('JSON parse error:', e);
                 console.error('Response was:', response);
