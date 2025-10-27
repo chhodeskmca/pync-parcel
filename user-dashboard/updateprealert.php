@@ -24,6 +24,8 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
   <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
   <!-- custom css -->
   <link rel="stylesheet" href="assets/css/custom.css" />
+  <link rel="stylesheet" href="assets/css/notifications.css" />
+
 </head>
 
 <body>
