@@ -400,12 +400,12 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                               <?php
                               $user_id =  $_REQUEST['user_id'];
                               $sql = "
-                                (SELECT p.tracking_number, p.tracking_name, p.describe_package, COALESCE(p.store, '') as store, p.weight, p.created_at, 'Warehouse Processed' as package_type, p.payment_status
+                                (SELECT p.tracking_number, p.tracking_name, p.describe_package, COALESCE(p.store, '') as store, p.weight, p.created_at, 'Warehouse Processed' as package_type, p.payment_status, NULL as id, NULL as value_of_package, NULL as invoice, NULL as courier_company
                                  FROM packages p
                                  WHERE p.user_id = $user_id
                                  AND NOT EXISTS (SELECT 1 FROM pre_alert pa WHERE pa.tracking_number = p.tracking_number AND pa.User_id = p.user_id))
                                 UNION
-                                (SELECT pa.tracking_number, pa.courier_company as tracking_name, pa.describe_package, pa.merchant as store, NULL as weight, pa.created_at, 'Pre-alert' as package_type, NULL as payment_status
+                                (SELECT pa.tracking_number, pa.courier_company as tracking_name, pa.describe_package, pa.merchant as store, NULL as weight, pa.created_at, 'Pre-alert' as package_type, NULL as payment_status, pa.id, pa.value_of_package, pa.invoice, pa.courier_company
                                  FROM pre_alert pa
                                  WHERE pa.User_id = $user_id)
                                 ORDER BY created_at DESC";
@@ -466,10 +466,16 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                           <td>
                                             <ul class="action-list">
                                               <li>
-                                                <?php $return_to = 'customer-view.php?user_id=' . urlencode($_REQUEST['user_id'] ?? ''); ?>
-                                                <a href="package-view.php?tracking=<?php echo urlencode($rows['tracking_number']); ?>&from=<?php echo urlencode($return_to); ?>">
-                                                  <i class="fa-solid fa-eye"></i>
-                                                </a>
+                                                <?php if ($rows['package_type'] === 'Pre-alert') { ?>
+                                                  <a href="#" data-prealert-id="<?php echo $rows['id']; ?>" data-customer-name="<?php echo $_REQUEST['user_name']; ?>" data-account-number="<?php echo $_REQUEST['account_number']; ?>" class="view_prealert_customer_view">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                  </a>
+                                                <?php } else { ?>
+                                                  <?php $return_to = 'customer-view.php?user_id=' . urlencode($_REQUEST['user_id'] ?? ''); ?>
+                                                  <a href="package-view.php?tracking=<?php echo urlencode($rows['tracking_number']); ?>&from=<?php echo urlencode($return_to); ?>">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                  </a>
+                                                <?php } ?>
                                               </li>
                                             </ul>
                                           </td>
@@ -705,6 +711,46 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                   echo "<p class='text-center' style='font-size: 25px'> Something went wrong</p>";
                 }
                 ?>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal for Pre-alert view in customer view -->
+      <div class="modal fade" id="view_prealert_customer_view" tabindex="-1" aria-labelledby="view_prealert_customer_view" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="border-0 modal-header justify-content-end">
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+              <div class="row Pre-Alert-details">
+                <h2>PreAlert</h2>
+                <p class='Description'></p>
+                <hr width="100%" />
+                <div class="col-6">
+                  <h2>Tracking</h2>
+                  <p class='Tracking'></p>
+                </div>
+                <div class="col-6">
+                  <h2>Courier</h2>
+                  <p class="Courier"></p>
+                </div>
+                <div class="col-6">
+                  <h2>Customer</h2>
+                  <p class="Customer"></p>
+                  <h2>Id</h2>
+                  <p class="account_num"></p>
+                </div>
+                <div class="col-6">
+                  <h2>Value</h2>
+                  <p class="Value"></p>
+                </div>
+                <hr width="100%" />
+                <div class="col-12">
+                  <h2>Invoice</h2>
+                  <p><a style="border:1px solid; margin-top: 5px;" class="text-center d-block Invoice" href="#"><i class="fa-solid fa-download"></i> Download</a></p>
+                </div>
               </div>
             </div>
           </div>
@@ -1089,6 +1135,76 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
           alert('Failed to update payment status');
         }
       }).catch(function(){ alert('Network error'); });
+    });
+
+    // Handle view link clicks for pre-alerts
+    document.querySelectorAll('.view_prealert_customer_view').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        var originalText = $this.html();
+        $this.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Loading...');
+
+        $('#view_prealert_customer_view').modal('show');
+
+        $('#view_prealert_customer_view .modal-content').css('background-size', '50px');
+        $('#view_prealert_customer_view .modal-body').css('opacity', '0');
+
+        var Pre_alert_id = $(this).data('prealert-id');
+        var customer_name = $(this).data('customer-name');
+        var account_number = $(this).data('account-number');
+
+        console.log('Pre_alert_id:', Pre_alert_id);
+
+        function Pre_alert() {
+          $.post("codes.php", {
+            showing_PreAlert_for_PreAlert_page: "1",
+            Pre_alert_id: Pre_alert_id
+          }, function(response) {
+            console.log('Response:', response);
+            console.log('Response type:', typeof response);
+            console.log('Response:', response);
+
+            try {
+              if (response.error) {
+                alertify.error(response.error);
+                $('#view_prealert_customer_view').modal('hide');
+              } else {
+                var describe_package = response['describe_package'];
+                var tracking_number = response['tracking_number'];
+                var value_of_package = response['value_of_package'];
+                var courier_company = response['courier_company'];
+                var invoice = $.trim(response['invoice']);
+                invoice = (invoice === '' || invoice === 'N/A' || invoice === null || invoice === undefined) ? '#' : '../uploaded-file/' + invoice;
+
+                $('.Pre-Alert-details .Description').text(describe_package ? describe_package : 'N/A');
+                $('.Pre-Alert-details .Tracking').text(tracking_number ? tracking_number : 'N/A');
+                $('.Pre-Alert-details .Courier').text(courier_company ? courier_company : 'N/A');
+                $('.Pre-Alert-details .Value').text('$' + (value_of_package && value_of_package !== '' ? value_of_package : 'N/A'));
+                $('.Pre-Alert-details .Customer').text(customer_name ? customer_name : 'N/A');
+                $('.Pre-Alert-details .account_num').text(account_number ? account_number : 'N/A');
+                $('.Pre-Alert-details .Invoice').attr('href', invoice).attr('download', '');
+
+                $('#view_prealert_customer_view .modal-content').css('background-size', '0px');
+                $('#view_prealert_customer_view .modal-body').css('opacity', '1');
+              }
+            } catch (e) {
+              console.error('Error processing response:', e);
+              alertify.error('Failed to load pre-alert details.');
+              $('#view_prealert_customer_view').modal('hide');
+            } finally {
+              $this.prop('disabled', false).html(originalText);
+            }
+          }).fail(function(xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+            alertify.error('Failed to load pre-alert details.');
+            $('#view_prealert_customer_view').modal('hide');
+            $this.prop('disabled', false).html(originalText);
+          });
+        }
+
+        Pre_alert();
+      });
     });
   });
 </script>
