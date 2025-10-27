@@ -284,7 +284,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
 
                     // Only lock if it is strictly more than 24 hours older
                     if (($now - $created_at) > 86400) {
-                      echo "<div class='alert alert-danger alert-dismissible fade show' role='alert' style='text-align: center; margin: 20px;'>
+                      echo "<div class='alert notification-warehouse alert-dismissible fade show' role='alert' style='text-align: center; margin: 20px;'>
                                   <strong>This pre-alert cannot be edited as it was created more than 24 hours ago.</strong>
                                   <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close' onclick='window.location.href=\"createprealert.php\"'></button>
                                 </div>";
