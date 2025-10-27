@@ -476,7 +476,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                               $ps = 'N/A';
                                               $ps_class = 'ps-na';
                                             } else {
-                                              $ps = $rows['payment_status'] ?? 'Pending';
+                                              $ps = $rows['payment_status'] ?? 'N/A';
                                               $ps_class = 'ps-unknown';
                                               if (strtolower($ps) === 'paid') $ps_class = 'ps-paid';
                                               if (strtolower($ps) === 'pending') $ps_class = 'ps-pending';
