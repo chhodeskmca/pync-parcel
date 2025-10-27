@@ -382,7 +382,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                         <thead class="thead-light">
                           <tr>
                             <th>Tracking</th>
-                            <th>PYNC ID</th>
+                            <!-- <th>PYNC ID</th> -->
                             <!-- <th>Type</th> -->
                             <th>Courier Company</th>
                             <th>Weight</th>
@@ -417,7 +417,7 @@ $current_file_name = basename($_SERVER['PHP_SELF']); // getting current file nam
                                       echo htmlspecialchars($rows['tracking_number'] ?? '');
                                     } ?>
                                 </td>
-                                <td class="text-end"><?php echo isset($account_number) ? htmlspecialchars($account_number) : '—'; ?></td>
+                                <!-- <td class="text-end"><?php echo isset($account_number) ? htmlspecialchars($account_number) : '—'; ?></td> -->
                                 <!-- <td class="text-end"><?php echo (isset($rows['type']) && $rows['type'] == 'prealert') ? 'Pre-alert' : 'Warehouse Processed'; ?></td> -->
                                 <td class="text-end"><?php echo !empty($rows['courier_company']) ? ucfirst(htmlspecialchars($rows['courier_company'])) : 'N/A'; ?></td>
                                 <td class="text-end"><?php echo (isset($rows['weight']) && $rows['weight'] != 0) ? htmlspecialchars($rows['weight']) . " lbs" : '—'; ?></td>

@@ -117,7 +117,7 @@ if (isset($_REQUEST['PasswordResetEmail'])) // for password reset
 								</div>
 							   ";
 
-  $mail->send();
+    $mail->send();
     $_SESSION['message'] = "<span style='color:#000'>An email has been sent to $email. you'll receive instructions on how to set a new password. Please check your email. </span>";
 
     if (isset($_REQUEST['AnotherRequest'])) {
