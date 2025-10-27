@@ -399,13 +399,16 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                               </div>
                               <?php
                               $user_id =  $_REQUEST['user_id'];
-                              $sql = "SELECT p.*, CASE 
-                                    WHEN pa.tracking_number IS NOT NULL THEN 'Pre-alert'
-                                    ELSE 'Warehouse Processed'
-                                END as package_type
-                                FROM packages p 
-                                LEFT JOIN pre_alert pa ON p.tracking_number = pa.tracking_number
-                                WHERE p.user_id = $user_id";
+                              $sql = "
+                                (SELECT p.tracking_number, p.tracking_name, p.describe_package, COALESCE(p.store, '') as store, p.weight, p.created_at, 'Warehouse Processed' as package_type, p.payment_status
+                                 FROM packages p
+                                 WHERE p.user_id = $user_id
+                                 AND NOT EXISTS (SELECT 1 FROM pre_alert pa WHERE pa.tracking_number = p.tracking_number AND pa.User_id = p.user_id))
+                                UNION
+                                (SELECT pa.tracking_number, pa.courier_company as tracking_name, pa.describe_package, pa.merchant as store, NULL as weight, pa.created_at, 'Pre-alert' as package_type, NULL as payment_status
+                                 FROM pre_alert pa
+                                 WHERE pa.User_id = $user_id)
+                                ORDER BY created_at DESC";
                               if (mysqli_num_rows(mysqli_query($conn, $sql)) > 0) {
 
 
@@ -474,7 +477,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                                             <?php
                                             if (isset($rows['package_type']) && strtolower($rows['package_type']) === 'pre-alert') {
                                                 $ps = 'N/A';
-                                                $ps_class = 'ps-na';
+                                                $ps_class = 'ps-unknown';
                                             } else {
                                                 $ps = $rows['payment_status'] ?? 'N/A';
                                                 $ps_class = 'ps-unknown';
