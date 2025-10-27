@@ -1,4 +1,4 @@
-// Parish-based region filtering (user)
+// Parish-based region filtering (user) - Safari compatible version
 $(document).ready(function() {
     const parishMap = {
         'Kingston': ['Kingston'],
@@ -10,37 +10,35 @@ $(document).ready(function() {
         return $('.addressParish').length ? $('.addressParish').val() : $('#State').val() || '';
     }
 
-    function updateRegionVisibility() {
+    function updateRegionOptions() {
         const parish = getParishValue();
         const $region = $('#RegionAddress');
         if (!$region.length) return;
 
         // Get current selection
         const currentValue = $region.val();
-        
-        // Get all options except the first (Keep "Choose...")
-        const $options = $region.find('option:not(:first)');
-        
+
         // Get allowed regions for selected parish
         const allowed = parishMap[parish] || [];
 
-        // Show/hide options based on selected parish
-        $options.each(function() {
-            const $option = $(this);
-            if (allowed.includes($option.val())) {
-                $option.show();
-            } else {
-                $option.hide();
-                // If a hidden option was selected, reset to Choose...
-                if ($option.is(':selected')) {
-                    $region.val('');
-                }
-            }
+        // Keep the first "Choose..." option
+        const firstOption = $region.find('option:first').prop('outerHTML');
+
+        // Build new options HTML for allowed regions
+        let newOptions = firstOption;
+        allowed.forEach(region => {
+            // escape HTML when injecting via template literal
+            const esc = String(region).replace(/&/g, '&amp;').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+            const selected = (currentValue === region) ? ' selected' : '';
+            newOptions += `<option value="${esc}"${selected}>${esc}</option>`;
         });
 
-        // If current selection is valid for new parish, keep it
-        if (currentValue && allowed.includes(currentValue)) {
-            $region.val(currentValue);
+        // Replace all options
+        $region.html(newOptions);
+
+        // If current selection is not in allowed regions, reset to Choose...
+        if (currentValue && !allowed.includes(currentValue)) {
+            $region.val('');
         }
     }
 
@@ -51,7 +49,7 @@ $(document).ready(function() {
 
         // Keep the first "Choose..." option
         const firstOption = $region.find('option:first').prop('outerHTML');
-        
+
         // Get all unique regions
         const allRegions = new Set();
         Object.values(parishMap).forEach(regions => {
@@ -65,17 +63,14 @@ $(document).ready(function() {
         let newOptions = firstOption;
         Array.from(allRegions).sort().forEach(region => {
             // escape HTML when injecting via template literal
-            const esc = String(region).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            newOptions += `<option value="${esc}">${esc}</option>`;
+            const esc = String(region).replace(/&/g, '&amp;').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+            const selected = (currentRegion === region) ? ' selected' : '';
+            newOptions += `<option value="${esc}"${selected}>${esc}</option>`;
         });
 
         // Set options and update visibility
         $region.html(newOptions);
-        // Set the current region value if it exists
-        if (currentRegion) {
-            $region.val(currentRegion);
-        }
-        updateRegionVisibility();
+        updateRegionOptions();
     }
 
     // Enable the Region select
@@ -91,7 +86,7 @@ $(document).ready(function() {
     // Handle parish changes
     $(document).on('change', '.addressParish, #State', function() {
         try { console.debug('[region-filter] parish changed to:', $(this).val()); } catch(e) {}
-        updateRegionVisibility();
+        updateRegionOptions();
         // do NOT auto-enable the Region select here; enabling is controlled by the 'Enable Edit' button
     });
 });
