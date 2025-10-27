@@ -366,7 +366,7 @@ $current_file_name =  basename($_SERVER['PHP_SELF']);  // getting current file n
                   <div class="col-md-3 col-lg-2">
 
                     <p>Delivery Region</p>
-                    <h3><?php echo ($user_row['region'] === 'NA') ? '' : ($user_row['region'] ?? 'Portland (Knutsford)'); ?></h3>
+                    <h3><?php echo ($user_row['region'] === 'NA') ? '' : ($user_row['region'] ?? 'N/A'); ?></h3>
                   </div>
                   <div class="package-details customerview">
                     <div class="card">
